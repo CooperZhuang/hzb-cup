@@ -765,6 +765,21 @@ html:not([data-authed]) body > *:not(#gate){display:none!important}
 html[data-role="viewer"] #drawBtn,html[data-role="viewer"] #resetBtn,html[data-role="viewer"] #importBtn,html[data-role="viewer"] #demoBtn,html[data-role="viewer"] #settingsBtn,html[data-role="viewer"] #seedInput,html[data-role="viewer"] #restoreBtn,html[data-role="viewer"] #unlockBtn,html[data-role="viewer"] #saveState{display:none!important}
 html[data-role="viewer"] .set-actions{display:none!important}
 html[data-role="viewer"] input.score,html[data-role="viewer"] input.tname{pointer-events:none;background:#f3f5f1;color:#4a5a51}
+html[data-role="viewer"] #publishBtn{display:none!important}
+#roleModal{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(22,33,27,.45);padding:24px;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+#roleModal[hidden]{display:none}
+#roleModal .hzb-modal-card{width:min(380px,100%);background:#fff;border-radius:14px;padding:24px;box-shadow:0 18px 50px rgba(0,0,0,.25);color:#16211b}
+#roleModal h2{font-size:17px;margin:0 0 6px}
+#roleModal p{font-size:12.5px;color:#6b7a70;margin:0 0 14px}
+#roleModal input{width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid #dde2d6;border-radius:9px;font-size:16px;outline:none}
+#roleModal input:focus{border-color:#1c5540;box-shadow:0 0 0 3px rgba(28,85,64,.15)}
+#roleModal .hzb-modal-err{color:#a33;font-size:12.5px;min-height:16px;margin-top:8px}
+#roleModal .hzb-modal-btns{display:flex;gap:10px;margin-top:14px}
+#roleModal button{flex:1;padding:10px;border-radius:9px;font-size:14px;cursor:pointer;font-weight:600}
+#roleModal .hzb-btn-ghost{background:#fff;border:1px solid #dde2d6;color:#3b4a41}
+#roleModal .hzb-btn-main{background:#1c5540;border:1px solid #1c5540;color:#fff}
+.hzb-toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);background:#16211b;color:#fff;padding:11px 18px;border-radius:10px;font-size:13.5px;line-height:1.5;max-width:84vw;z-index:10001;opacity:0;pointer-events:none;transition:.25s;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;text-align:center}
+.hzb-toast.show{opacity:.96;transform:translateX(-50%) translateY(0)}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
@@ -808,9 +823,11 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
       </span>
       <span class="act-sep"></span>
       <span class="act-group">
+        <button class="btn btn-ghost" id="roleBtn">管理端</button>
         <button class="btn btn-ghost" id="settingsBtn">设置</button>
         <button class="btn btn-ghost" id="resetBtn">重置</button>
         <button class="btn btn-ghost" id="exportBtn">导出</button>
+        <button class="btn btn-ghost" id="publishBtn">发布</button>
         <button class="btn btn-ghost" id="importBtn">导入</button>
         <input type="file" id="importFile" accept="application/json" hidden>
       </span>
@@ -2781,6 +2798,8 @@ const qs=new URLSearchParams(location.search);
 if(qs.has('skin')) setSkin(qs.get('skin'),true);
 if(qs.get('view')) setTimeout(()=>{const el=document.getElementById(qs.get('view')+'Sec');if(el)el.scrollIntoView();},120);
 if(qs.has('scroll')) setTimeout(()=>{const el=document.getElementById(qs.get('scroll')+'Sec');if(el)el.scrollIntoView({block:'start'});},700);
+window.__exportSnapshot=function(){return Object.assign({},state,{skin:skinId()});};
+window.__render=function(){render();};
 
 };
 </script>
@@ -2788,6 +2807,15 @@ if(qs.has('scroll')) setTimeout(()=>{const el=document.getElementById(qs.get('sc
 
 
 
+<div id="roleModal" hidden>
+  <div class="hzb-modal-card">
+    <h2 id="roleTitle">切换到管理端</h2>
+    <p id="roleHint">请输入管理口令</p>
+    <input id="rolePwd" type="password" autocomplete="current-password" placeholder="口令">
+    <div class="hzb-modal-err" id="roleErr"></div>
+    <div class="hzb-modal-btns"><button type="button" id="roleCancel" class="hzb-btn-ghost">取消</button><button type="button" id="roleOk" class="hzb-btn-main">确定</button></div>
+  </div>
+</div>
 <div id="gate">
   <div class="gate-card">
     <h1>赛事看板</h1>
@@ -2802,108 +2830,283 @@ if(qs.has('scroll')) setTimeout(()=>{const el=document.getElementById(qs.get('sc
 <script>
 (function () {
   'use strict';
+  var STORE = 'huahuabei-knockout-v3', PUB = 'hzb-pub', SESS = 'hzb-session', PATK = 'hzb-pat';
   var gate = document.getElementById('gate');
+  var gateCard = gate ? gate.querySelector('.gate-card') : null;
   var input = document.getElementById('gatePwd');
   var btn = document.getElementById('gateBtn');
-  var err = document.getElementById('gateErr');
-  var busy = false, meta = null;
+  var errEl = document.getElementById('gateErr');
+  var roleModal = document.getElementById('roleModal');
+  var rolePwd = document.getElementById('rolePwd');
+  var roleErr = document.getElementById('roleErr');
+  var roleOk = document.getElementById('roleOk');
+  var roleCancel = document.getElementById('roleCancel');
+  var roleTitle = document.getElementById('roleTitle');
+  var roleHint = document.getElementById('roleHint');
 
-  function b64(s) {
-    var bin = atob(s), u = new Uint8Array(bin.length);
-    for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
-    return u;
+  var busy = false, meta = null, keyBytes = null, role = 'viewer', started = false;
+  var modalResolve = null;
+
+  function b64ToU8(s) { var bin = atob(s), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
+  function u8ToB64(u) { var s = ''; for (var i = 0; i < u.length; i += 8192) s += String.fromCharCode.apply(null, u.subarray(i, i + 8192)); return btoa(s); }
+  async function sha256Hex(buf) {
+    var d = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(d)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
   }
-  function setErr(t) { err.textContent = t || ''; }
-
   async function deriveKey(pw, salt) {
     var base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
-    return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt: b64(salt), iterations: 150000, hash: 'SHA-256' },
-      base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
-    );
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64ToU8(salt), iterations: 150000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt', 'encrypt']);
   }
-
-  async function unlock(pw) {
-    for (var i = 0; i < meta.wraps.length; i++) {
-      var w = meta.wraps[i];
-      try {
-        var kek = await deriveKey(pw, w.salt);
-        var raw = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(w.iv) }, kek, b64(w.ct));
-        var ck = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
-        var plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(meta.data.iv) }, ck, b64(meta.data.ct));
-        return { role: w.role, bundle: JSON.parse(new TextDecoder().decode(plain)) };
-      } catch (e) { /* wrong password for this wrap */ }
-    }
+  async function unwrapKey(roleName, pw, m) {
+    var w = null;
+    for (var i = 0; i < m.wraps.length; i++) if (m.wraps[i].role === roleName) w = m.wraps[i];
+    if (!w) return null;
+    try {
+      var kek = await deriveKey(pw, w.salt);
+      var raw = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64ToU8(w.iv) }, kek, b64ToU8(w.ct));
+      return new Uint8Array(raw);
+    } catch (e) { return null; }
+  }
+  async function decryptData(kb, m) {
+    var ck = await crypto.subtle.importKey('raw', kb, 'AES-GCM', false, ['decrypt']);
+    var p = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64ToU8(m.data.iv) }, ck, b64ToU8(m.data.ct));
+    return JSON.parse(new TextDecoder().decode(p));
+  }
+  async function encryptData(kb, text) {
+    var ck = await crypto.subtle.importKey('raw', kb, 'AES-GCM', false, ['encrypt']);
+    var iv = new Uint8Array(12); crypto.getRandomValues(iv);
+    var ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, ck, new TextEncoder().encode(text)));
+    return { iv: u8ToB64(iv), ct: u8ToB64(ct) };
+  }
+  async function fetchMeta() {
+    var r = await fetch('data.enc.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('data ' + r.status);
+    return r.json();
+  }
+  function readSession() {
+    try { var s = JSON.parse(localStorage.getItem(SESS) || 'null'); if (s && s.v === 1 && s.key && s.role) return s; } catch (e) {}
     return null;
   }
+  function saveSession() {
+    try { localStorage.setItem(SESS, JSON.stringify({ v: 1, role: role, key: u8ToB64(keyBytes) })); } catch (e) {}
+  }
+  function clearSession() { try { localStorage.removeItem(SESS); } catch (e) {} }
+  function seedPreload(bundle, m, force) {
+    if (!bundle.preload) return;
+    var seen = null, has = false;
+    try { seen = localStorage.getItem(PUB); has = !!localStorage.getItem(STORE); } catch (e) {}
+    if (force || !has || seen !== m.publishId) {
+      try {
+        localStorage.setItem(STORE, JSON.stringify(bundle.preload));
+        localStorage.setItem(PUB, m.publishId);
+      } catch (e) {}
+    }
+  }
+  function showToast(msg) {
+    var t = document.getElementById('hzbToast');
+    if (!t) { t = document.createElement('div'); t.id = 'hzbToast'; t.className = 'hzb-toast'; document.body.appendChild(t); }
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function () { t.classList.remove('show'); }, 4200);
+  }
+  function setRoleUI(doRender) {
+    document.documentElement.setAttribute('data-role', role);
+    window.__ROLE = role;
+    var rb = document.getElementById('roleBtn');
+    if (rb) rb.textContent = role === 'admin' ? '退出管理' : '管理端';
+    if (doRender && window.__render) window.__render();
+    if (role !== 'admin') {
+      document.querySelectorAll('input.score,input.tname').forEach(function (el) { el.readOnly = true; });
+    }
+  }
+  function attachViewerGuards() {
+    document.addEventListener('click', function (e) {
+      if (role === 'admin') return;
+      var t = e.target && e.target.closest && e.target.closest('#drawBtn,#resetBtn,#importBtn,#demoBtn,#settingsBtn,#restoreBtn,#unlockBtn,#seedInput,#publishBtn');
+      if (t) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+  }
+  function start(bundle) {
+    window.__PAGE_DATA = { men: bundle.men, women: bundle.women, subs: bundle.subs, avatars: bundle.avatars, settings: bundle.settings };
+    window.__PD = function () { return window.__PAGE_DATA; };
+    window.__isAdmin = function () { return window.__ROLE === 'admin'; };
+    seedPreload(bundle, meta, false);
+    document.documentElement.setAttribute('data-role', role);
+    document.documentElement.setAttribute('data-authed', '');
+    if (gate) gate.remove();
+    window.__startApp();
+    setRoleUI(false);
+    if (role !== 'admin') attachViewerGuards();
+    startPolling();
+  }
+  function startPolling() {
+    setInterval(async function () {
+      if (role !== 'viewer' || !keyBytes) return;
+      try {
+        var m2 = await fetchMeta();
+        if (m2.publishId === meta.publishId) return;
+        var b = await decryptData(keyBytes, m2);
+        seedPreload(b, m2, true);
+        location.reload();
+      } catch (e) {}
+    }, 45000);
+  }
+  function openModal(title, hint, isPassword) {
+    return new Promise(function (resolve) {
+      modalResolve = resolve;
+      roleTitle.textContent = title;
+      roleHint.textContent = hint || '';
+      rolePwd.value = '';
+      rolePwd.type = isPassword ? 'password' : 'text';
+      roleErr.textContent = '';
+      roleModal.hidden = false;
+      setTimeout(function () { rolePwd.focus(); }, 60);
+    });
+  }
+  function closeModal(v) {
+    roleModal.hidden = true;
+    if (modalResolve) { var r = modalResolve; modalResolve = null; r(v); }
+  }
+  roleOk.addEventListener('click', function () { closeModal(rolePwd.value.trim()); });
+  roleCancel.addEventListener('click', function () { closeModal(null); });
+  rolePwd.addEventListener('keydown', function (e) { if (e.key === 'Enter') closeModal(rolePwd.value.trim()); });
 
-  async function loadMeta() {
-    var res = await fetch('data.enc.json', { cache: 'no-store' });
-    if (!res.ok) throw new Error('data ' + res.status);
-    return res.json();
+  async function switchToAdmin() {
+    var pw = await openModal('切换到管理端', '请输入管理口令', true);
+    if (pw === null) return;
+    try {
+      if (!meta) meta = await fetchMeta();
+      var kb = await unwrapKey('admin', pw, meta);
+      if (!kb) { alert('管理口令不正确'); return; }
+      keyBytes = kb; role = 'admin'; saveSession(); setRoleUI(true);
+      showToast('已切换到管理端');
+    } catch (e) { alert('切换失败：' + (e.message || e)); }
+  }
+  function exitAdmin() {
+    role = 'viewer'; saveSession(); setRoleUI(true);
+    if (window.__PAT_HINT) { /* noop */ }
+    showToast('已切换回观看模式');
+  }
+  async function publishNow() {
+    if (role !== 'admin') return;
+    if (!window.__exportSnapshot) { alert('页面还没准备好'); return; }
+    var pat = null;
+    try { pat = localStorage.getItem(PATK); } catch (e) {}
+    if (!pat) {
+      pat = window.prompt('首次发布需要 GitHub Token（只保存在本机浏览器，只需一次）\n\n建议用 Fine-grained token，只勾选 hzb-cup 仓库的 Contents: Read and write');
+      if (!pat) return;
+      pat = pat.trim();
+      if (!pat) return;
+      try { localStorage.setItem(PATK, pat); } catch (e) {}
+    }
+    try {
+      var bundle = {
+        men: window.__PAGE_DATA.men,
+        women: window.__PAGE_DATA.women,
+        subs: window.__PAGE_DATA.subs,
+        avatars: window.__PAGE_DATA.avatars,
+        settings: window.__PAGE_DATA.settings,
+        preload: window.__exportSnapshot()
+      };
+      var sealed = await encryptData(keyBytes, JSON.stringify(bundle));
+      var meta2 = {
+        v: 1, kdf: meta.kdf,
+        publishId: (await sha256Hex(b64ToU8(sealed.ct))).slice(0, 16),
+        generatedAt: new Date().toISOString(),
+        data: sealed,
+        wraps: meta.wraps
+      };
+      var api = 'https://api.github.com/repos/CooperZhuang/hzb-cup/contents/data.enc.json';
+      var h = { Authorization: 'Bearer ' + pat, Accept: 'application/vnd.github+json' };
+      var gr = await fetch(api + '?ref=main', { headers: h });
+      var sha = null;
+      if (gr.ok) { sha = (await gr.json()).sha; }
+      else if (gr.status !== 404) { throw new Error('读取远端失败 ' + gr.status); }
+      var body = {
+        message: 'publish ' + meta2.publishId,
+        content: u8ToB64(new TextEncoder().encode(JSON.stringify(meta2))),
+        branch: 'main'
+      };
+      if (sha) body.sha = sha;
+      var put = await fetch(api, { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, h), body: JSON.stringify(body) });
+      if (!put.ok) {
+        var txt = await put.text();
+        if (put.status === 401 || put.status === 403) { try { localStorage.removeItem(PATK); } catch (e) {} try { localStorage.removeItem('hzb-pat'); } catch (e) {} }
+        throw new Error('发布失败 ' + put.status + ' ' + txt.slice(0, 180));
+      }
+      meta = meta2;
+      showToast('已发布，约 1 分钟后所有人同步（页面会自动刷新）');
+    } catch (e) {
+      showToast('发布失败：' + (e.message || e));
+    }
   }
 
-  async function submit() {
+  async function submitGate() {
     if (busy) return;
-    busy = true; btn.disabled = true; setErr('');
+    busy = true; btn.disabled = true; errEl.textContent = '';
     try {
-      if (!meta) meta = await loadMeta();
-      var r = await unlock(input.value.trim());
-      if (!r) {
-        setErr('口令不对，请确认后重试');
-        busy = false; btn.disabled = false; input.select();
-        return;
+      if (!meta) meta = await fetchMeta();
+      var pw = input.value.trim();
+      var kb = await unwrapKey('viewer', pw, meta);
+      var nextRole = 'viewer';
+      if (!kb) { kb = await unwrapKey('admin', pw, meta); nextRole = 'admin'; }
+      if (!kb) {
+        errEl.textContent = '口令不对，请确认后重试';
+        busy = false; btn.disabled = false; return;
       }
-      window.__ROLE = r.role;
-      window.__PAGE_DATA = {
-        men: r.bundle.men,
-        women: r.bundle.women,
-        subs: r.bundle.subs,
-        avatars: r.bundle.avatars,
-        settings: r.bundle.settings
-      };
-      window.__PD = function () { return window.__PAGE_DATA; };
-      window.__isAdmin = function () { return window.__ROLE === 'admin'; };
-
-      if (r.bundle.preload) {
-        var STORE = 'huahuabei-knockout-v3', PUB = 'hzb-pub';
-        var seen = null;
-        try { seen = localStorage.getItem(PUB); } catch (e) {}
-        var hasLocal = false;
-        try { hasLocal = !!localStorage.getItem(STORE); } catch (e) {}
-        if (r.role === 'viewer' || !hasLocal || seen !== meta.publishId) {
-          try {
-            localStorage.setItem(STORE, JSON.stringify(r.bundle.preload));
-            localStorage.setItem(PUB, meta.publishId);
-          } catch (e) {}
-        }
-      }
-
-      document.documentElement.setAttribute('data-role', r.role);
-      document.documentElement.setAttribute('data-authed', '');
-      if (gate) gate.remove();
-      window.__startApp();
-
-      if (r.role !== 'admin') {
-        document.addEventListener('click', function (e) {
-          var t = e.target && e.target.closest && e.target.closest('#drawBtn,#resetBtn,#importBtn,#demoBtn,#settingsBtn,#restoreBtn,#unlockBtn,#seedInput');
-          if (t) { e.preventDefault(); e.stopPropagation(); }
-        }, true);
-        document.querySelectorAll('input.score,input.tname').forEach(function (el) {
-          el.readOnly = true;
-          el.disabled = true;
-        });
-      }
+      keyBytes = kb; role = nextRole; saveSession();
+      var b = await decryptData(kb, meta);
+      started = true;
+      start(b);
     } catch (e) {
-      setErr('加载失败：' + ((e && e.message) || e));
+      errEl.textContent = '加载失败：' + (e.message || e);
       busy = false; btn.disabled = false;
     }
   }
 
-  btn.addEventListener('click', submit);
-  input.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
-  input.focus();
-  loadMeta().catch(function (e) { setErr('初始化失败：' + ((e && e.message) || e)); });
+  async function boot() {
+    var sess = readSession();
+    if (sess && gateCard) {
+      gateCard.innerHTML = '<h1>赛事看板</h1><p>正在加载…</p>';
+    }
+    try {
+      meta = await fetchMeta();
+      if (sess) {
+        try {
+          keyBytes = b64ToU8(sess.key);
+          var b = await decryptData(keyBytes, meta);
+          role = sess.role === 'admin' ? 'admin' : 'viewer';
+          started = true;
+          start(b);
+          return;
+        } catch (e) { clearSession(); }
+      }
+      if (gateCard) {
+        gateCard.innerHTML = '<h1>赛事看板</h1><p>请输入观看口令进入<br><span style="font-size:12px;color:#9aa79e">（管理员请点「管理端」切换）</span></p>'
+          + '<input id="gatePwd" type="password" autocomplete="current-password" placeholder="观看口令">'
+          + '<button id="gateBtn" type="button">进入</button>'
+          + '<div class="err" id="gateErr"></div>'
+          + '<div class="foot">仅限参赛人员查看</div>';
+        input = document.getElementById('gatePwd');
+        btn = document.getElementById('gateBtn');
+        errEl = document.getElementById('gateErr');
+        btn.addEventListener('click', submitGate);
+        input.addEventListener('keydown', function (e) { if (e.key === 'Enter') submitGate(); });
+        input.focus();
+      }
+    } catch (e) {
+      if (errEl) errEl.textContent = '初始化失败：' + (e.message || e);
+      else if (gateCard) gateCard.innerHTML = '<h1>赛事看板</h1><p>初始化失败：' + (e.message || e) + '</p>';
+    }
+  }
+
+  var roleBtn = document.getElementById('roleBtn');
+  if (roleBtn) roleBtn.addEventListener('click', function () { if (role === 'admin') exitAdmin(); else switchToAdmin(); });
+  var publishBtn = document.getElementById('publishBtn');
+  if (publishBtn) publishBtn.addEventListener('click', publishNow);
+
+  boot();
 })();
 </script>
 </body>
