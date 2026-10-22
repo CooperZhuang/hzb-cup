@@ -1,0 +1,2909 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-skin="fresh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>赛事看板</title>
+<link rel="icon" href="assets/logo.png">
+<style>
+/* =========================================================================
+   设计令牌 + 皮肤
+   一套皮肤 = 一组颜色变量 + 一组结构规则。
+   切换方式：<html data-skin="classic|night|ember|cobalt|mono">
+   圆角规则：面板/卡片 = --radius，按钮/输入 = --radius-sm，标签 = --radius-xs
+   ========================================================================= */
+:root{
+  color-scheme:light;
+  --paper:#F6F7F3;        /* 页面底色 */
+  --paper-2:#EDEFE7;      /* 次级底色 / 内嵌块 */
+  --surface:#FFFFFF;      /* 卡片面 */
+  --ink:#16211B;          /* 主文字 */
+  --ink-2:#3B4A41;        /* 次文字 */
+  --muted:#6B7A70;        /* 弱文字 */
+  --line:#DDE2D6;         /* 描边 */
+  --green:#1C5540;        /* 主强调 */
+  --green-2:#2C7A59;      /* 次强调 */
+  --lime:#E4F0C8;         /* 高亮块 */
+  --lime-2:#CFE39A;       /* 高亮描边 */
+  --on-accent:#FFFFFF;    /* 强调色底上的文字 */
+  --on-lime:#16211B;      /* 高亮块上的文字 */
+  --win-bg:#E8F3D8;       /* 胜者底色 */
+  --win-line:#C3DCA0;     /* 胜者描边 */
+  --champ-bg:#EEF5E0;     /* 冠军行底色 */
+  --medal-bg:#16211B;     /* 冠军队徽 */
+  --medal-ink:#E4F0C8;
+  --focus:rgba(28,90,64,.35);
+  --grid:rgba(28,85,64,.028);
+  --row-alt:rgba(28,85,64,.025);
+  --live-ring:rgba(207,227,154,.35);
+  --demo-bg:#FFF4D6; --demo-line:#E6C97A; --demo-ink:#6B4E12;
+  --demo-chip:#FFF1C9; --demo-chip-line:#E5C87A; --demo-chip-ink:#7A5A12;
+  --tie:#A33;
+  --connector:#C3CDBB;
+  --radius:12px; --radius-sm:9px; --radius-xs:7px;
+  --shadow:0 8px 24px rgba(22,33,27,.07);
+}
+
+/* ---- 原版：改造前的样式，一键复原 ---- */
+:root[data-skin="classic"]{
+  --paper:#F7F5EF; --paper-2:#EFEBDF; --surface:#FFFEFB;
+  --ink:#18231D; --ink-2:#3F4B44; --muted:#68746C; --line:#D8D3C6;
+  --green:#1B4D3A; --green-2:#2A6B50; --lime:#E7EFC4; --lime-2:#D5E39A;
+  --on-accent:#FFFEFB; --on-lime:#18231D;
+  --win-bg:#F1F6DE; --win-line:#CBD99A; --champ-bg:#F4F7E6;
+  --medal-bg:#18231D; --medal-ink:#E7EFC4;
+  --focus:rgba(28,115,84,.35); --grid:rgba(27,77,58,.025); --row-alt:rgba(255,255,255,.45);
+  --live-ring:rgba(196,227,79,.25);
+  --demo-bg:#FFF4D6; --demo-line:#E6C97A; --demo-ink:#6B4E12;
+  --demo-chip:#FFF1C9; --demo-chip-line:#E5C87A; --demo-chip-ink:#7A5A12;
+  --tie:#A33;
+  --connector:#CBC4B4;
+  --radius:8px; --radius-sm:7px; --radius-xs:6px;
+  --shadow:0 6px 18px rgba(24,35,29,.06);
+}
+
+/* ---- 夜场：深色，灯光下的球场 ---- */
+:root[data-skin="night"]{
+  color-scheme:dark;
+  --paper:#0D1310; --paper-2:#121A16; --surface:#151E19;
+  --ink:#E9F1EB; --ink-2:#A8B8AD; --muted:#7C8D82; --line:#26332C;
+  --green:#C8E64E; --green-2:#96C235; --lime:#C8E64E; --lime-2:#A9D23C;
+  --on-accent:#0D1310; --on-lime:#0D1310;
+  --win-bg:rgba(200,230,78,.13); --win-line:rgba(200,230,78,.38); --champ-bg:rgba(200,230,78,.10);
+  --medal-bg:#C8E64E; --medal-ink:#0D1310;
+  --focus:rgba(200,230,78,.45); --grid:rgba(200,230,78,.05); --row-alt:rgba(255,255,255,.035);
+  --live-ring:rgba(200,230,78,.22);
+  --demo-bg:#2B2413; --demo-line:#5C4B1D; --demo-ink:#F3E3AF;
+  --demo-chip:#342C15; --demo-chip-line:#5C4B1D; --demo-chip-ink:#F3E3AF;
+  --tie:#F2A196;
+  --connector:#47594D;
+  --radius:12px; --radius-sm:9px; --radius-xs:8px;
+  --shadow:0 12px 34px rgba(0,0,0,.5);
+}
+
+/* ---- 赤羽：朱红，硬朗的编辑部气质 ---- */
+:root[data-skin="ember"]{
+  --paper:#F7F2EF; --paper-2:#EFE4DE; --surface:#FFFCFB;
+  --ink:#1E1512; --ink-2:#4C3B34; --muted:#7C6A63; --line:#DFC9C1;
+  --green:#A32A22; --green-2:#C4402E; --lime:#F7DED5; --lime-2:#EDC2B4;
+  --on-accent:#FFF7F5; --on-lime:#3B1411;
+  --win-bg:#FBE3DA; --win-line:#E0A091; --champ-bg:#FBE3DA;
+  --medal-bg:#1E1512; --medal-ink:#F7DED5;
+  --focus:rgba(163,42,34,.32); --grid:rgba(163,42,34,.035); --row-alt:rgba(163,42,34,.035);
+  --live-ring:rgba(163,42,34,.18);
+  --demo-bg:#FFF4D6; --demo-line:#E0C179; --demo-ink:#6B4E12;
+  --demo-chip:#FFF1C9; --demo-chip-line:#E0C179; --demo-chip-ink:#7A5A12;
+  --tie:#A32A22;
+  --connector:#D5B9B0;
+  --radius:4px; --radius-sm:4px; --radius-xs:3px;
+  --shadow:none;
+}
+
+/* ---- 靛蓝：冷色，通透留白 ---- */
+:root[data-skin="cobalt"]{
+  --paper:#F2F5FA; --paper-2:#E7EDF6; --surface:#FFFFFF;
+  --ink:#111823; --ink-2:#3A4757; --muted:#66748A; --line:#C9D5E5;
+  --green:#1B4C9B; --green-2:#2C6BD0; --lime:#DDE9FA; --lime-2:#C1D5F3;
+  --on-accent:#F4F8FF; --on-lime:#0E1726;
+  --win-bg:#E2ECFB; --win-line:#A9C4EE; --champ-bg:#E2ECFB;
+  --medal-bg:#111823; --medal-ink:#DDE9FA;
+  --focus:rgba(27,76,155,.32); --grid:rgba(27,76,155,.035); --row-alt:rgba(27,76,155,.035);
+  --live-ring:rgba(27,76,155,.18);
+  --demo-bg:#FFF4D6; --demo-line:#E0C179; --demo-ink:#6B4E12;
+  --demo-chip:#FFF1C9; --demo-chip-line:#E0C179; --demo-chip-ink:#7A5A12;
+  --tie:#B0453F;
+  --connector:#B2C2D8;
+  --radius:14px; --radius-sm:10px; --radius-xs:8px;
+  --shadow:0 12px 30px rgba(17,24,35,.07);
+}
+
+/* ---- 素白：黑白，纸面与打印 ---- */
+:root[data-skin="mono"]{
+  --paper:#FFFFFF; --paper-2:#F3F3F3; --surface:#FFFFFF;
+  --ink:#111111; --ink-2:#3A3A3A; --muted:#6E6E6E; --line:#D6D6D6;
+  --green:#111111; --green-2:#3F3F3F; --lime:#EDEDED; --lime-2:#D8D8D8;
+  --on-accent:#FFFFFF; --on-lime:#111111;
+  --win-bg:#EFEFEF; --win-line:#B4B4B4; --champ-bg:#EFEFEF;
+  --medal-bg:#111111; --medal-ink:#FFFFFF;
+  --focus:rgba(17,17,17,.4); --grid:transparent; --row-alt:rgba(0,0,0,.03);
+  --live-ring:rgba(17,17,17,.16);
+  --demo-bg:#FFF8E3; --demo-line:#D8C489; --demo-ink:#5B4A12;
+  --demo-chip:#FFF2CE; --demo-chip-line:#D8C489; --demo-chip-ink:#5B4A12;
+  --tie:#8C2F2A;
+  --connector:#C6C6C6;
+  --radius:0px; --radius-sm:0px; --radius-xs:0px;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  overflow-x:hidden;
+  background:
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/72px 72px,
+    linear-gradient(0deg,var(--grid) 1px,transparent 1px) 0 0/72px 72px,
+    var(--paper);
+  color:var(--ink);
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.55;
+}
+button{font:inherit;color:inherit}
+.wrap{max-width:1600px;margin:0 auto;padding:0 26px 72px}
+.topmeta{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted)}
+.skin-list{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.skin-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  border:1px solid var(--line);background:var(--surface);border-radius:var(--radius-sm);
+  padding:6px 12px 6px 6px;cursor:pointer;line-height:1;
+  transition:background .15s ease,border-color .15s ease,transform .12s ease;
+}
+.skin-btn:hover{background:var(--paper-2);border-color:var(--green-2)}
+.skin-btn:active{transform:translateY(1px)}
+.skin-btn[aria-checked="true"]{border-color:var(--green);background:var(--paper-2);box-shadow:inset 0 0 0 1px var(--green)}
+.skin-btn:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.skin-sw{
+  width:30px;height:30px;border-radius:var(--radius-xs);flex:none;display:block;
+  background:linear-gradient(135deg,var(--a) 0 52%,var(--b) 52% 100%);
+  border:1px solid var(--line);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);
+}
+.skin-name{font-size:12.5px;font-weight:700;color:var(--ink-2);white-space:nowrap}
+.skin-btn[aria-checked="true"] .skin-name{color:var(--ink)}
+.skin-btn[aria-checked="true"]::after{content:"✓";font-size:11px;font-weight:800;color:var(--green)}
+.skin-tag{
+  font-style:normal;font-size:10px;font-weight:700;color:var(--muted);
+  border:1px solid var(--line);border-radius:4px;padding:0 4px;white-space:nowrap;
+}
+.hero{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;
+  min-width:0;
+  padding:52px 0 28px;align-items:end;
+}
+.kicker{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--green-2);
+}
+.kicker::before{content:"";width:22px;height:2px;background:var(--lime-2)}
+.event-title{
+  margin:12px 0 10px;display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;
+  line-height:.82;letter-spacing:-.06em;font-weight:900;
+}
+.event-title .huahua{
+  font-size:clamp(76px,12vw,150px);
+  background:linear-gradient(transparent 66%,var(--lime) 66%);
+  padding:0 6px 6px 0;
+}
+.event-title .event-sub{
+  font-size:clamp(22px,3vw,38px);letter-spacing:.06em;color:var(--green);
+  padding-bottom:14px;border-bottom:4px solid var(--lime-2);
+  font-weight:900;
+}
+.event-meta{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:700;margin:0 0 12px}
+.event-meta b{color:var(--green-2)}
+.lede{max-width:46ch;color:var(--ink-2);font-size:15px;margin:0}
+.hero-side{display:grid;grid-template-columns:repeat(2,minmax(118px,1fr));gap:10px;min-width:0}
+.stat{
+  display:grid;gap:2px;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);padding:11px 13px;min-width:0;
+}
+.stat b{font-size:26px;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.15}
+.stat span{font-size:11px;color:var(--muted);letter-spacing:.06em}
+.drawbar{
+  display:flex;flex-wrap:wrap;align-items:center;gap:14px;min-width:0;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:13px 16px;box-shadow:var(--shadow);
+}
+.btn{
+  border:1px solid transparent;border-radius:var(--radius);padding:12px 20px;
+  font-weight:800;letter-spacing:.02em;cursor:pointer;transition:transform .15s ease,background .15s ease,color .15s ease;
+  min-height:44px;
+}
+.btn:active{transform:translateY(1px) scale(.995)}
+.btn-primary{background:var(--lime);color:var(--ink);border-color:rgba(18,32,25,.18)}
+.btn-primary:hover{background:var(--lime-2)}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink-2)}
+.btn-ghost:hover{border-color:var(--green-2);color:var(--green)}
+.btn:focus-visible,.team:focus-visible,input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.draw-state{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-2)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.live{background:var(--lime-2);box-shadow:0 0 0 4px var(--live-ring)}
+.seedbox{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);min-width:0;flex-wrap:wrap;margin-left:auto}
+.act-group{display:inline-flex;align-items:center;gap:8px}
+.act-sep{width:1px;height:20px;background:var(--line);flex:none}
+.seedbox input{
+  width:92px;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);
+  padding:7px 9px;font-variant-numeric:tabular-nums;color:var(--ink);
+}
+section{padding-top:34px}
+.sec-head{display:grid;gap:3px;align-items:start;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:18px}
+.sec-head h2{margin:0;font-size:clamp(20px,2.4vw,28px);letter-spacing:-.03em}
+.sec-head p{margin:0;color:var(--muted);font-size:12px;max-width:74ch}
+.roster{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.roster>*{min-width:0}
+.teamlist{min-width:0}
+.chips{min-width:0}
+.teamlist h3{margin:0 0 10px;font-size:13px;letter-spacing:.08em;color:var(--green-2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;background:var(--surface);
+  border:1px solid var(--line);border-radius:999px;padding:5px 8px;font-size:13px;
+}
+.chip b{font-weight:700}
+.chip .lv{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.mm{display:inline-block;font-size:9px;font-weight:800;color:var(--on-lime);background:var(--lime);border-radius:3px;padding:0 4px;margin-left:3px;vertical-align:1px}
+.note{font-size:12px;color:var(--muted);margin-top:10px}
+.pairs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.paircol{border-top:2px solid var(--green);padding-top:10px}
+.paircol h3{margin:0 0 10px;font-size:14px;display:flex;justify-content:space-between;align-items:baseline}
+.paircol h3 span{font-size:11px;color:var(--muted);font-weight:500}
+.pairrow{
+  display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;
+  padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px;
+}
+.pairrow .code{font-size:10px;color:var(--muted);font-weight:800;letter-spacing:.04em}
+.pairrow .sum{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pinfo{display:grid;gap:1px;min-width:0}
+.tname{border:0;border-bottom:1px dashed var(--line);background:transparent;border-radius:4px;padding:0 2px;font:inherit;font-size:12.5px;font-weight:700;color:var(--ink);width:100%;min-width:0}
+.tname:hover,.tname:focus{border-color:var(--line);background:var(--surface)}
+.pinfo small{font-size:10px;color:var(--muted);font-weight:500}
+.pairrow.empty{opacity:.45}
+.byes:empty{display:none}
+.byes{margin-top:12px;font-size:12px;color:var(--ink-2);background:var(--paper-2);border-left:3px solid var(--lime-2);padding:8px 10px;border-radius:0 8px 8px 0}
+.bracket-wrap{display:grid;gap:26px}
+.bracket-wrap>*{min-width:0}
+.intl-section{min-width:0;max-width:100%}
+.intl-wrap{min-width:0;max-width:100%}
+.bracket{border-top:2px solid var(--ink);padding-top:10px}
+.bracket-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}
+.bracket-head h3{margin:0;font-size:18px;letter-spacing:-.02em}
+.bracket-head .meta{font-size:11px;color:var(--muted)}
+.cols{display:grid;gap:14px;align-items:stretch}
+.cols.md{grid-template-columns:repeat(3,1fr)}
+.cols.wd{grid-template-columns:repeat(3,1fr)}
+.cols.xd{grid-template-columns:repeat(4,1fr)}
+.bcol{display:flex;flex-direction:column;gap:10px;justify-content:space-around}
+.bcol-label{font-size:10px;letter-spacing:.12em;color:var(--muted);font-weight:800;margin-bottom:2px}
+.match{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:7px;display:grid;gap:4px;position:relative;
+}
+.match-meta{font-size:9px;color:var(--muted);letter-spacing:.06em;display:flex;justify-content:space-between}
+.team{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  border:1px solid transparent;background:var(--paper);border-radius:7px;
+  padding:6px 8px;font-size:11.5px;text-align:left;cursor:default;min-height:30px;
+}
+.team.ready{cursor:pointer;background:var(--surface);border-color:var(--line)}
+.team.ready::after{content:"›";color:var(--muted);font-size:15px;margin-left:4px}
+.team.win::after,.team.loss::after{content:""}
+.team.ready:hover{border-color:var(--green-2)}
+.team .seed{font-size:9px;color:var(--muted);font-variant-numeric:tabular-nums}
+.team.win{background:var(--lime);border-color:rgba(18,32,25,.2);font-weight:800}
+.team.loss{opacity:.42;text-decoration:line-through;text-decoration-thickness:1px}
+.team.tbd{color:var(--muted);font-style:italic}
+.schedule{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+.schedule th{
+  background:var(--paper-2);color:var(--ink-2);text-align:left;padding:8px 10px;font-size:11px;letter-spacing:.06em;
+  border-bottom:1px solid var(--line);
+}
+.schedule td{border-bottom:1px solid var(--line);padding:9px 10px;vertical-align:top;word-break:break-word}
+.schedule tr:nth-child(even) td{background:var(--row-alt)}
+.schedule .round{font-weight:800;white-space:nowrap}
+.schedule .time{display:block;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:500}
+.schedule .cell b{display:block;font-size:12.5px}
+.schedule .cell span{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+.schedule .empty{color:var(--muted);font-style:italic;font-size:11px}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;border-top:1px solid var(--line);padding-top:16px}
+.challenge{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.challenge .side{display:flex;flex-direction:column;gap:6px;justify-content:center}
+.challenge .side span{font-size:10px;letter-spacing:.12em;color:var(--muted);font-weight:800}
+.challenge .side b{font-size:clamp(16px,2vw,22px);letter-spacing:-.02em}
+.challenge .mid{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--green-2);border-left:1px solid var(--line);border-right:1px solid var(--line);padding:0 18px}
+.challenge .mid em{display:block;font-style:normal;font-size:10px;color:var(--muted);font-weight:600;margin-top:2px}
+.rule b{display:block;font-size:12px;letter-spacing:.04em;color:var(--green-2);margin-bottom:4px}
+.rule p{margin:0;font-size:12px;color:var(--ink-2)}
+.foot{margin-top:40px;border-top:1px solid var(--line);padding-top:14px;display:flex;justify-content:space-between;gap:12px;font-size:11px;color:var(--muted);flex-wrap:wrap}
+.draw-flash{animation:flash .6s ease}
+@keyframes flash{0%{opacity:.25;transform:translateY(3px)}100%{opacity:1;transform:none}}
+.shuffling .pairrow{animation:shuffle .35s linear infinite alternate}
+@keyframes shuffle{from{opacity:.35}to{opacity:1}}
+
+/* vertical bracket */
+.vbracket{display:flex;flex-direction:column;align-items:center;padding:2px 0 8px}
+.vchampion{
+  display:flex;align-items:center;gap:12px;background:var(--lime);color:var(--ink);
+  border:1px solid rgba(18,32,25,.22);border-radius:12px;padding:12px 20px;
+  font-weight:900;font-size:clamp(16px,2vw,22px);letter-spacing:-.02em;box-shadow:var(--shadow);
+}
+.vchampion .medal{
+  width:30px;height:30px;border-radius:50%;background:var(--medal-bg);color:var(--medal-ink);
+  display:grid;place-items:center;font-size:12px;font-weight:900;
+}
+.vchampion small{display:block;font-size:10px;letter-spacing:.14em;color:var(--green);font-weight:800;margin-bottom:2px}
+.vconnector{width:2px;height:18px;background:var(--line);flex:none}
+.vround{width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;padding:3px 0}
+.vround-label{display:flex;align-items:baseline;gap:6px;font-size:10px;color:var(--muted);font-weight:800;letter-spacing:.04em}
+.vround-label b{font-size:11px;color:var(--ink-2);letter-spacing:.08em}
+.vround-label i{font-style:normal;font-size:9.5px;color:var(--muted);font-weight:600;letter-spacing:0;font-variant-numeric:tabular-nums}
+.vrow{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;width:100%;align-items:flex-start}
+.match{width:302px;max-width:100%}
+.match.bye{width:196px;background:var(--paper-2);border-style:dashed;opacity:.9}
+.match.bye .team{min-height:28px;font-size:11px;color:var(--ink-2)}
+.teamline{display:grid;grid-template-columns:1fr 46px;gap:6px;align-items:center}
+.score{
+  width:46px;height:28px;border:1px solid var(--line);border-radius:6px;background:var(--paper);
+  text-align:center;font:inherit;font-size:12px;font-variant-numeric:tabular-nums;color:var(--ink);
+}
+.score:focus{border-color:var(--green-2);background:var(--surface)}
+.score:disabled{opacity:.35}
+.score::-webkit-outer-spin-button,.score::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.team{display:flex;align-items:center;justify-content:flex-start;gap:8px}
+.tie{font-size:9.5px;color:var(--tie);font-weight:700;margin-top:2px}
+.sc{font-style:normal;color:var(--green-2);font-weight:800;margin-left:4px;font-variant-numeric:tabular-nums}
+@media (max-width:560px){.match{width:min(100%,340px)}}
+
+
+dialog{border:none;border-radius:14px;padding:0;max-width:980px;width:calc(100% - 28px);max-height:92vh;background:var(--surface);box-shadow:0 30px 80px rgba(18,32,25,.3);color:var(--ink)}
+dialog::backdrop{background:rgba(18,32,25,.38);backdrop-filter:blur(2px)}
+.settings{display:flex;flex-direction:column;max-height:92vh}
+.set-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+.set-head h2{margin:0;font-size:20px;letter-spacing:-.02em}
+.set-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px 18px;overflow:auto}
+fieldset{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:0;min-width:0}
+legend{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--green-2);padding:0 6px}
+.field{display:grid;gap:3px;margin-bottom:8px}
+.field label{font-size:11px;color:var(--muted);font-weight:700}
+.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:var(--radius-sm);padding:7px 8px;font:inherit;font-size:12px;background:var(--paper);color:var(--ink);min-width:0}
+.field textarea{min-height:118px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.5;resize:vertical}
+.set-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.set-actions{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--line)}
+.set-preview{font-size:11px;color:var(--green-2);margin:3px 0 0;font-weight:600}
+@media (max-width:760px){.set-grid{grid-template-columns:1fr}.set-two{grid-template-columns:1fr}}
+
+
+/* readability pass: players first, team names secondary */
+:root{
+  --paper:#F7F5EF; --paper-2:#EFEBDF; --ink:#18231D; --ink-2:#3F4B44;
+  --muted:#68746C; --line:#D8D3C6; --green:#1B4D3A; --green-2:#2A6B50;
+  --lime:#E7EFC4; --lime-2:#D5E39A; --white:#FFFEFB;
+  --shadow:0 6px 18px rgba(24,35,29,.06);
+}
+body{
+  font-size:14px;
+}
+.kicker{font-size:11px;letter-spacing:.05em;text-transform:none;color:var(--muted);font-weight:700}
+.kicker::before{width:16px;background:var(--green-2)}
+.event-title .huahua{background:none;padding:0;font-size:clamp(72px,10vw,118px);letter-spacing:-.055em;color:var(--green)}
+.event-title .event-sub{font-size:clamp(20px,2.4vw,30px);letter-spacing:.04em;color:var(--ink);border-bottom:3px solid var(--green-2);padding-bottom:10px}
+.event-meta{font-size:12.5px;letter-spacing:0;color:var(--ink-2);font-weight:600}
+.lede{font-size:14.5px;color:var(--ink-2);max-width:60ch}
+.sec-head{border-bottom:1px solid var(--line);padding-bottom:9px}
+.sec-head h2{font-size:24px;letter-spacing:-.02em}
+.sec-head p{font-size:11.5px}
+.btn{border-radius:var(--radius-sm);box-shadow:none}
+.poster-style{border:1px solid var(--line);border-radius:var(--radius-sm);padding:6px 8px;font:inherit;font-size:11px;background:var(--paper);color:var(--ink-2)}
+.btn-primary{background:var(--green);color:var(--on-accent);border-color:var(--green)}
+.btn-primary:hover{background:var(--green-2)}
+.chip{border-radius:var(--radius-xs);background:var(--surface);box-shadow:none}
+.chip b{font-size:12px}
+.chip .lv{font-size:9.5px}
+.pairrow .players{display:block;font-size:13.5px;font-weight:700;line-height:1.35}
+.tname{font-size:10px;font-weight:500;color:var(--muted);opacity:.55;border:0;border-bottom:1px dashed var(--line);border-radius:0;padding:1px 0;margin-top:1px;background:transparent}
+.tname:focus{background:var(--surface);border-bottom-color:var(--green-2);outline:none}
+.team{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0}
+.team .players{font-size:15px;font-weight:700;line-height:1.3}
+.team-tag{display:block;font-size:10px;font-weight:500;color:var(--muted);line-height:1.25;margin-top:1px}
+.team.win{background:var(--win-bg);border-color:var(--win-line);color:var(--ink);font-weight:800;text-decoration:none}
+.team.loss{opacity:.55;text-decoration:none}
+.team.ready::after{content:""}
+.teamline{grid-template-columns:1fr 44px;gap:8px}
+.score{font-size:13px;height:30px;background:var(--surface);border-color:var(--line)}
+.match{width:320px;border-radius:var(--radius);box-shadow:none}
+.match-meta{font-size:9.5px;letter-spacing:0}
+.match.bye{width:196px;border-style:solid;opacity:.8}
+.match.bye .team .players{font-size:11.5px;font-weight:600}
+.vchampion{
+  background:var(--surface);color:var(--ink);border:1px solid var(--line);
+  border-left:4px solid var(--green-2);border-radius:var(--radius);box-shadow:none;
+  padding:11px 16px;gap:12px;align-items:center;
+}
+.vchampion .label{font-size:10.5px;letter-spacing:.08em;color:var(--green-2);font-weight:800;white-space:nowrap}
+.vchampion .champ-body{display:flex;flex-direction:column;gap:1px}
+.vchampion .players{font-size:22px;font-weight:900;letter-spacing:-.02em;line-height:1.25}
+.vchampion .team-tag{font-size:11px;margin-top:0}
+.vchampion .champ-score{font-size:12px;color:var(--green-2);font-weight:800;margin-left:6px}
+.schedule .cell b{font-size:13.5px;font-weight:700}
+.schedule .cell .team-tag{display:inline;font-size:10px;margin-left:4px;color:var(--muted);font-weight:500}
+.schedule .cell span{font-size:10.5px}
+.schedule th{font-size:10.5px;letter-spacing:.04em;color:var(--muted);font-weight:700}
+
+
+.hero-main{display:grid;grid-template-columns:132px minmax(0,1fr);gap:22px;align-items:center;min-width:0}
+.hero-logo{width:132px;height:132px;border-radius:50%;display:block;filter:drop-shadow(0 8px 18px rgba(24,35,29,.14))}
+.hero-copy{min-width:0}
+.event-title .huahua{font-size:clamp(48px,7vw,96px)}
+
+.faq{margin-top:28px;border-top:1px solid var(--line);padding-top:20px;max-width:920px}
+.faq h3{font-size:16px;margin:0 0 8px;letter-spacing:0}
+.faq h3:not(:first-child){margin-top:22px}
+.faq-why{font-size:13.5px;line-height:1.75;color:var(--ink-2);margin:0}
+.faq details{border-bottom:1px solid var(--line);padding:9px 0}
+.faq summary{cursor:pointer;font-size:13.5px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--muted);font-weight:400;font-size:16px}
+.faq details[open] summary::after{content:"−"}
+.faq details p{margin:7px 0 2px;font-size:13px;line-height:1.7;color:var(--ink-2)}
+
+
+#championsSec[hidden]{display:none}
+#championsSec{margin:6px 0 30px}
+.champ-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.champ-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+.champ-kind{font-size:11px;color:var(--green-2);font-weight:800;letter-spacing:.06em;margin-bottom:6px}
+.champ-line{display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+.champ-line:first-of-type{border-top:0}
+.champ-line .place{font-size:10.5px;color:var(--muted);font-weight:600}
+.champ-line .who b{display:block;font-size:14px;font-weight:700;line-height:1.3}
+.champ-line .who small{display:block;font-size:10px;color:var(--muted);line-height:1.3}
+.champ-line .champ-score{font-size:11px;color:var(--green-2);font-weight:700;font-variant-numeric:tabular-nums}
+.champ-line.first{background:var(--champ-bg);margin:0 -8px;padding:6px 8px;border-radius:5px;border-top:0}
+.champ-line.first .place{color:var(--green-2);font-weight:800}
+@media (max-width:800px){.champ-grid{grid-template-columns:1fr}}
+
+
+/* draw animation */
+
+.draw-overlay{position:fixed;inset:0;z-index:120;display:grid;place-items:center;padding:20px}
+.draw-blur{position:absolute;inset:0;background:#0C1E17 url("assets/draw-blur.jpg") center/cover no-repeat}
+.draw-overlay[hidden]{display:none}
+.draw-card{width:min(620px,100%);background:var(--paper);border:1px solid rgba(231,239,196,.5);border-radius:14px;padding:26px 28px 20px;box-shadow:0 30px 80px rgba(0,0,0,.35);position:relative;z-index:1;overflow:hidden}
+.draw-kicker{font-size:11px;letter-spacing:.12em;color:var(--green-2);font-weight:800}
+.draw-title{font-size:clamp(40px,7vw,64px);font-weight:900;letter-spacing:-.03em;line-height:1.05;color:var(--green);margin:6px 0 16px}
+.draw-slots{display:grid;gap:0}
+.slot{display:grid;grid-template-columns:56px 46px minmax(0,1fr);gap:10px;align-items:center;border-top:1px solid var(--line);padding:9px 0}
+.slot-avatars{display:flex;align-items:center;min-width:46px}
+.slot-avatars .avatar{width:22px;height:22px}
+.slot-avatars .avatar+.avatar{margin-left:-6px}
+.slot span{font-size:11px;color:var(--muted);font-weight:700}
+.slot b{font-size:17px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.draw-progress{height:4px;background:var(--line);border-radius:2px;margin-top:18px;overflow:hidden}
+.draw-progress i{display:block;height:100%;width:100%;background:var(--green-2);transform:scaleX(0);transform-origin:left}
+.draw-overlay.running .draw-progress i{animation:drawBar 2s linear forwards}
+@keyframes drawBar{to{transform:scaleX(1)}}
+.draw-hint{font-size:11px;color:var(--muted);margin-top:8px;min-height:16px}
+.draw-card.flash{animation:drawFlash .38s ease-out}
+@keyframes drawFlash{0%{box-shadow:0 0 0 0 rgba(231,239,196,.85)}100%{box-shadow:0 0 0 34px rgba(231,239,196,0)}}
+.pairrow.reveal{animation:rowIn .42s ease both}
+@keyframes rowIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.draw-overlay{display:none!important}.pairrow.reveal{animation:none!important}}
+
+
+.demo-watermark{position:fixed;inset:0;z-index:80;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='180'%3E%3Ctext x='180' y='90' transform='rotate(-24 180 90)' text-anchor='middle' font-family='PingFang SC,Microsoft YaHei,sans-serif' font-size='18' font-weight='700' fill='%231B4D3A'%3E演示模式 · 非真实结果%3C/text%3E%3C/svg%3E");background-repeat:repeat;background-size:480px 240px}
+.demo-watermark[hidden]{display:none}
+.demo-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--demo-bg);border:1px solid var(--demo-line);color:var(--demo-ink);border-radius:var(--radius);padding:9px 12px;margin:10px 0 14px;font-size:12.5px;font-weight:600}
+.demo-banner[hidden]{display:none}
+.demo-banner .btn{padding:5px 9px;font-size:11px;border-color:var(--demo-line);color:var(--demo-ink);background:transparent}
+.demo-tag{display:inline-block;font-size:10px;font-weight:800;color:var(--demo-chip-ink);background:var(--demo-chip);border:1px solid var(--demo-chip-line);border-radius:var(--radius-xs);padding:1px 5px;vertical-align:2px;margin-left:6px}
+
+
+/* 抽签安全锁 */
+.lock-chip{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;color:var(--ink-2);background:var(--paper-2);border:1px solid var(--line);border-radius:999px;padding:2px 8px;white-space:nowrap}
+.lock-chip[hidden]{display:none}
+.btn.is-locked{background:var(--paper-2);color:var(--muted);border-color:var(--line);cursor:not-allowed;transition:none}
+.btn.is-locked:hover{background:var(--paper-2)}
+#seedInput:disabled{opacity:.5;cursor:not-allowed}
+.demo-banner .btn.restore{background:var(--demo-ink);border-color:var(--demo-ink);color:var(--paper);font-weight:800}
+.lock-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-2);margin:0 0 8px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(12px);background:var(--ink);color:var(--paper);font-size:12.5px;font-weight:700;padding:10px 16px;border-radius:999px;box-shadow:0 14px 34px rgba(18,32,25,.28);opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease;z-index:150;max-width:min(92vw,520px);text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast[hidden]{display:none}
+
+
+.set-three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.set-btns{display:flex;gap:8px;flex-wrap:wrap}
+.set-three textarea{min-height:84px}
+.set-hint{font-size:11px;color:var(--muted);margin:0 0 8px;line-height:1.5}
+.switch-line{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;margin:0 0 8px}
+.switch-line input{accent-color:var(--green)}
+@media (max-width:760px){.set-three{grid-template-columns:1fr}}
+
+
+.avatar{width:22px;height:22px;border-radius:50%;object-fit:cover;flex:none;background:var(--paper-2);border:1px solid var(--line)}
+.avatar-sm{width:18px;height:18px}
+.avatar-stack{display:inline-flex;align-items:center;flex:none;margin-right:2px}
+.avatar-stack .avatar+.avatar{margin-left:-6px}
+.avatar-fallback{display:inline-grid;place-items:center;font-size:9px;font-weight:800;color:var(--green);background:var(--paper-2)}
+.note .avatar{vertical-align:-5px;margin-right:3px}
+.players{gap:6px;flex-wrap:nowrap;min-width:0}
+.pairrow .players,.team .players,.vchampion .players,.champ-line .who b{display:flex;align-items:center;gap:6px;min-width:0}
+.players-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vchampion .avatar{width:24px;height:24px}
+.match.bye .avatar{width:18px;height:18px}
+.champ-line .avatar{width:20px;height:20px}
+
+
+#prizesSec{max-width:1240px}
+.prize-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+.prize-table{width:100%;min-width:760px;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.prize-table th{background:var(--paper-2);color:var(--muted);font-size:10.5px;font-weight:700;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.prize-table td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.prize-table tr:last-child td{border-bottom:0}
+.prize-table .project{font-weight:800;color:var(--green-2);white-space:nowrap;border-right:1px solid var(--line)}
+.prize-table .place{font-weight:700;white-space:nowrap;color:var(--ink-2)}
+.prize-table td[colspan]{color:var(--ink-2)}
+@media (max-width:560px){.prize-table{font-size:12px}.prize-table th,.prize-table td{padding:7px 8px}}
+
+
+.poster-overlay{position:fixed;inset:0;z-index:140;background:rgba(12,30,23,.72);display:flex;align-items:center;justify-content:center;padding:18px}
+.poster-overlay[hidden]{display:none}
+.poster-shell{width:min(900px,100%);max-height:94vh;background:var(--surface);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.35)}
+.poster-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);flex:none}
+.poster-head h2{margin:0;font-size:20px}
+.poster-body{flex:1;min-height:0;padding:10px 12px;overflow:auto;background:var(--paper-2)}
+.poster-body img{display:block;width:100%;height:auto;border:1px solid var(--line);background:var(--paper)}
+.poster-actions{display:flex;justify-content:flex-end;gap:8px;padding:10px 16px;border-top:1px solid var(--line);flex:none}
+@media (max-width:560px){.poster-overlay{padding:6px}.poster-body{padding:6px}}
+@media (max-width:560px){.poster-body{padding:6px}}
+
+
+.vstage{position:relative;width:100%;display:flex;flex-direction:column;align-items:center}
+.vspacer{height:124px}
+.vthird{position:absolute;left:calc(50% + 190px);right:auto;top:50%;transform:translateY(-50%);width:302px;max-width:100%;z-index:1}
+.vthird-line{position:absolute;left:50%;top:50%;width:190px;height:2px;background:var(--line);z-index:0}
+.vthird-line::before{content:"";position:absolute;left:-3px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--line)}
+@media (max-width:1240px){.vthird{position:static;transform:none;margin:10px auto 0;left:auto}.vthird-line{display:none}.vspacer{height:18px}}
+
+
+.intl-section{margin:0 0 26px}
+.intl-section h3{margin:0 0 8px;font-size:18px;letter-spacing:-.01em}
+.intl-wrap{overflow-x:auto;border-top:1px solid var(--line);padding:10px 0 6px;display:flex;justify-content:center}
+.intl-bracket{display:flex;gap:30px;align-items:stretch;min-width:max-content;padding:0 2px;position:relative}
+svg.intl-lines{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:0}
+svg.intl-lines path{fill:none;stroke:var(--connector);stroke-width:1.6;stroke-linecap:round}
+.intl-col{display:flex;flex-direction:column;gap:6px;min-width:240px}
+.intl-col-body{display:flex;flex-direction:column;justify-content:space-around;gap:8px;flex:1;min-height:180px}
+.intl-col.champ .intl-col-body{justify-content:center}
+.intl-col-label{display:flex;flex-direction:column;align-items:center;gap:1px;text-align:center}
+.intl-col-label b{font-size:10.5px;color:var(--ink-2);font-weight:800;letter-spacing:.06em}
+.intl-col-label i{font-style:normal;font-size:9px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.intl-match{width:240px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-xs);padding:5px 7px}
+.intl-meta{display:flex;justify-content:space-between;gap:6px;font-size:9px;color:var(--muted);margin-bottom:2px}
+.intl-team{display:grid;grid-template-columns:minmax(0,1fr) 38px;gap:6px;align-items:center;padding:3px 0;border-top:1px solid var(--line);font-size:11.5px;font-weight:600;line-height:1.25}
+.intl-team:first-of-type{border-top:0}
+.intl-team.win{background:var(--win-bg);margin:0 -3px;padding:3px;border-radius:3px}
+.intl-team.loss{color:var(--muted)}
+.intl-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.intl-player{display:flex;align-items:center;gap:5px;min-width:0}
+.intl-player .avatar{width:18px;height:18px}
+.intl-player .avatar-stack .avatar+.avatar{margin-left:-5px}
+.intl-champ .intl-player .avatar{width:22px;height:22px}
+.intl-score{width:38px;height:24px;font-size:11px;padding:0 2px}
+.intl-bye{width:240px;border:1px dashed var(--line);border-radius:6px;background:var(--paper-2);padding:5px 7px;font-size:10.5px;color:var(--ink-2);display:flex;gap:8px;align-items:center}
+.intl-bye b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.intl-champ{width:240px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--green-2);border-radius:var(--radius-xs);padding:8px 10px}
+.intl-champ{text-align:center}
+.intl-champ-wrap{display:flex;justify-content:center;padding:6px 0 10px}
+.intl-champ.intl-champ-wide{width:360px;max-width:100%}
+.intl-champ .intl-player{justify-content:center;max-width:100%;gap:8px}
+.intl-champ b{display:block;font-size:13px;margin-top:3px;line-height:1.3;text-align:center}
+.intl-third{width:240px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-xs);padding:5px 7px}
+.intl-third .intl-meta{color:var(--muted)}
+@media (max-width:900px){.intl-wrap{justify-content:flex-start}}
+@media (max-width:560px){.intl-col,.intl-match,.intl-bye,.intl-champ,.intl-third{min-width:216px;width:216px}}
+
+/* =========================================================================
+   皮肤的结构差异
+   默认是新版布局；「原版」皮肤把下面这些逐条改回改造前的样子，
+   所以切到原版就等于一键复原。
+   ========================================================================= */
+:root[data-skin="classic"] .hero{padding:42px 0 26px}
+:root[data-skin="classic"] .hero-main{grid-template-columns:150px minmax(0,1fr);gap:24px}
+:root[data-skin="classic"] .hero-logo{width:150px;height:150px}
+:root[data-skin="classic"] .hero-side{
+  border-left:1px solid var(--line);padding-left:22px;
+  display:grid;grid-template-columns:1fr;gap:14px;
+}
+:root[data-skin="classic"] .stat{
+  display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  border:0;border-bottom:1px dashed var(--line);border-radius:0;padding:0 0 8px;background:transparent;
+}
+:root[data-skin="classic"] .drawbar{display:grid;grid-template-columns:auto 1fr auto;gap:18px;padding:14px 16px}
+:root[data-skin="classic"] .seedbox{margin-left:0;gap:8px}
+:root[data-skin="classic"] .act-group{display:contents}
+:root[data-skin="classic"] .act-sep{display:none}
+:root[data-skin="classic"] .sec-head{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:18px;
+  padding-bottom:9px;margin-bottom:18px;
+}
+:root[data-skin="classic"] .sec-head p{font-size:11.5px;max-width:none}
+:root[data-skin="classic"] .schedule th{
+  background:var(--ink);color:var(--paper);border-bottom:0;
+}
+
+/* ---- 夜场：深色，线条发光但不刺眼 ---- */
+:root[data-skin="night"] .hero{padding-top:34px}
+:root[data-skin="night"] .hero-logo{width:112px;height:112px;border:1px solid var(--line)}
+:root[data-skin="night"] .stat{background:transparent}
+:root[data-skin="night"] .drawbar{background:transparent;box-shadow:none}
+:root[data-skin="night"] .sec-head{border-bottom:0;border-left:3px solid var(--green);padding-left:12px}
+:root[data-skin="night"] .chip{background:transparent}
+
+/* ---- 赤羽：编辑部气质，硬边、重规则线 ---- */
+:root[data-skin="ember"] .stat{background:transparent;border:0;border-top:2px solid var(--ink);border-radius:0;padding:9px 0 0}
+:root[data-skin="ember"] .sec-head{border-bottom:3px solid var(--ink)}
+:root[data-skin="ember"] .drawbar{background:transparent;border:0;border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);border-radius:0;box-shadow:none}
+:root[data-skin="ember"] .chip{background:transparent}
+:root[data-skin="ember"] .hero-logo{border-radius:4px}
+
+/* ---- 靛蓝：通透留白，段头是一块淡色底 ---- */
+:root[data-skin="cobalt"] .hero{padding:44px 0 28px}
+:root[data-skin="cobalt"] .stat{background:var(--paper-2);border:0}
+:root[data-skin="cobalt"] .chip{background:var(--paper-2);border:0}
+:root[data-skin="cobalt"] .sec-head{
+  background:var(--paper-2);border:0;border-radius:var(--radius);
+  padding:11px 16px;margin-bottom:18px;
+}
+:root[data-skin="cobalt"] .sec-head p{color:var(--ink-2)}
+
+/* ---- 素白：黑白报纸稿，方便打印 ---- */
+:root[data-skin="mono"] .hero-logo{filter:grayscale(1) contrast(1.05);border-radius:0}
+:root[data-skin="mono"] .stat{background:transparent;border:0;border-left:2px solid var(--ink);border-radius:0;padding:2px 0 2px 10px}
+:root[data-skin="mono"] .sec-head{
+  background:var(--ink);border-bottom:0;border-radius:0;
+  padding:8px 14px;margin-bottom:16px;
+}
+:root[data-skin="mono"] .sec-head h2{color:var(--paper);font-size:19px}
+:root[data-skin="mono"] .sec-head p{color:#C4C4C4;font-size:11px}
+:root[data-skin="mono"] .drawbar{background:transparent;border:0;border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);border-radius:0;box-shadow:none}
+:root[data-skin="mono"] .chip{background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0}
+:root[data-skin="mono"] .chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0 16px}
+:root[data-skin="mono"] .match,:root[data-skin="mono"] .team{border-radius:0}
+
+
+@media (max-width:980px){
+  .hero-main{grid-template-columns:116px minmax(0,1fr);gap:18px}
+  .hero-logo{width:116px;height:116px}
+  .event-title .huahua{font-size:clamp(48px,7vw,80px)}
+}
+@media (max-width:560px){
+  .hero-main{grid-template-columns:1fr;gap:14px}
+  .hero-logo{width:96px;height:96px}
+  .event-title .huahua{font-size:52px}
+}
+
+@media (max-width:980px){
+  .hero{grid-template-columns:1fr;gap:20px}
+  .hero-side{grid-template-columns:repeat(4,1fr)}
+  :root[data-skin="classic"] .hero-side{
+    border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:16px;
+    grid-template-columns:repeat(3,1fr);
+  }
+  .pairs{grid-template-columns:1fr}
+  .roster{grid-template-columns:1fr}
+  .cols.md,.cols.wd,.cols.xd{grid-template-columns:1fr}
+  .bcol{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+  .rules{grid-template-columns:1fr 1fr}
+  .drawbar{grid-template-columns:1fr;align-items:stretch}
+  .act-sep{display:none}
+}
+
+@media (max-width:560px){
+  .wrap{padding:0 14px 50px}
+  .hero{padding-top:26px}
+  .topmeta{display:none}
+  .schedule{font-size:11px}
+  .schedule th,.schedule td{padding:6px}
+  .rules{grid-template-columns:1fr}
+  .hero-side{grid-template-columns:1fr 1fr}
+  :root[data-skin="classic"] .hero-side{grid-template-columns:1fr 1fr}
+}
+@media print{
+  :root,:root[data-skin]{
+    --paper:#fff;--paper-2:#fff;--surface:#fff;
+    --ink:#000;--ink-2:#222;--muted:#555;--line:#bbb;
+    --green:#000;--green-2:#333;--lime:#eee;--lime-2:#ddd;
+    --on-accent:#fff;--on-lime:#000;
+    --win-bg:#f0f0f0;--win-line:#999;--champ-bg:#f0f0f0;
+    --medal-bg:#000;--medal-ink:#fff;
+    --grid:transparent;--row-alt:rgba(0,0,0,.04);--shadow:none;
+    --radius:0px;--radius-sm:0px;--radius-xs:0px;
+  }
+  body{background:#fff}
+  .drawbar,.foot{display:none}
+  .wrap{max-width:none;padding:0}
+  section{break-inside:avoid}
+  .bracket,.schedule{break-before:page}
+  .team{cursor:default}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+<script>
+/* 皮肤：先读本地存的，刷新时不闪回默认色 */
+(function(){
+  try{
+    var s=localStorage.getItem("huahuabei-skin");
+    if(s&&/^[a-z][a-z-]{1,15}$/.test(s)) document.documentElement.setAttribute("data-skin",s);
+  }catch(e){}
+})();
+</script>
+
+<style>
+#gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#f6f7f3;padding:24px;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+#gate .gate-card{width:min(400px,100%);background:#fff;border:1px solid #dde2d6;border-radius:16px;padding:30px 26px 22px;box-shadow:0 12px 40px rgba(22,33,27,.12);text-align:center;color:#16211b}
+#gate h1{font-size:20px;margin:0 0 8px;letter-spacing:.08em}
+#gate p{font-size:13px;color:#6b7a70;margin:0 0 18px;line-height:1.6}
+#gate input{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #dde2d6;border-radius:10px;font-size:16px;outline:none;background:#fbfcf9;color:#16211b}
+#gate input:focus{border-color:#1c5540;box-shadow:0 0 0 3px rgba(28,85,64,.15)}
+#gate button{width:100%;margin-top:12px;padding:12px;border:0;border-radius:10px;background:#1c5540;color:#fff;font-size:15px;font-weight:600;cursor:pointer}
+#gate button:disabled{opacity:.6;cursor:wait}
+#gate .err{color:#a33;font-size:13px;min-height:18px;margin:10px 0 0}
+#gate .foot{font-size:11px;color:#9aa79e;margin-top:16px;letter-spacing:.05em}
+html:not([data-authed]) body > *:not(#gate){display:none!important}
+html[data-role="viewer"] #drawBtn,html[data-role="viewer"] #resetBtn,html[data-role="viewer"] #importBtn,html[data-role="viewer"] #demoBtn,html[data-role="viewer"] #settingsBtn,html[data-role="viewer"] #seedInput,html[data-role="viewer"] #restoreBtn,html[data-role="viewer"] #unlockBtn,html[data-role="viewer"] #saveState{display:none!important}
+html[data-role="viewer"] .set-actions{display:none!important}
+html[data-role="viewer"] input.score,html[data-role="viewer"] input.tname{pointer-events:none;background:#f3f5f1;color:#4a5a51}
+</style>
+<meta name="robots" content="noindex,nofollow">
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-main">
+      <img class="hero-logo" src="assets/logo.png" alt="">
+      <div class="hero-copy">
+        <h1 class="event-title"><span class="huahua">赛事</span><span class="event-sub">看板</span></h1>
+        <p class="event-meta" id="heroMeta"></p>
+        <p class="lede" id="lede"></p>
+      </div>
+    </div>
+    <div class="hero-side">
+      <div class="stat"><b>22</b><span>参赛人数</span></div>
+      <div class="stat"><b>3</b><span>项目</span></div>
+      <div class="stat"><b>22</b><span>总场次</span></div>
+      <div class="stat"><b id="statEnd">12:08</b><span>预计结束</span></div>
+    </div>
+  </header>
+
+  <div class="drawbar">
+    <button class="btn btn-primary" id="drawBtn">抽签</button>
+    <div class="draw-state">
+      <span class="dot" id="stateDot"></span>
+      <span id="stateText">还没抽签</span>
+      <span class="lock-chip" id="lockChip" hidden>🔒 已锁定</span>
+      <span id="saveState" style="font-size:10px;color:var(--muted);margin-left:8px">未保存</span>
+    </div>
+    <div class="seedbox">
+      <label for="seedInput">种子</label>
+      <input id="seedInput" inputmode="numeric" placeholder="随机" autocomplete="off" title="同一种子、同一设置和名单，抽签结果一致">
+      <span class="act-sep"></span>
+      <span class="act-group">
+        <button class="btn btn-ghost" id="demoBtn">演示模式</button>
+        <select id="posterStyle" class="poster-style" aria-label="海报样式"><option value="international">横版 · 国际签表</option><option value="vertical">竖版 · 手机</option></select>
+        <button class="btn btn-ghost" id="posterBtn">生成对阵图</button>
+        <button class="btn btn-ghost" id="styleBtn">纵向签表</button>
+      </span>
+      <span class="act-sep"></span>
+      <span class="act-group">
+        <button class="btn btn-ghost" id="settingsBtn">设置</button>
+        <button class="btn btn-ghost" id="resetBtn">重置</button>
+        <button class="btn btn-ghost" id="exportBtn">导出</button>
+        <button class="btn btn-ghost" id="importBtn">导入</button>
+        <input type="file" id="importFile" accept="application/json" hidden>
+      </span>
+    </div>
+  </div>
+
+  <div class="demo-banner" id="demoBanner" hidden>
+    <span id="demoText">演示模式：随机抽签 + 随机比分，不是真实比赛结果。</span>
+    <button class="btn btn-ghost" id="exitDemoBtn">退出演示</button>
+  </div>
+
+  <section id="championsSec" hidden>
+    <div class="sec-head"><h2 id="champTitle">冠军名单</h2></div>
+    <div class="champ-grid" id="champGrid"></div>
+  </section>
+
+  <section id="rosterSec">
+    <div class="sec-head"><h2>名单</h2></div>
+    <div class="roster">
+      <div class="teamlist">
+        <h3>男生 · 12</h3>
+        <div class="chips" id="menChips"></div>
+      </div>
+      <div class="teamlist">
+        <h3>女生 · 10</h3>
+        <div class="chips" id="womenChips"></div>
+      </div>
+    </div>
+    <p class="note" id="rosterNote"></p>
+  </section>
+
+  <section id="pairsSec">
+    <div class="sec-head"><h2>抽签结果</h2><p id="pairsMeta">等待抽签</p></div>
+    <div class="pairs">
+      <div class="paircol"><h3>男双 <span>6 对</span></h3><div id="mdPairs"></div></div>
+      <div class="paircol"><h3>女双 <span>5 对</span></h3><div id="wdPairs"></div></div>
+      <div class="paircol"><h3>混双 <span>11 对</span></h3><div id="xdPairs"></div></div>
+    </div>
+    <div class="byes" id="byeNote"></div>
+    <div class="byes" id="byeSummary"></div>
+  </section>
+
+  <section id="bracketSec">
+    <div class="sec-head"><h2>对阵图</h2><p id="bracketMeta">轮次下的小字＝进入该轮的对数 · 场次 · 轮空；虚线框＝轮空</p></div>
+    <div class="bracket-wrap" id="brackets"></div>
+  </section>
+
+  <section id="scheduleSec">
+    <div class="sec-head"><h2>赛程</h2><p id="schedMeta">预计 13 分钟一局 · 上不封顶</p></div>
+    <table class="schedule">
+      <thead><tr><th style="width:110px">时段</th><th>5 号场</th><th>6 号场</th></tr></thead>
+      <tbody id="scheduleBody"></tbody>
+    </table>
+    <p class="note">时间为预计，按现场实际情况调整；赛程按 5/6 号场固定，抽签只决定搭档与对阵位置，不改变比赛时间。</p>
+  </section>
+
+
+  <section id="prizesSec">
+    <div class="sec-head"><h2>奖项与奖品</h2><p>混双：奖品 1 给男生，奖品 2 给女生；男双/女双：两名队员各一份</p></div>
+    <div class="prize-wrap">
+      <table class="prize-table">
+        <colgroup><col style="width:90px"><col style="width:90px"><col><col></colgroup>
+        <thead><tr><th style="width:90px">项目</th><th style="width:90px">名次</th><th>奖品 1</th><th>奖品 2</th></tr></thead>
+        <tbody>
+          <tr><td class="project" rowspan="5">混双</td><td class="place">冠军</td><td>更大更强球桶（待采）</td><td>露八颗洗牙器</td></tr>
+          <tr><td class="place">亚军</td><td>强劲护你腕 1</td><td>强劲护你腕 2</td></tr>
+          <tr><td class="place">第三名</td><td>华为照耀小夜灯</td><td>运动杯</td></tr>
+          <tr><td class="place">第四名</td><td colspan="2">手胶</td></tr>
+          <tr><td class="place">其他</td><td colspan="2">小挂件</td></tr>
+          <tr><td class="project" rowspan="5">女双</td><td class="place">冠军</td><td>MK 车载情调香薰</td><td>富贵首饰盒</td></tr>
+          <tr><td class="place">亚军</td><td>暴力运动滚轴</td><td>厚底香香袜</td></tr>
+          <tr><td class="place">第三名</td><td>粉嫩速干毛巾</td><td>运动杯</td></tr>
+          <tr><td class="place">第四名</td><td colspan="2">手胶</td></tr>
+          <tr><td class="place">参与奖</td><td colspan="2">小挂件</td></tr>
+          <tr><td class="project" rowspan="5">男双</td><td class="place">冠军</td><td>VICTOR 球包</td><td>VICTOR 球包</td></tr>
+          <tr><td class="place">亚军</td><td>厚底香香袜</td><td>宠物亲子套装</td></tr>
+          <tr><td class="place">第三名</td><td>车载好伴侣支架</td><td>运动杯</td></tr>
+          <tr><td class="place">第四名</td><td colspan="2">手胶</td></tr>
+          <tr><td class="place">参与奖</td><td colspan="2">小挂件</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="rulesSec">
+    <div class="sec-head"><h2>规则</h2></div>
+    <div class="rules">
+      <div class="rule"><b>计分</b><p id="rulePoints">21 分一局，每球得分；20 平后净胜 2 分，不封顶，打到赢。</p></div>
+      <div class="rule"><b>限时</b><p id="ruleLimit">预计 13 分钟一局，按现场实际情况调整；不设时间上限，打到分出胜负。</p></div>
+      <div class="rule"><b>间隔</b><p id="ruleInterval">场间休息约 1 分钟，按现场实际情况开下一轮。</p></div>
+      <div class="rule"><b>名次</b><p>决赛胜者冠军、负者亚军；3、4名比赛的胜者第三。</p></div>
+      <div class="rule"><b>让分</b><p id="ruleHandicap">混双里的男双遇到混双，混双 6:0 开局；男双让 6 分。</p></div>
+    </div>
+
+    <div class="faq">
+      <h3>为什么会有轮空？</h3>
+      <p class="faq-why">单败淘汰的签位必须是 4、8、16 这种 2 的倍数。三个项目都铺不满：男双 6 对进 8 位签表，第 1 轮只打 2 场，剩下 <b>2 对轮空</b>；女双 5 对进 8 位，第 1 轮只打 1 场，剩下 <b>3 对轮空</b>；混双 11 对进 16 位，第 1 轮打 3 场，剩下 <b>5 对轮空</b>。轮空数 = 签位数 − 对数，所以一共 10 对轮空，全部集中在第 1 轮，第 2 轮起每一列都是满的。轮空位由抽签决定，设置里也可以改成按等级给种子。</p>
+      <h3>常见问题</h3>
+      <details><summary>轮空的人会少打吗？</summary><p>会少打一场，而且只少第 1 轮：轮空的一对直接进下一轮，之后每轮照常出场。所以男双、女双的冠军打 2 场（有轮空）或 3 场，混双冠军打 3 场（有轮空）或 4 场。轮空等于少一场消耗，是抽签带来的优势，不会少拿名次。</p></details>
+      <details><summary>轮空算赢吗？不记比分怎么算？</summary><p>算直接晋级，不用上场，也不填比分；对阵图里用虚线框写在“轮空”，下一轮的格子里就是这一对。</p></details>
+      <details><summary>混双里的男双让几分？</summary><p>默认让 <span id="qaHandicap">6</span> 分，混双从 <span id="qaHandicapScore">6:0</span> 开始；在“设置”里可以改。</p></details>
+      <details><summary>比分填让分前还是让分后？</summary><p>填最终比分。比如混双从让分后的比分开始，最后打到 21:15，就填 21 和 15。</p></details>
+      <details><summary>同一个人能打男双和混双吗？</summary><p>可以。男双和混双是两个项目；赛程已经把男双、女双分开，混双放在最后。</p></details>
+      <details><summary>输了还能打吗？</summary><p>淘汰赛输了就结束。3、4 名比赛是给决赛前一轮的负者打的，不影响决赛。</p></details>
+      <details><summary>换手机或电脑怎么看？</summary><p>签表存在当前浏览器里。点“导出”存一个 JSON 文件，在新设备点“导入”就能恢复。</p></details>
+    </div>
+  </section>
+
+  <div class="foot">
+    <span id="footTitle"></span>
+    <span></span>
+  </div>
+</div>
+
+
+<div class="draw-overlay" id="drawOverlay" hidden>
+  <div class="draw-blur"></div>
+  <div class="draw-card" id="drawCard">
+    <div class="draw-kicker">抽签</div>
+    <div class="draw-title" id="drawTitle">抽签中</div>
+    <div class="draw-slots">
+      <div class="slot"><span>男双</span><span class="slot-avatars" id="slotMdAv"><img class="avatar" alt=""><img class="avatar" alt=""></span><b id="slotMd">—</b></div>
+      <div class="slot"><span>女双</span><span class="slot-avatars" id="slotWdAv"><img class="avatar" alt=""><img class="avatar" alt=""></span><b id="slotWd">—</b></div>
+      <div class="slot"><span>混双</span><span class="slot-avatars" id="slotXdAv"><img class="avatar" alt=""><img class="avatar" alt=""></span><b id="slotXd">—</b></div>
+    </div>
+    <div class="draw-progress"><i id="drawProgress"></i></div>
+    <div class="draw-hint" id="drawHint">正在打乱名单…</div>
+  </div>
+</div>
+
+<div class="demo-watermark" id="demoWatermark" hidden aria-hidden="true"></div>
+<div class="toast" id="toast" hidden></div>
+
+
+<div class="poster-overlay" id="posterOverlay" hidden>
+  <div class="poster-shell">
+    <div class="poster-head"><h2 id="posterTitle">对阵图</h2><button type="button" class="btn btn-ghost" id="posterClose">关闭</button></div>
+    <div class="poster-body"><img id="posterImg" alt="对阵图"></div>
+    <div class="poster-actions">
+      <a class="btn btn-primary" id="posterDownload" download>下载 PNG</a>
+      <button type="button" class="btn btn-ghost" id="posterClose2">关闭</button>
+    </div>
+  </div>
+</div>
+
+<dialog id="settingsDialog">
+  <form method="dialog" class="settings" id="settingsForm">
+    <div class="set-head"><h2>设置</h2><button type="button" class="btn btn-ghost" id="setClose">关闭</button></div>
+    <div class="set-grid">
+      <fieldset style="grid-column:1/-1">
+        <legend>外观</legend>
+        <p class="set-hint">换皮肤只改配色和排版，名单、签表、锁定状态都不动，选择会记住。「原版」是改造前的样式，点一下就复原。</p>
+        <div class="skin-list" id="skinList" role="radiogroup" aria-label="皮肤切换"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>赛事</legend>
+        <div class="field"><label for="setTitle">赛事名称</label><input id="setTitle" type="text"></div>
+        <div class="field"><label for="setDate">日期</label><input id="setDate" type="text"></div>
+        <div class="field"><label for="setVenue">场馆</label><input id="setVenue" type="text"></div>
+        <div class="field"><label for="setStart">开始时间</label><input id="setStart" type="time"></div>
+      </fieldset>
+      <fieldset>
+        <legend>赛制</legend>
+        <div class="field"><label for="setPoints">每局分数</label><input id="setPoints" type="number" min="1" max="99"></div>
+        <div class="field"><label for="setWinBy">平分后净胜</label><input id="setWinBy" type="number" min="1" max="10"></div>
+        <div class="field"><label for="setCap">封顶分（0=不封顶）</label><input id="setCap" type="number" min="0" max="99"></div>
+        <div class="field"><label for="setTimeLimit">时间上限分钟（0=不限）</label><input id="setTimeLimit" type="number" min="0" max="120"></div>
+      </fieldset>
+      <fieldset>
+        <legend>时间与让分</legend>
+        <div class="field"><label for="setMatchMin">每场计划分钟</label><input id="setMatchMin" type="number" min="5" max="60"></div>
+        <div class="field"><label for="setIntervalMin">场间分钟</label><input id="setIntervalMin" type="number" min="0" max="30"></div>
+        <div class="field"><label for="setBreakMin">男双/女双与混双之间休息</label><input id="setBreakMin" type="number" min="0" max="60"></div>
+        <div class="field"><label for="setHandicap">男双让混双多少分</label><input id="setHandicap" type="number" min="0" max="20"><p class="set-preview" id="setPreview">混双 6:0 开局，男双让 6 分</p></div>
+      </fieldset>
+      <fieldset>
+        <legend>抽签</legend>
+        <div class="field"><label for="setPairMode">搭档方式</label><select id="setPairMode"><option value="level">按等级强弱搭配</option><option value="random">完全随机</option></select></div>
+        <div class="field"><label for="setByeMode">轮空方式</label><select id="setByeMode"><option value="random">随机轮空</option><option value="seeded">按等级种子</option></select></div>
+        <div class="field"><label for="setSubMen">男候补</label><input id="setSubMen" type="text"></div>
+        <div class="field"><label for="setSubWomen">女候补</label><input id="setSubWomen" type="text"></div>
+        <div class="field"><label for="setReferee">裁判/计分</label><input id="setReferee" type="text"></div>
+      </fieldset>
+
+      <fieldset style="grid-column:1/-1">
+        <legend>签表锁</legend>
+        <p class="set-hint">真实抽签完成后自动上锁：抽签按钮、种子、只重抽对阵、手动导入都会被挡住，防止现场误点。演示模式不受影响，随时可以一键复原。</p>
+        <div class="lock-line"><span id="lockHint">当前未锁定</span></div>
+        <div class="set-btns">
+          <button type="button" class="btn btn-ghost" id="unlockBtn">解锁（允许重新抽签）</button>
+          <button type="button" class="btn btn-ghost" id="restoreBtn">复原锁定签表</button>
+        </div>
+      </fieldset>
+      <fieldset style="grid-column:1/-1">
+        <legend>手动指定搭档（黑箱）</legend>
+        <label class="switch-line"><input type="checkbox" id="setForcedOn" checked> <span>启用手动指定（关闭后即使填了也忽略）</span></label>
+        <p class="set-hint">每行一对，用 + 或逗号分隔；不填就是正常抽签。</p>
+        <div class="set-three">
+          <div class="field"><label for="setForcedMd">男双指定</label><textarea id="setForcedMd" spellcheck="false" placeholder="甲 + 乙"></textarea></div>
+          <div class="field"><label for="setForcedWd">女双指定</label><textarea id="setForcedWd" spellcheck="false" placeholder="甲 + 乙"></textarea></div>
+          <div class="field"><label for="setForcedXd">混双指定</label><textarea id="setForcedXd" spellcheck="false" placeholder="甲 + 乙"></textarea></div>
+        </div>
+      </fieldset>
+
+      <fieldset style="grid-column:1/-1">
+        <legend>手动导入搭档（对阵另抽）</legend>
+        <p class="set-hint">先写“男双 / 女双 / 混双”，每行一对，用 + 分隔；男双 6 对、女双 5 对、混双 11 对（含 1 对男双）。只导入搭档；导入后，对阵位置和轮空会另外随机抽。</p>
+        <div class="field"><textarea id="manualDraw" spellcheck="false" style="min-height:170px" placeholder="男双 / 女双 / 混双"></textarea></div>
+        <div class="set-btns"><button type="button" class="btn btn-ghost" id="manualApply">导入搭档，随机对阵</button><button type="button" class="btn btn-ghost" id="redrawBracketBtn">只重抽对阵（搭档不变）</button></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>候补替换</legend>
+        <div class="field"><label for="subOut">缺阵球员</label><select id="subOut"></select></div>
+        <div class="field"><label for="subIn">上场候补</label><select id="subIn"><option value="">先选缺阵球员</option></select></div>
+        <button type="button" class="btn btn-ghost" id="subApply">替换</button>
+        <p class="set-hint">替换后不重新抽签，签表里的名字和头像会直接更新。</p>
+      </fieldset>
+
+      <fieldset style="grid-column:1/-1">
+        <legend>名单（每行：名字,等级）</legend>
+        <div class="set-two">
+          <div class="field"><label for="setMen">男生</label><textarea id="setMen" spellcheck="false"></textarea></div>
+          <div class="field"><label for="setWomen">女生</label><textarea id="setWomen" spellcheck="false"></textarea></div>
+        </div>
+      </fieldset>
+    </div>
+    <div class="set-actions">
+      <button type="button" class="btn btn-ghost" id="setDefault">恢复默认</button>
+      <button type="button" class="btn btn-primary" id="setSave">保存并应用</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+window.__startApp = function(){
+"use strict";
+const MEN = __PD().men;
+const WOMEN = __PD().women;
+const SUBS = __PD().subs;
+const AVATARS = __PD().avatars;
+Object.values(AVATARS).forEach(src=>{const im=new Image();im.src=src;});
+const __drawBg=new Image();__drawBg.src="assets/draw-blur.jpg";
+const DEFAULT_MEN = MEN.map(p=>({...p}));
+const DEFAULT_WOMEN = WOMEN.map(p=>({...p}));
+const STORE = "huahuabei-knockout-v3";
+const DEFAULT_SETTINGS = __PD().settings;
+function __cupTitle(){try{const t=(state.settings.eventTitle||"").replace(/羽球赛$/,"");return t||"赛事";}catch(e){return "赛事";}}
+
+const state = {
+  settings:{...DEFAULT_SETTINGS},
+  seed:null,
+  drawn:false,
+  demo:false,
+  manualPairs:false,
+  byes:[],
+  pairs:{md:[],wd:[],xd:[]},
+  brackets:{md:null,wd:null,xd:null},
+  locked:false,
+  lock:null
+};
+
+/* ---------------- 签表安全锁 ---------------- */
+function cloneDeep(v){
+  try{return JSON.parse(JSON.stringify(v));}catch(e){return null;}
+}
+function isLocked(){return !!(state.locked && state.lock);}
+function takeLock(reason){
+  state.locked=true;
+  state.lock={
+    at:new Date().toISOString(),
+    reason:reason||"draw",
+    seed:state.seed,
+    manualPairs:!!state.manualPairs,
+    byes:(state.byes||[]).slice(),
+    pairs:cloneDeep(state.pairs)||{md:[],wd:[],xd:[]},
+    brackets:cloneDeep(state.brackets)||{md:null,wd:null,xd:null}
+  };
+}
+function refreshLockSnapshot(){
+  if(isLocked()) takeLock(state.lock.reason);
+}
+function lockTimeText(){
+  if(!isLocked()) return "";
+  const d=new Date(state.lock.at);
+  const pad=n=>String(n).padStart(2,"0");
+  return `${d.getMonth()+1}月${d.getDate()}日 ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function lockBlocked(){
+  if(!isLocked()) return false;
+  toast(state.demo?"当前是演示结果 · 点横幅上的「一键复原」回到真实签表":"签表已锁定 · 要重抽先到「设置 → 签表锁」解锁");
+  return true;
+}
+function toast(msg){
+  const el=document.getElementById("toast");
+  if(!el) return;
+  el.textContent=msg;
+  el.hidden=false;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t=setTimeout(()=>{el.classList.remove("show");setTimeout(()=>{el.hidden=true;},240);},2600);
+}
+
+/* ---------------- 皮肤 ----------------
+   一套皮肤 = 颜色变量 + 结构规则，切换只改 <html data-skin="...">。
+   皮肤是显示偏好，单独存一份，导出的 JSON 里也会带上。 */
+const SKIN_STORE="huahuabei-skin";
+const SKINS=[
+  {id:"fresh",  name:"清爽", desc:"新版布局 · 干净的白卡片",       a:"#F6F7F3", b:"#1C5540"},
+  {id:"night",  name:"夜场", desc:"深色 · 灯光下的球场",           a:"#0D1310", b:"#C8E64E"},
+  {id:"ember",  name:"赤羽", desc:"朱红 · 硬朗的编辑部气质",       a:"#F7F2EF", b:"#A32A22"},
+  {id:"cobalt", name:"靛蓝", desc:"冷色 · 通透留白",               a:"#F2F5FA", b:"#1B4C9B"},
+  {id:"mono",   name:"素白", desc:"黑白 · 方便打印",               a:"#FFFFFF", b:"#111111"},
+  {id:"classic",name:"原版", desc:"改造前的样式，一键复原",       a:"#F7F5EF", b:"#1B4D3A", restore:true, tag:"改造前"}
+];
+function skinId(){
+  try{
+    const s=localStorage.getItem(SKIN_STORE);
+    return SKINS.some(x=>x.id===s)?s:"fresh";
+  }catch(e){return "fresh";}
+}
+function skinInfo(id){return SKINS.find(x=>x.id===id)||SKINS[0];}
+function setSkin(id,silent){
+  const info=skinInfo(id);
+  document.documentElement.setAttribute("data-skin",info.id);
+  try{localStorage.setItem(SKIN_STORE,info.id);}catch(e){}
+  renderSkinList();
+  syncPosterPalette();
+  if(!silent) toast(`皮肤 · ${info.name}`);
+}
+function renderSkinList(){
+  const box=document.getElementById("skinList");
+  if(!box) return;
+  const cur=skinId();
+  box.innerHTML=SKINS.map(s=>
+    `<button type="button" class="skin-btn" role="radio" aria-checked="${s.id===cur}" data-skin="${s.id}"`+
+    ` title="${s.name} · ${s.desc}" style="--a:${s.a};--b:${s.b}">`+
+    `<span class="skin-sw" aria-hidden="true"></span><span class="skin-name">${s.name}</span>`+
+    (s.tag?`<em class="skin-tag">${s.tag}</em>`:"")+
+    `</button>`
+  ).join("");
+  box.querySelectorAll(".skin-btn").forEach(b=>{
+    b.addEventListener("click",()=>setSkin(b.dataset.skin));
+  });
+}
+function restoreLocked(){ if(!window.__isAdmin()){toast("仅管理员可操作");return;}
+  if(!isLocked()){ reset(); return; }
+  const L=state.lock;
+  state.seed=L.seed;
+  state.manualPairs=!!L.manualPairs;
+  state.drawn=true;
+  state.demo=false;
+  state.byes=(L.byes||[]).slice();
+  state.pairs=cloneDeep(L.pairs)||{md:[],wd:[],xd:[]};
+  state.brackets=cloneDeep(L.brackets)||{md:null,wd:null,xd:null};
+  save(); render(); scrollToPairs();
+  toast(`已复原锁定签表 · 种子 ${state.seed}`);
+}
+function unlockDraw(){ if(!window.__isAdmin()){toast("仅管理员可操作");return;}
+  if(!isLocked()){ toast("当前没有锁定"); return; }
+  if(!confirm("解锁后可以重新抽签，现在的签表会被覆盖。要解锁吗？")) return;
+  state.locked=false; state.lock=null;
+  save(); render(); fillSettings();
+  toast("已解锁，可以重新抽签");
+}
+
+/* ---------------- 轮次与轮空 ---------------- */
+function totalRounds(kind){return kind==="xd"?4:3;}
+function finalMatchId(kind){return kind==="xd"?"m10":kind==="wd"?"m4":"m5";}
+function thirdMatchId(kind){return kind==="xd"?"m11":kind==="wd"?"m5":"m6";}
+function byeSeedNumbers(kind){return kind==="md"?[1,2]:kind==="wd"?[1,2,3]:[1,2,3,4,5];}
+function roundEnterCount(kind,r){
+  const br=state.brackets[kind];
+  const T=totalRounds(kind);
+  if(r===1) return br?br.seeds.length:0;
+  return Math.pow(2,T-r+1);
+}
+function roundMatchCount(kind,r){
+  const br=state.brackets[kind];
+  if(!br) return 0;
+  const thirdId=thirdMatchId(kind);
+  return Object.values(br.matches).filter(m=>m.round===r && m.id!==thirdId).length;
+}
+function roundByeCount(kind,r){
+  if(r!==1) return 0;
+  const enter=roundEnterCount(kind,r);
+  const pairs=roundMatchCount(kind,r)*2;
+  return Math.max(0,enter-pairs);
+}
+function roundSubLabel(kind,r){
+  const T=totalRounds(kind);
+  const parts=[`${roundEnterCount(kind,r)} 对`,`${roundMatchCount(kind,r)} 场`];
+  const byes=roundByeCount(kind,r);
+  if(byes) parts.push(`${byes} 轮空`);
+  if(r===T) parts.push("含 3、4 名");
+  return parts.join(" · ");
+}
+function round1SlotItems(kind){
+  const br=state.brackets[kind];
+  if(!br) return [];
+  const r2=Object.values(br.matches)
+    .filter(m=>m.round===2)
+    .sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
+  const items=[];
+  for(const m of r2){
+    for(const ref of [m.a,m.b]){
+      if(!ref) continue;
+      if(ref.t==="w"){
+        const src=br.matches[ref.m];
+        if(src) items.push({type:"match",m:src});
+      }else{
+        items.push({type:"bye",seed:ref.i});
+      }
+    }
+  }
+  return items;
+}
+
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function shuffle(arr, rnd){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+function pair(p1,p2,code){
+  return {code,p1,p2,sum:Number((p1.lv+p2.lv).toFixed(1)),name:""};
+}
+function avatarImg(name,cls="avatar"){
+  const src=AVATARS[name];
+  if(src) return `<img class="${cls}" src="${src}" alt="">`;
+  return `<span class="${cls} avatar-fallback">${esc((name||"?").slice(0,1))}</span>`;
+}
+function avatarStack(p1,p2){
+  return `<span class="avatar-stack">${avatarImg(p1.name)}${avatarImg(p2.name)}</span>`;
+}
+function parseForcedRaw(raw){
+  return String(raw||"").split(/\n+/).map(l=>l.trim()).filter(Boolean).map(line=>{
+    const parts=line.split(/[+，,\/]/).map(x=>x.trim()).filter(Boolean);
+    return parts.length>=2?[parts[0],parts[1]]:null;
+  }).filter(Boolean);
+}
+function findByName(arr,name){
+  const n=String(name||"").trim().toLowerCase();
+  return arr.find(p=>p.name.trim().toLowerCase()===n);
+}
+function balancedPairs(players,rnd,randomMode,prefix){
+  let arr=shuffle(players.slice(),rnd);
+  if(!randomMode) arr.sort((a,b)=>b.lv-a.lv);
+  const out=[];
+  for(let i=0;i<Math.floor(arr.length/2);i++) out.push(pair(arr[i],arr[arr.length-1-i],prefix));
+  return out;
+}
+function validateForced(raw,kind,menPool,womenPool){
+  const pairs=parseForcedRaw(raw);
+  const max=kind==="md"?6:kind==="wd"?5:10;
+  if(pairs.length>max) return `最多只能指定 ${max} 对`;
+  const used=new Set();
+  for(const [a,b] of pairs){
+    let p1,p2;
+    if(kind==="md"){p1=findByName(menPool,a);p2=findByName(menPool,b);}
+    else if(kind==="wd"){p1=findByName(womenPool,a);p2=findByName(womenPool,b);}
+    else {p1=findByName(menPool,a)||findByName(menPool,b);p2=findByName(womenPool,a)||findByName(womenPool,b);}
+    if(!p1||!p2) return `找不到或性别不对：${a} + ${b}`;
+    if(used.has(p1.name)||used.has(p2.name)) return `同一个人重复出现：${p1.name} / ${p2.name}`;
+    used.add(p1.name);used.add(p2.name);
+  }
+  return "";
+}
+function drawMD(rnd){
+  const forced=state.settings.forcedEnabled===false?[]:parseForcedRaw(state.settings.forcedMd);
+  const used=new Set(), out=[];
+  for(const [a,b] of forced){
+    const p1=findByName(MEN,a), p2=findByName(MEN,b);
+    if(p1&&p2&&!used.has(p1.name)&&!used.has(p2.name)){
+      used.add(p1.name);used.add(p2.name);out.push(pair(p1,p2,"M?"));
+    }
+  }
+  const rest=MEN.filter(m=>!used.has(m.name));
+  out.push(...balancedPairs(rest,rnd,state.settings.pairMode==="random","M?"));
+  return out.map((p,i)=>({...p,code:"M"+(i+1)}));
+}
+function drawWD(rnd){
+  const forced=state.settings.forcedEnabled===false?[]:parseForcedRaw(state.settings.forcedWd);
+  const used=new Set(), out=[];
+  for(const [a,b] of forced){
+    const p1=findByName(WOMEN,a), p2=findByName(WOMEN,b);
+    if(p1&&p2&&!used.has(p1.name)&&!used.has(p2.name)){
+      used.add(p1.name);used.add(p2.name);out.push(pair(p1,p2,"W?"));
+    }
+  }
+  const rest=WOMEN.filter(w=>!used.has(w.name));
+  out.push(...balancedPairs(rest,rnd,state.settings.pairMode==="random","W?"));
+  return out.map((p,i)=>({...p,code:"W"+(i+1)}));
+}
+function drawXD(rnd){
+  const forced=state.settings.forcedEnabled===false?[]:parseForcedRaw(state.settings.forcedXd);
+  const usedM=new Set(), usedW=new Set(), out=[];
+  for(const [a,b] of forced){
+    let m=findByName(MEN,a), w=findByName(WOMEN,b);
+    if(!m||!w){ const m2=findByName(MEN,b), w2=findByName(WOMEN,a); if(m2&&w2){m=m2;w=w2;} }
+    if(m&&w&&!usedM.has(m.name)&&!usedW.has(w.name)){
+      usedM.add(m.name);usedW.add(w.name);out.push(pair(m,w,"X?"));
+    }
+  }
+  const men=MEN.filter(m=>!usedM.has(m.name));
+  const women=WOMEN.filter(w=>!usedW.has(w.name));
+  const mm=shuffle(men,rnd).slice(0,2);
+  const restMen=men.filter(m=>!mm.includes(m));
+  const randomMode=state.settings.pairMode==="random";
+  let pool=shuffle(restMen.slice(),rnd), poolW=shuffle(women.slice(),rnd);
+  if(!randomMode){pool.sort((x,y)=>y.lv-x.lv);poolW.sort((x,y)=>x.lv-y.lv);}
+  const pairs=pool.map((m,i)=>pair(m,poolW[i],"X?"));
+  const mp=pair(mm[0],mm[1],"X?"); mp.type="mm";
+  out.push(...pairs,mp);
+  return {pairs:out,mm:mm.map(m=>m.name)};
+}
+function seedPairs(pairs,rnd,prefix){
+  let arr;
+  if(state.settings.byeMode==="seeded"){
+    arr=shuffle(pairs,rnd);
+    arr.sort((a,b)=>{
+      const ea=a.type==="mm"?a.sum-state.settings.handicap:a.sum;
+      const eb=b.type==="mm"?b.sum-state.settings.handicap:b.sum;
+      return eb-ea;
+    });
+  } else {
+    arr=shuffle(pairs,rnd);
+  }
+  return arr.map((p,i)=>({...p,code:prefix+(i+1),seed:i+1}));
+}
+function arrangePairs(pairs,prefix,rnd){
+  return shuffle(pairs,rnd).map((p,i)=>({...p,code:prefix+(i+1),seed:i+1}));
+}
+function esc(v){return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function escAttr(v){return esc(v).replace(/"/g,"&quot;");}
+function teamName(t){return t?(t.name||`${t.p1.name} + ${t.p2.name}`):"待定";}
+function seedRef(n){return {t:"seed",i:n};}
+function winRef(m){return {t:"w",m};}
+function loseRef(m){return {t:"l",m};}
+
+function buildBracket(kind,seeds){
+  const matches={};
+  const add=(id,round,a,b)=>{matches[id]={id,round,a,b,winner:null,sa:null,sb:null};};
+  if(kind==="md"){
+    add("m1",1,seedRef(3),seedRef(6));
+    add("m2",1,seedRef(4),seedRef(5));
+    add("m3",2,seedRef(1),winRef("m1"));
+    add("m4",2,seedRef(2),winRef("m2"));
+    add("m5",3,winRef("m3"),winRef("m4"));
+    add("m6",3,loseRef("m3"),loseRef("m4"));
+  } else if(kind==="wd"){
+    add("m1",1,seedRef(4),seedRef(5));
+    add("m2",2,seedRef(1),winRef("m1"));
+    add("m3",2,seedRef(2),seedRef(3));
+    add("m4",3,winRef("m2"),winRef("m3"));
+    add("m5",3,loseRef("m2"),loseRef("m3"));
+  } else {
+    add("m1",1,seedRef(6),seedRef(11));
+    add("m2",1,seedRef(7),seedRef(10));
+    add("m3",1,seedRef(8),seedRef(9));
+    add("m4",2,seedRef(1),winRef("m1"));
+    add("m5",2,seedRef(2),winRef("m2"));
+    add("m6",2,seedRef(3),winRef("m3"));
+    add("m7",2,seedRef(4),seedRef(5));
+    add("m8",3,winRef("m4"),winRef("m5"));
+    add("m9",3,winRef("m6"),winRef("m7"));
+    add("m10",4,winRef("m8"),winRef("m9"));
+    add("m11",4,loseRef("m8"),loseRef("m9"));
+  }
+  return {kind,seeds,matches};
+}
+function resolveRef(ref,bracket){
+  if(!ref) return null;
+  if(ref.t==="seed") return bracket.seeds[ref.i-1] || null;
+  const m=bracket.matches[ref.m];
+  if(!m || !m.winner) return null;
+  if(ref.t==="w") return m.winner;
+  const a=resolveRef(m.a,bracket), b=resolveRef(m.b,bracket);
+  if(!a || !b) return null;
+  return m.winner.code===a.code ? b : a;
+}
+function dependsOn(ref,mid){
+  return ref && (ref.m===mid);
+}
+function clearDownstream(kind,mid){
+  const br=state.brackets[kind];
+  if(!br) return;
+  for(const m of Object.values(br.matches)){
+    if(dependsOn(m.a,mid)||dependsOn(m.b,mid)){
+      m.winner=null; m.sa=null; m.sb=null;
+      clearDownstream(kind,m.id);
+    }
+  }
+}
+function recomputeWinner(m,br){
+  const a=resolveRef(m.a,br), b=resolveRef(m.b,br);
+  if(!a||!b){ m.winner=null; return; }
+  const sa=m.sa, sb=m.sb;
+  if(Number.isInteger(sa)&&Number.isInteger(sb)&&sa!==sb) m.winner=sa>sb?a:b;
+  else m.winner=null;
+}
+function setScore(kind,mid,side,raw){
+  const br=state.brackets[kind], m=br.matches[mid];
+  const n=raw===""?null:Number(raw);
+  if(n!==null && (!Number.isFinite(n)||n<0||n>99)) return;
+  m[side==="a"?"sa":"sb"]=n;
+  const before=m.winner?m.winner.code:null;
+  recomputeWinner(m,br);
+  const after=m.winner?m.winner.code:null;
+  if(before!==after) clearDownstream(kind,mid);
+  save(); render();
+}
+
+const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function animatePairs(){
+  if(reduceMotion) return;
+  const rows=[...document.querySelectorAll(".pairrow")];
+  rows.forEach((el,i)=>{
+    el.classList.add("reveal");
+    el.style.animationDelay=`${Math.min(i,22)*30}ms`;
+  });
+  setTimeout(()=>rows.forEach(el=>{el.classList.remove("reveal");el.style.animationDelay="";}),1400);
+}
+function buildDraw(seed,opts={}){
+  const savedForced={forcedMd:state.settings.forcedMd,forcedWd:state.settings.forcedWd,forcedXd:state.settings.forcedXd};
+  if(opts.ignoreForced){ state.settings.forcedMd=""; state.settings.forcedWd=""; state.settings.forcedXd=""; }
+  const rnd=mulberry32(seed);
+  const md=seedPairs(drawMD(rnd),rnd,"M");
+  const wd=seedPairs(drawWD(rnd),rnd,"W");
+  const xdRaw=drawXD(rnd);
+  const xd=seedPairs(xdRaw.pairs,rnd,"X");
+  state.seed=seed; state.drawn=true; state.manualPairs=false; state.byes=xdRaw.mm;
+  state.pairs={md,wd,xd};
+  state.brackets={md:buildBracket("md",md),wd:buildBracket("wd",wd),xd:buildBracket("xd",xd)};
+  if(!state.demo) takeLock("draw");
+  if(opts.ignoreForced) Object.assign(state.settings,savedForced);
+}
+function finishDraw(){
+  save(); render();
+  scrollToPairs();
+  animatePairs();
+}
+function generateDraw(seed,opts={}){
+  buildDraw(seed,opts);
+  finishDraw();
+}
+function playDrawAnimation(done,afterHide){
+  const overlay=document.getElementById("drawOverlay");
+  if(reduceMotion||!overlay){ done(); if(afterHide) afterHide(); return; }
+  const card=document.getElementById("drawCard");
+  const title=document.getElementById("drawTitle");
+  const hint=document.getElementById("drawHint");
+  const bar=document.getElementById("drawProgress");
+  const btn=document.getElementById("drawBtn");
+  const slotMd=document.getElementById("slotMd");
+  const slotWd=document.getElementById("slotWd");
+  const slotXd=document.getElementById("slotXd");
+  const slotMdAv=document.getElementById("slotMdAv");
+  const slotWdAv=document.getElementById("slotWdAv");
+  const slotXdAv=document.getElementById("slotXdAv");
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const pickTwo=arr=>{const a=pick(arr);let b=pick(arr);while(arr.length>1&&b===a)b=pick(arr);return [a,b];};
+  const setSlot=(el,av,p1,p2)=>{
+    el.textContent=`${p1.name} + ${p2.name}`;
+    const imgs=av.querySelectorAll("img");
+    [p1,p2].forEach((p,i)=>{
+      const src=AVATARS[p.name];
+      imgs[i].src=src||"";
+      imgs[i].style.visibility=src?"visible":"hidden";
+    });
+  };
+  const randomMd=()=>pickTwo(MEN);
+  const randomWd=()=>pickTwo(WOMEN);
+  const randomXd=()=>[pick(MEN),pick(WOMEN)];
+  const paintRandom=()=>{
+    const [m1,m2]=randomMd(); setSlot(slotMd,slotMdAv,m1,m2);
+    const [w1,w2]=randomWd(); setSlot(slotWd,slotWdAv,w1,w2);
+    const [x1,x2]=randomXd(); setSlot(slotXd,slotXdAv,x1,x2);
+  };
+  overlay.style.transition="none";
+  overlay.hidden=false;
+  overlay.classList.remove("closing");
+  void overlay.offsetWidth;
+  overlay.style.transition="";
+  document.body.classList.add("drawing");
+  if(btn) btn.disabled=true;
+  card.classList.remove("flash");
+  title.textContent="抽签中";
+  hint.textContent="正在打乱名单…";
+  paintRandom();
+  overlay.classList.remove("running");
+  void overlay.offsetWidth;
+  overlay.classList.add("running");
+  const timer=setInterval(paintRandom,100);
+  setTimeout(()=>{title.textContent="3";},1050);
+  setTimeout(()=>{title.textContent="2";},1300);
+  setTimeout(()=>{title.textContent="1";},1550);
+  setTimeout(()=>{
+    title.textContent="开";
+    hint.textContent="对阵已生成";
+    clearInterval(timer);
+    const mdP=state.pairs.md&&state.pairs.md[0];
+    const wdP=state.pairs.wd&&state.pairs.wd[0];
+    const xdP=state.pairs.xd&&(state.pairs.xd.find(p=>p.type!=="mm")||state.pairs.xd[0]);
+    if(mdP) setSlot(slotMd,slotMdAv,mdP.p1,mdP.p2);
+    if(wdP) setSlot(slotWd,slotWdAv,wdP.p1,wdP.p2);
+    if(xdP) setSlot(slotXd,slotXdAv,xdP.p1,xdP.p2);
+  },1800);
+  setTimeout(()=>{
+    clearInterval(timer);
+    card.classList.add("flash");
+    hint.textContent="对阵已生成";
+  },1900);
+  setTimeout(()=>{
+    clearInterval(timer);
+    if(done) done();
+    overlay.hidden=true;
+    overlay.classList.remove("running");
+    card.classList.remove("flash");
+    document.body.classList.remove("drawing");
+    if(btn) btn.disabled=false;
+    if(afterHide) afterHide();
+  },2300);
+}
+function jumpTo(el){
+  const h=document.documentElement, prev=h.style.scrollBehavior;
+  h.style.scrollBehavior="auto";
+  if(el) el.scrollIntoView({block:"start"}); else window.scrollTo(0,0);
+  h.style.scrollBehavior=prev;
+}
+function scrollToPairs(){
+  const sec=document.getElementById("pairsSec");
+  if(sec) jumpTo(sec);
+}
+function prepareDrawView(){
+  save(); render();
+  jumpTo(null);
+}
+
+const POSTER_FONT='"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+const POSTER={W:1080,PAD:44,CARD_W:488,CARD_H:112,GAP:14,HEADER:190,FOOTER:70};
+function cssVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+/* 海报配色跟着当前皮肤走 */
+function posterPalette(){
+  return {
+    paper:cssVar("--paper"), paper2:cssVar("--paper-2"), surface:cssVar("--surface"),
+    ink:cssVar("--ink"), ink2:cssVar("--ink-2"), muted:cssVar("--muted"), line:cssVar("--line"),
+    green:cssVar("--green"), green2:cssVar("--green-2"), lime:cssVar("--lime"),
+    white:cssVar("--surface"), winBg:cssVar("--win-bg")
+  };
+}
+let PC=posterPalette();
+function syncPosterPalette(){PC=posterPalette();}
+function pKind(k){return k==="md"?"男双":k==="wd"?"女双":"混双";}
+function pInfo(kind){
+  const br=state.brackets[kind];
+  if(!br) return null;
+  const finalId=kind==="xd"?"m10":kind==="wd"?"m4":"m5";
+  const thirdId=kind==="xd"?"m11":kind==="wd"?"m5":"m6";
+  return {kind,br,finalId,thirdId,rounds:kind==="xd"?[4,3,2,1]:[3,2,1],final:br.matches[finalId],third:br.matches[thirdId]};
+}
+function pRoundMatches(info,r){
+  let ms=Object.values(info.br.matches).filter(m=>m.round===r);
+  if(r===info.rounds[0]) ms=ms.filter(m=>m.id===info.finalId);
+  return ms.sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
+}
+function pByes(info){
+  const nums=info.kind==="md"?[1,2]:info.kind==="wd"?[1,2,3]:[1,2,3,4,5];
+  return nums.map(n=>info.br.seeds[n-1]).filter(Boolean);
+}
+function pRoundLabel(info,r){return r===info.rounds[0]?"决赛":`第${r}轮`;}
+function pRoundCounts(info,r){
+  const ms=Object.values(info.br.matches).filter(m=>m.round===r && m.id!==info.thirdId);
+  const enter=r===1?info.br.seeds.length:Math.pow(2,info.rounds[0]-r+1);
+  return {enter,matches:ms.length,byes:Math.max(0,enter-ms.length*2)};
+}
+function pRoundSub(info,r){
+  const c=pRoundCounts(info,r);
+  const parts=[`${c.enter} 对`,`${c.matches} 场`];
+  if(c.byes) parts.push(`${c.byes} 轮空`);
+  if(r===info.rounds[0]) parts.push("含 3、4 名");
+  return parts.join(" · ");
+}
+function pRoundHead(info,r){return `${pRoundLabel(info,r)} · ${pRoundSub(info,r)}`;}
+function pStage(info,m){return m.id===info.finalId?"决赛":m.id===info.thirdId?"3、4名":"";}
+function pName(t){return t?`${t.p1.name} + ${t.p2.name}`:"待定";}
+function pTeam(t){return t&&t.name?t.name:"";}
+function pFit(ctx,text,maxW){
+  if(ctx.measureText(text).width<=maxW) return text;
+  let s=text;
+  while(s.length>1 && ctx.measureText(s+"…").width>maxW) s=s.slice(0,-1);
+  return s+"…";
+}
+function pWrap(ctx,text,maxW){
+  const lines=[]; let cur="";
+  for(const ch of text){
+    if(ctx.measureText(cur+ch).width>maxW && cur){lines.push(cur);cur=ch;} else cur+=ch;
+  }
+  if(cur)lines.push(cur);
+  return lines;
+}
+function pRR(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+function pAvatar(ctx,img,cx,cy,r){
+  ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+  if(img) ctx.drawImage(img,cx-r,cy-r,r*2,r*2);
+  else {ctx.fillStyle=PC.paper;ctx.fillRect(cx-r,cy-r,r*2,r*2);}
+  ctx.restore();
+  ctx.strokeStyle=PC.line;ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+}
+function pAvatars(ctx,t,x,y,size,images){
+  if(!t) return;
+  const r=size/2;
+  [t.p1,t.p2].forEach((p,i)=>pAvatar(ctx,images[p.name],x+r+i*(size-8),y+r,r));
+}
+function pByeLines(ctx,info,maxW=POSTER.W-POSTER.PAD*2){
+  const names=pByes(info).map(pName);
+  if(!names.length) return [];
+  ctx.font=`20px ${POSTER_FONT}`;
+  return pWrap(ctx,"轮空："+names.join("、"),maxW);
+}
+function pSectionHeight(ctx,info){
+  let h=46;
+  const byes=pByeLines(ctx,info);
+  if(byes.length) h+=byes.length*26+6;
+  h+=96;
+  for(let i=0;i<info.rounds.length;i++){
+    const r=info.rounds[i];
+    const rows=Math.ceil(pRoundMatches(info,r).length/2);
+    h+=28+rows*POSTER.CARD_H+(rows-1)*POSTER.GAP;
+    h+=(i===0&&info.third)?140:12;
+  }
+  return h+30;
+}
+function pDrawChampion(ctx,info,y,images){
+  const x=POSTER.PAD,w=POSTER.W-POSTER.PAD*2,h=92;
+  ctx.fillStyle=PC.white;pRR(ctx,x,y,w,h,10);ctx.fill();
+  ctx.strokeStyle=PC.line;ctx.lineWidth=1;pRR(ctx,x+0.5,y+0.5,w-1,h-1,10);ctx.stroke();
+  ctx.fillStyle=PC.green2;ctx.fillRect(x,y,4,h);
+  ctx.textBaseline="middle";
+  ctx.fillStyle=PC.green2;ctx.font=`bold 14px ${POSTER_FONT}`;ctx.fillText("冠军",x+18,y+22);
+  const t=info.final&&info.final.winner;
+  if(!t){
+    ctx.fillStyle=PC.muted;ctx.font=`bold 26px ${POSTER_FONT}`;ctx.fillText("待定",x+18,y+58);
+    return y+h;
+  }
+  pAvatars(ctx,t,x+66,y+42,38,images);
+  ctx.fillStyle=PC.ink;ctx.font=`bold 28px ${POSTER_FONT}`;ctx.fillText(pFit(ctx,pName(t),w-300),x+150,y+40);
+  if(t.name){ctx.fillStyle=PC.muted;ctx.font=`16px ${POSTER_FONT}`;ctx.fillText(pFit(ctx,t.name,w-300),x+150,y+70);}
+  if(info.final&&Number.isInteger(info.final.sa)){
+    const s=info.final.winner.code===resolveRef(info.final.a,info.br).code?`${info.final.sa}:${info.final.sb}`:`${info.final.sb}:${info.final.sa}`;
+    ctx.fillStyle=PC.green2;ctx.font=`bold 18px ${POSTER_FONT}`;ctx.textAlign="right";ctx.fillText(s,x+w-18,y+52);ctx.textAlign="left";
+  }
+  return y+h;
+}
+function pDrawCard(ctx,info,m,x,y,w,h,images){
+  const a=resolveRef(m.a,info.br),b=resolveRef(m.b,info.br);
+  const compact=w<360;
+  const rowStep=compact?34:38;
+  const nameFont=compact?20:26;
+  const nameX=compact?70:84;
+  const avSize=compact?26:32;
+  ctx.fillStyle=PC.white;pRR(ctx,x,y,w,h,9);ctx.fill();
+  ctx.strokeStyle=PC.line;ctx.lineWidth=1;pRR(ctx,x+0.5,y+0.5,w-1,h-1,9);ctx.stroke();
+  ctx.textBaseline="middle";
+  ctx.fillStyle=PC.muted;ctx.font=`15px ${POSTER_FONT}`;
+  ctx.fillText(m.id.toUpperCase(),x+12,y+16);
+  const st=pStage(info,m);if(st){ctx.textAlign="right";ctx.fillText(st,x+w-12,y+16);ctx.textAlign="left";}
+  [[a,1],[b,2]].forEach(([t,side],i)=>{
+    const cy=y+(compact?40:46)+i*rowStep;
+    if(m.winner&&t&&m.winner.code===t.code){ctx.fillStyle=PC.winBg;ctx.fillRect(x+4,cy-18,w-8,36);}
+    if(t){
+      pAvatars(ctx,t,x+(compact?8:12),cy-avSize/2,avSize,images);
+      ctx.fillStyle=m.winner&&m.winner.code===t.code?PC.ink:PC.ink2;
+      ctx.font=`${m.winner&&m.winner.code===t.code?"bold ":""}${nameFont}px ${POSTER_FONT}`;
+      ctx.fillText(pFit(ctx,pName(t),w-nameX-44),x+nameX,cy);
+    }else{
+      ctx.fillStyle=PC.muted;ctx.font=`${compact?18:22}px ${POSTER_FONT}`;ctx.fillText("待定",x+nameX,cy);
+    }
+    const sc=side===1?m.sa:m.sb;
+    if(Number.isInteger(sc)){ctx.fillStyle=PC.green2;ctx.font=`bold ${compact?17:20}px ${POSTER_FONT}`;ctx.textAlign="right";ctx.fillText(String(sc),x+w-10,cy);ctx.textAlign="left";}
+  });
+}
+function pDrawSection(ctx,info,y,images){
+  const x=POSTER.PAD,w=POSTER.W-POSTER.PAD*2;
+  ctx.textBaseline="middle";
+  ctx.fillStyle=PC.ink;ctx.font=`bold 30px ${POSTER_FONT}`;
+  const count=info.br.seeds.length;
+  ctx.fillText(`${pKind(info.kind)} · ${count} 对`,x,y+24);
+  ctx.strokeStyle=PC.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y+42);ctx.lineTo(x+w,y+42);ctx.stroke();
+  y+=52;
+  const byes=pByeLines(ctx,info);
+  if(byes.length){
+    ctx.fillStyle=PC.muted;ctx.font=`20px ${POSTER_FONT}`;
+    byes.forEach((line,i)=>ctx.fillText(line,x,y+12+i*26));
+    y+=byes.length*26+6;
+  }
+  y=pDrawChampion(ctx,info,y,images)+12;
+  for(let idx=0;idx<info.rounds.length;idx++){
+    const r=info.rounds[idx];
+    ctx.fillStyle=PC.muted;ctx.font=`20px ${POSTER_FONT}`;ctx.textAlign="center";
+    ctx.fillText(pRoundHead(info,r),POSTER.W/2,y+14);ctx.textAlign="left";
+    y+=28;
+    const ms=pRoundMatches(info,r);
+    for(let i=0;i<ms.length;i+=2){
+      const row=ms.slice(i,i+2);
+      const rowW=row.length*POSTER.CARD_W+(row.length-1)*POSTER.GAP;
+      let cx=(POSTER.W-rowW)/2;
+      for(const m of row){pDrawCard(ctx,info,m,cx,y,POSTER.CARD_W,POSTER.CARD_H,images);cx+=POSTER.CARD_W+POSTER.GAP;}
+      y+=POSTER.CARD_H+POSTER.GAP;
+    }
+    if(y>0) y-=POSTER.GAP;
+    if(idx===0&&info.third){
+      const gap=140, tw=300, th=100;
+      const ty=y+(gap-th)/2, tx=POSTER.W-POSTER.PAD-tw;
+      const cx=POSTER.W/2, ly=y+gap/2;
+      ctx.strokeStyle=PC.line;ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(cx,y);ctx.lineTo(cx,y+gap);ctx.moveTo(cx,ly);ctx.lineTo(tx,ly);ctx.stroke();
+      ctx.fillStyle=PC.line;ctx.beginPath();ctx.arc(cx,ly,3,0,Math.PI*2);ctx.fill();
+      pDrawCard(ctx,info,info.third,tx,ty,tw,th,images);
+      y+=gap;
+    }else{
+      y+=12;
+    }
+  }
+  return y+30;
+}
+function pDrawHeader(ctx,images){
+  ctx.fillStyle=PC.paper;ctx.fillRect(0,0,POSTER.W,POSTER.HEADER);
+  if(images.__logo) ctx.drawImage(images.__logo,POSTER.PAD,36,88,88);
+  ctx.textBaseline="middle";
+  ctx.fillStyle=PC.green;ctx.font=`bold 44px ${POSTER_FONT}`;ctx.fillText(__cupTitle(),POSTER.PAD+112,72);
+  ctx.fillStyle=PC.ink2;ctx.font=`22px ${POSTER_FONT}`;ctx.fillText("羽毛球赛 · 对阵图",POSTER.PAD+112,106);
+  ctx.fillStyle=PC.muted;ctx.font=`18px ${POSTER_FONT}`;ctx.fillText(`${state.settings.date} · ${state.settings.venue} 5/6 号场`,POSTER.PAD+112,138);
+  ctx.textAlign="right";ctx.fillStyle=PC.green2;ctx.font=`bold 18px ${POSTER_FONT}`;
+  ctx.fillText(state.manualPairs?`手动搭档 · 对阵抽签 ${state.seed}`:`种子 ${state.seed}`,POSTER.W-POSTER.PAD,54);
+  ctx.fillStyle=PC.muted;ctx.font=`16px ${POSTER_FONT}`;ctx.fillText("抽签结果 · 长按保存",POSTER.W-POSTER.PAD,82);ctx.textAlign="left";
+  ctx.strokeStyle=PC.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(POSTER.PAD,176);ctx.lineTo(POSTER.W-POSTER.PAD,176);ctx.stroke();
+}
+async function loadPosterImages(){
+  const cache={};
+  const load=src=>new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=src;});
+  await Promise.all(Object.entries(AVATARS).map(async([n,src])=>{const data=(window.AVATAR_DATA&&window.AVATAR_DATA[n])||src;cache[n]=await load(data);}));
+  cache.__logo=await load((window.LOGO_DATA)||"assets/logo.png");
+  return cache;
+}
+
+const IP={W:1920,PAD:48,COL:280,CARD:268,H:76,BYE:30,COLGAP:18,GAP:8,HEADER:160,FOOTER:50};
+function ipRound1Slots(info){
+  const r2=Object.values(info.br.matches).filter(m=>m.round===2)
+    .sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
+  const items=[];
+  for(const m of r2){
+    for(const ref of [m.a,m.b]){
+      if(!ref) continue;
+      if(ref.t==="w"){ const src=info.br.matches[ref.m]; if(src) items.push({type:"match",m:src}); }
+      else{ const t=info.br.seeds[ref.i-1]; if(t) items.push({type:"bye",t,seed:ref.i}); }
+    }
+  }
+  return items;
+}
+function ipItems(info,r){
+  let ms=Object.values(info.br.matches).filter(m=>m.round===r);
+  if(r===info.rounds[0]) ms=ms.filter(m=>m.id===info.finalId);
+  ms.sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
+  const items=(r===1)?ipRound1Slots(info):ms.map(m=>({type:"match",m}));
+  if(r===info.rounds[0]&&info.third) items.push({type:"third",m:info.third});
+  return items;
+}
+function ipItemH(it){return it.type==="bye"?IP.BYE:it.type==="champ"?70:IP.H;}
+function ipBodyH(cols){
+  let h=140;
+  for(const items of cols){let s=0;items.forEach((it,i)=>s+=ipItemH(it)+(i?IP.GAP:0));h=Math.max(h,s);}
+  return h;
+}
+function ipSectionHeight(ctx,info){
+  const cols=info.rounds.slice().reverse().map(r=>ipItems(info,r));
+  cols.push([{type:"champ"}]);
+  return 50+26+ipBodyH(cols)+26;
+}
+function ipDrawMatch(ctx,info,m,x,y,w,h,images){
+  const a=resolveRef(m.a,info.br),b=resolveRef(m.b,info.br);
+  ctx.fillStyle=PC.white;pRR(ctx,x,y,w,h,7);ctx.fill();
+  ctx.strokeStyle=PC.line;ctx.lineWidth=1;pRR(ctx,x+0.5,y+0.5,w-1,h-1,7);ctx.stroke();
+  ctx.textBaseline="middle";
+  ctx.fillStyle=PC.muted;ctx.font=`10px ${POSTER_FONT}`;ctx.fillText(m.id.toUpperCase(),x+9,y+12);
+  const tag=pStage(info,m);if(tag){ctx.textAlign="right";ctx.fillText(tag,x+w-9,y+12);ctx.textAlign="left";}
+  [[a,"a"],[b,"b"]].forEach(([t,side],i)=>{
+    const cy=y+29+i*26;
+    if(m.winner&&t&&m.winner.code===t.code){ctx.fillStyle=PC.winBg;ctx.fillRect(x+3,cy-13,w-6,26);}
+    if(t){
+      pAvatars(ctx,t,x+6,cy-9,18,images);
+      ctx.fillStyle=m.winner&&m.winner.code===t.code?PC.ink:PC.ink2;
+      ctx.font=`${m.winner&&m.winner.code===t.code?"bold ":""}15px ${POSTER_FONT}`;
+      ctx.fillText(pFit(ctx,pName(t),w-92),x+46,cy);
+    }else{
+      ctx.fillStyle=PC.muted;ctx.font=`14px ${POSTER_FONT}`;ctx.fillText("待定",x+46,cy);
+    }
+    const sc=side==="a"?m.sa:m.sb;
+    if(Number.isInteger(sc)){ctx.fillStyle=PC.green2;ctx.font=`bold 13px ${POSTER_FONT}`;ctx.textAlign="right";ctx.fillText(String(sc),x+w-9,cy);ctx.textAlign="left";}
+  });
+}
+function ipDrawBye(ctx,t,x,y,w,h,images){
+  ctx.fillStyle=PC.paper2||PC.paper; ctx.strokeStyle=PC.line;ctx.lineWidth=1;ctx.setLineDash([4,3]);pRR(ctx,x+0.5,y+0.5,w-1,h-1,6);ctx.fill();ctx.stroke();ctx.setLineDash([]);
+  ctx.textBaseline="middle";ctx.fillStyle=PC.muted;ctx.font=`10px ${POSTER_FONT}`;ctx.fillText("轮空",x+9,y+h/2);
+  pAvatars(ctx,t,x+42,y+(h-18)/2,18,images);
+  ctx.fillStyle=PC.ink2;ctx.font=`14px ${POSTER_FONT}`;ctx.fillText(pFit(ctx,pName(t),w-140),x+80,y+h/2);
+}
+function ipDrawChamp(ctx,info,x,y,w,h,images){
+  ctx.fillStyle=PC.white;pRR(ctx,x,y,w,h,7);ctx.fill();ctx.strokeStyle=PC.line;ctx.lineWidth=1;pRR(ctx,x+0.5,y+0.5,w-1,h-1,7);ctx.stroke();
+  ctx.fillStyle=PC.green2;ctx.fillRect(x,y,4,h);
+  ctx.textBaseline="middle";ctx.textAlign="center";ctx.fillStyle=PC.green2;ctx.font=`bold 11px ${POSTER_FONT}`;ctx.fillText("冠军",x+w/2,y+14);
+  const t=info.final&&info.final.winner;
+  if(!t){ctx.fillStyle=PC.muted;ctx.font=`16px ${POSTER_FONT}`;ctx.fillText("待定",x+w/2,y+42);ctx.textAlign="left";return;}
+  ctx.font=`bold 18px ${POSTER_FONT}`;
+  const name=pFit(ctx,pName(t),w-110);
+  const nw=ctx.measureText(name).width;
+  const avW=36, gap=10;
+  const gw=avW+gap+nw;
+  const gx=x+(w-gw)/2;
+  pAvatars(ctx,t,gx,y+24,22,images);
+  ctx.textAlign="left";ctx.fillStyle=PC.ink;ctx.font=`bold 18px ${POSTER_FONT}`;ctx.fillText(name,gx+avW+gap,y+34);
+  if(Number.isInteger(info.final.sa)){
+    const a=resolveRef(info.final.a,info.br);
+    const s=info.final.winner.code===a.code?`${info.final.sa}:${info.final.sb}`:`${info.final.sb}:${info.final.sa}`;
+    ctx.textAlign="center";ctx.fillStyle=PC.green2;ctx.font=`bold 12px ${POSTER_FONT}`;ctx.fillText(s,x+w/2,y+56);
+  }
+  ctx.textAlign="left";
+  ctx.textAlign="left";
+}
+function ipCurve(ctx,x1,y1,x2,y2){
+  const gap=Math.max(4,x2-x1);
+  const k=gap*0.55;
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.bezierCurveTo(x1+k,y1,x2-k,y2,x2,y2);
+  ctx.stroke();
+}
+/* 海报里的连接线：和网页同一套圆曲线 */
+function ipDrawLinks(ctx,info,pos){
+  ctx.save();
+  ctx.strokeStyle=PC.line;
+  ctx.lineWidth=2;
+  ctx.lineCap="round";
+  for(const m of Object.values(info.br.matches)){
+    if(m.round<2) continue;
+    if(m.id===info.thirdId) continue;   /* 3、4 名不连线，避免交叉 */
+    const target=pos.get(m.id);
+    if(!target) continue;
+    for(const ref of [m.a,m.b]){
+      if(!ref) continue;
+      const src=ref.t==="seed"?pos.get("bye-"+ref.i):pos.get(ref.m);
+      if(!src) continue;
+      ipCurve(ctx,src.x+src.w,src.cy,target.x,target.cy);
+    }
+  }
+  const fin=pos.get(info.finalId), ch=pos.get("champ");
+  if(fin&&ch) ipCurve(ctx,fin.x+fin.w,fin.cy,ch.x,ch.cy);
+  ctx.restore();
+}
+function ipDrawSection(ctx,info,y,images){
+  const cols=info.rounds.slice().reverse().map(r=>({label:pRoundHead(info,r),items:ipItems(info,r)}));
+  cols.push({label:"冠军",items:[{type:"champ"}]});
+  ctx.textBaseline="middle";ctx.fillStyle=PC.ink;ctx.font=`bold 28px ${POSTER_FONT}`;
+  ctx.fillText(`${pKind(info.kind)} · ${info.br.seeds.length} 对`,IP.PAD,y+24);
+  ctx.strokeStyle=PC.line;ctx.beginPath();ctx.moveTo(IP.PAD,y+40);ctx.lineTo(IP.W-IP.PAD,y+40);ctx.stroke();
+  const by=y+50;
+  const bodyH=ipBodyH(cols.map(c=>c.items));
+  const groupW=cols.length*IP.COL+(cols.length-1)*IP.COLGAP;
+  const startX=(IP.W-groupW)/2;
+  const labelY=by+12, bodyY=by+26;
+  /* 第一遍：算出每张卡的位置 */
+  const pos=new Map();
+  cols.forEach((col,ci)=>{
+    const cx=startX+ci*(IP.COL+IP.COLGAP);
+    const items=col.items;
+    const total=items.reduce((s,it,i)=>s+ipItemH(it)+(i?IP.GAP:0),0);
+    const free=Math.max(0,bodyH-total);
+    const step=items.length>1?free/(items.length-1):0;
+    let iy=bodyY;
+    for(const it of items){
+      const h=ipItemH(it);
+      if(items.length===1) iy=bodyY+(bodyH-h)/2;
+      const x=cx+(IP.COL-IP.CARD)/2;
+      let key=null;
+      if(it.type==="match"||it.type==="third") key=it.m.id;
+      else if(it.type==="bye") key="bye-"+it.seed;
+      else if(it.type==="champ") key="champ";
+      if(key) pos.set(key,{x,y:iy,w:IP.CARD,h,cy:iy+h/2});
+      iy+=h+IP.GAP+step;
+    }
+  });
+  /* 第二遍：先铺连接线，再压卡片 */
+  ipDrawLinks(ctx,info,pos);
+  /* 第三遍：画卡片 */
+  cols.forEach((col,ci)=>{
+    const cx=startX+ci*(IP.COL+IP.COLGAP);
+    ctx.fillStyle=PC.muted;ctx.font=`13px ${POSTER_FONT}`;ctx.textAlign="center";ctx.fillText(col.label,cx+IP.COL/2,labelY);ctx.textAlign="left";
+    const items=col.items;
+    const total=items.reduce((s,it,i)=>s+ipItemH(it)+(i?IP.GAP:0),0);
+    const free=Math.max(0,bodyH-total);
+    const step=items.length>1?free/(items.length-1):0;
+    let iy=bodyY;
+    for(const it of items){
+      const h=ipItemH(it);
+      if(items.length===1) iy=bodyY+(bodyH-h)/2;
+      const x=cx+(IP.COL-IP.CARD)/2;
+      if(it.type==="match"||it.type==="third") ipDrawMatch(ctx,info,it.m,x,iy,IP.CARD,h,images);
+      else if(it.type==="bye") ipDrawBye(ctx,it.t,x,iy,IP.CARD,h,images);
+      else if(it.type==="champ") ipDrawChamp(ctx,info,x,iy,IP.CARD,h,images);
+      iy+=h+IP.GAP+step;
+    }
+  });
+  return bodyY+bodyH+26;
+}
+function ipHeader(ctx,images){
+  ctx.fillStyle=PC.paper;ctx.fillRect(0,0,IP.W,IP.HEADER);
+  if(images.__logo) ctx.drawImage(images.__logo,IP.PAD,32,80,80);
+  ctx.textBaseline="middle";ctx.fillStyle=PC.green;ctx.font=`bold 40px ${POSTER_FONT}`;ctx.fillText(__cupTitle(),IP.PAD+100,64);
+  ctx.fillStyle=PC.ink2;ctx.font=`18px ${POSTER_FONT}`;ctx.fillText("羽毛球赛 · 国际签表",IP.PAD+100,96);
+  ctx.fillStyle=PC.muted;ctx.font=`15px ${POSTER_FONT}`;ctx.fillText(`${state.settings.date} · ${state.settings.venue} 5/6 号场`,IP.PAD+100,124);
+  ctx.textAlign="right";ctx.fillStyle=PC.green2;ctx.font=`bold 16px ${POSTER_FONT}`;ctx.fillText(state.manualPairs?`手动搭档 · 对阵抽签 ${state.seed}`:`种子 ${state.seed}`,IP.W-IP.PAD,50);
+  ctx.fillStyle=PC.muted;ctx.font=`14px ${POSTER_FONT}`;ctx.fillText("横版 · 长按保存",IP.W-IP.PAD,76);ctx.textAlign="left";
+  ctx.strokeStyle=PC.line;ctx.beginPath();ctx.moveTo(IP.PAD,144);ctx.lineTo(IP.W-IP.PAD,144);ctx.stroke();
+}
+async function buildIntlPosterBlob(){
+  if(!state.drawn) throw new Error("还没有抽签");
+  const infos=["md","wd","xd"].map(pInfo);
+  if(!infos.every(Boolean)) throw new Error("签表还没准备好");
+  const images=await loadPosterImages();
+  const measure=document.createElement("canvas").getContext("2d");measure.font=`16px ${POSTER_FONT}`;
+  let total=IP.HEADER+IP.FOOTER;
+  for(const info of infos) total+=ipSectionHeight(measure,info);
+  const canvas=document.createElement("canvas");canvas.width=IP.W;canvas.height=Math.ceil(total);
+  const ctx=canvas.getContext("2d");ctx.fillStyle=PC.paper;ctx.fillRect(0,0,canvas.width,canvas.height);
+  ipHeader(ctx,images);
+  let y=IP.HEADER;
+  for(const info of infos) y=ipDrawSection(ctx,info,y,images);
+  ctx.strokeStyle=PC.line;ctx.beginPath();ctx.moveTo(IP.PAD,canvas.height-36);ctx.lineTo(IP.W-IP.PAD,canvas.height-36);ctx.stroke();
+  ctx.fillStyle=PC.muted;ctx.font=`14px ${POSTER_FONT}`;ctx.textAlign="center";ctx.fillText(`${__cupTitle()} · ${state.settings.date} · ${state.settings.venue}`,IP.W/2,canvas.height-18);ctx.textAlign="left";
+  return new Promise(res=>canvas.toBlob(res,"image/png"));
+}
+
+async function buildPosterBlob(){
+  if(!state.drawn) throw new Error("还没有抽签");
+  const infos=["md","wd","xd"].map(pInfo);
+  if(!infos.every(Boolean)) throw new Error("签表还没准备好");
+  const images=await loadPosterImages();
+  const measure=document.createElement("canvas").getContext("2d");
+  measure.font=`20px ${POSTER_FONT}`;
+  let total=POSTER.HEADER+POSTER.FOOTER;
+  for(const info of infos) total+=pSectionHeight(measure,info);
+  const canvas=document.createElement("canvas");canvas.width=POSTER.W;canvas.height=Math.ceil(total);
+  const ctx=canvas.getContext("2d");
+  ctx.fillStyle=PC.paper;ctx.fillRect(0,0,canvas.width,canvas.height);
+  pDrawHeader(ctx,images);
+  let y=POSTER.HEADER;
+  for(const info of infos) y=pDrawSection(ctx,info,y,images);
+  ctx.strokeStyle=PC.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(POSTER.PAD,canvas.height-52);ctx.lineTo(POSTER.W-POSTER.PAD,canvas.height-52);ctx.stroke();
+  ctx.fillStyle=PC.muted;ctx.font=`16px ${POSTER_FONT}`;ctx.textAlign="center";
+  ctx.fillText(`${__cupTitle()} · ${state.settings.date} · ${state.settings.venue}`,POSTER.W/2,canvas.height-28);ctx.textAlign="left";
+  return new Promise(res=>canvas.toBlob(res,"image/png"));
+}
+let posterUrl=null;
+async function generatePoster(){
+  const btn=document.getElementById("posterBtn");
+  if(!state.drawn){alert("先抽签再生成对阵图");return;}
+  if(btn){btn.disabled=true;btn.textContent="生成中…";}
+  try{
+    const style=document.getElementById("posterStyle")?document.getElementById("posterStyle").value:"international";
+    const blob=style==="international"?await buildIntlPosterBlob():await buildPosterBlob();
+    if(!blob) throw new Error("图片生成失败");
+    if(posterUrl) URL.revokeObjectURL(posterUrl);
+    posterUrl=URL.createObjectURL(blob);
+    document.getElementById("posterImg").src=posterUrl;
+    const skinName=skinInfo(skinId()).name;
+    const t=document.getElementById("posterTitle"); if(t) t.textContent=`对阵图 · ${style==="international"?"横版":"竖版"} · ${skinName}`;
+    const a=document.getElementById("posterDownload");
+    a.href=posterUrl;a.download=`${__cupTitle()}-对阵图-${style==="international"?"横版":"竖版"}-${skinName}-${state.seed}.png`;
+    document.getElementById("posterOverlay").hidden=false;
+  }catch(e){alert("生成失败："+e.message);}
+  finally{if(btn){btn.disabled=false;btn.textContent="生成对阵图";}}
+}
+
+function redrawBracket(){
+  if(!state.drawn||!state.pairs.md||!state.pairs.md.length){ alert("还没有搭档，先抽签或导入手动搭档"); return; }
+  if(isLocked()){ alert("签表已锁定：先在「设置 → 签表锁」点解锁，才能重抽对阵"); return; }
+  const seed=Math.floor(Math.random()*900000+100000);
+  const rnd=mulberry32(seed);
+  const mdS=arrangePairs(state.pairs.md,"M",rnd);
+  const wdS=arrangePairs(state.pairs.wd,"W",rnd);
+  const xdS=arrangePairs(state.pairs.xd,"X",rnd);
+  const mmS=xdS.find(p=>p.type==="mm");
+  state.seed=seed; state.drawn=true; state.demo=false; state.byes=mmS?[mmS.p1.name,mmS.p2.name]:[];
+  state.pairs={md:mdS,wd:wdS,xd:xdS};
+  state.brackets={md:buildBracket("md",mdS),wd:buildBracket("wd",wdS),xd:buildBracket("xd",xdS)};
+  takeLock("redraw");
+  closeSettings();
+  prepareDrawView();
+  playDrawAnimation(null,()=>{ scrollToPairs(); animatePairs(); });
+}
+function doDraw(forceSeed,opts={}){ if(!window.__isAdmin()) return false;
+  const ov=document.getElementById('drawOverlay');
+  if(ov && !ov.hidden) return;
+  if(opts.demo!==true && opts.force!==true && lockBlocked()) return;
+  const seed=(forceSeed===null||forceSeed===undefined)?Math.floor(Math.random()*900000+100000):forceSeed;
+  state.demo=opts.demo===true;
+  if(opts.animate===false){ buildDraw(seed,opts); finishDraw(); if(opts.done) setTimeout(opts.done,80); return; }
+  buildDraw(seed,opts);
+  prepareDrawView();
+  playDrawAnimation(null,()=>{
+    scrollToPairs();
+    animatePairs();
+    if(opts.done) setTimeout(opts.done,80);
+  });
+}
+function reset(){
+  state.seed=null;state.drawn=false;state.demo=false;state.manualPairs=false;state.byes=[];
+  state.pairs={md:[],wd:[],xd:[]};state.brackets={md:null,wd:null,xd:null};
+  state.locked=false;state.lock=null;
+  save(); render();
+}
+function save(){
+  state.savedAt=new Date().toISOString();
+  try{localStorage.setItem(STORE,JSON.stringify(state));}catch(e){}
+  const el=document.getElementById("saveState");
+  if(el) el.textContent="已保存 "+new Date().toLocaleTimeString("zh-CN",{hour12:false});
+}
+function normalize(s){
+  if(!s || !s.brackets) return s;
+  const hadStyleVersion=s.settings&&s.settings.bracketStyleVersion;
+  s.settings={...DEFAULT_SETTINGS,...(s.settings||{})};
+  if(s.locked===undefined) s.locked=false;
+  if(!s.lock || !s.lock.pairs || !s.lock.brackets){ s.locked=false; s.lock=null; }
+  if(!hadStyleVersion){s.settings.bracketStyle="international";s.settings.bracketStyleVersion=1;}
+  if(!s.settings.handicapVersion || s.settings.handicapVersion<2){ s.settings.handicap=6; s.settings.handicapVersion=2; }
+  if(s.pairs){for(const kind of ["md","wd","xd"]){ (s.pairs[kind]||[]).forEach(p=>{ if(p.name===undefined) p.name=""; }); }}
+  for(const kind of ["md","wd","xd"]){
+    const br=s.brackets[kind];
+    if(!br || !br.matches) continue;
+    for(const m of Object.values(br.matches)){
+      if(m.sa===undefined) m.sa=null;
+      if(m.sb===undefined) m.sb=null;
+      if(m.winner===undefined) m.winner=null;
+    }
+  }
+  return s;
+}
+function load(){
+  try{
+    const raw=localStorage.getItem(STORE);
+    if(!raw) return false;
+    const s=JSON.parse(raw);
+    if(s && s.drawn && s.brackets){
+      Object.assign(state,normalize(s));
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+function chip(p){
+  return `<span class="chip">${avatarImg(p.name,"avatar avatar-sm")}<b>${p.name}</b><span class="lv">${p.lv.toFixed(1)}</span></span>`;
+}
+function renderRoster(){
+  document.getElementById("menChips").innerHTML=MEN.map(chip).join("");
+  document.getElementById("womenChips").innerHTML=WOMEN.map(chip).join("");
+}
+function renderPairs(){
+  const meta=document.getElementById("pairsMeta");
+  if(!state.drawn){
+    meta.textContent="等待抽签";
+    document.getElementById("mdPairs").innerHTML=Array.from({length:6},()=>`<div class="pairrow empty"><span class="code">M</span><span>待抽签</span><span class="sum">-</span></div>`).join("");
+    document.getElementById("wdPairs").innerHTML=Array.from({length:5},()=>`<div class="pairrow empty"><span class="code">W</span><span>待抽签</span><span class="sum">-</span></div>`).join("");
+    document.getElementById("xdPairs").innerHTML=Array.from({length:11},()=>`<div class="pairrow empty"><span class="code">X</span><span>待抽签</span><span class="sum">-</span></div>`).join("");
+    document.getElementById("byeNote").textContent="";
+    const bs=document.getElementById("byeSummary"); if(bs) bs.textContent="";
+    return;
+  }
+  const lockTag=isLocked()?" · 🔒 已锁定":"";
+  meta.textContent=(state.manualPairs?`手动搭档 · 对阵抽签 ${state.seed}`:`种子 ${state.seed} · 已抽签`)+lockTag;
+  const row=(p)=>`<div class="pairrow"><span class="code">${p.code}</span><span class="pinfo"><b class="players">${avatarStack(p.p1,p.p2)}<span class="players-text">${p.p1.name} + ${p.p2.name}</span>${p.type==="mm"?` <span class="mm">男双 · 让${state.settings.handicap}</span>`:""}</b><input class="tname" data-code="${p.code}" value="${escAttr(p.name||"")}" placeholder="队名"></span><span class="sum">${p.sum.toFixed(1)}</span></div>`;
+  const byCode=(arr)=>arr.slice().sort((a,b)=>a.code.localeCompare(b.code,undefined,{numeric:true}));
+  document.getElementById("mdPairs").innerHTML=byCode(state.pairs.md).map(row).join("");
+  document.getElementById("wdPairs").innerHTML=byCode(state.pairs.wd).map(row).join("");
+  document.getElementById("xdPairs").innerHTML=byCode(state.pairs.xd).map(row).join("");
+  document.getElementById("byeNote").textContent=`以男双身份参加混双：${state.byes.join(" + ")}；遇混双让 ${state.settings.handicap} 分（混双 ${state.settings.handicap}:0 开局）。`;
+  const bs=document.getElementById("byeSummary");
+  if(bs){
+    const line=kind=>`${({md:"男双",wd:"女双",xd:"混双"})[kind]} ${roundByeCount(kind,1)} 对`;
+    const total=["md","wd","xd"].reduce((s,k)=>s+roundByeCount(k,1),0);
+    bs.textContent=`轮空（第 1 轮不打，直接进下一轮）：${line("md")}、${line("wd")}、${line("xd")}，共 ${total} 对；虚线框里的就是轮空的对，名单见对阵图。`;
+  }
+}
+function roundLabel(kind,r){
+  const finalR=kind==="xd"?4:3;
+  return r===finalR?"决赛":`第${r}轮`;
+}
+function matchCard(kind,m,br){
+  const a=resolveRef(m.a,br), b=resolveRef(m.b,br);
+  const ready=!!(a&&b);
+  const win=(t)=>m.winner&&t&&m.winner.code===t.code;
+  const tie=Number.isInteger(m.sa)&&Number.isInteger(m.sb)&&m.sa===m.sb;
+  const label=(t)=>{
+    if(!t) return `<span class="tbd">待定</span>`;
+    const players=`<span class="players">${avatarStack(t.p1,t.p2)}<span class="players-text">${esc(t.p1.name)} + ${esc(t.p2.name)}</span></span>`;
+    const team=t.name?`<span class="team-tag">${esc(t.name)}</span>`:"";
+    const hcp=t.type==="mm"?` <span class="mm" title="混双里的男双，让${state.settings.handicap}分">让${state.settings.handicap}</span>`:"";
+    return players+team+hcp;
+  };
+  const finalId=kind==="xd"?"m10":kind==="wd"?"m4":"m5";
+  const thirdId=kind==="xd"?"m11":kind==="wd"?"m5":"m6";
+  const tag=m.id===finalId?"":m.id===thirdId?"3、4名":"";
+  const score=(side)=>`<input class="score" type="number" min="0" max="99" inputmode="numeric" data-kind="${kind}" data-mid="${m.id}" data-side="${side}" value="${m[side==="a"?"sa":"sb"]??""}" ${ready?"":"disabled"} aria-label="比分">`;
+  return `<div class="match" data-kind="${kind}" data-mid="${m.id}">
+    <div class="match-meta"><span>${m.id.toUpperCase()}</span><span>${tag}</span></div>
+    <div class="teamline"><span class="team${win(a)?" win":m.winner?" loss":""}">${label(a)}</span>${score("a")}</div>
+    <div class="teamline"><span class="team${win(b)?" win":m.winner?" loss":""}">${label(b)}</span>${score("b")}</div>
+    ${tie?'<div class="tie">平分，请改比分</div>':""}
+  </div>`;
+}
+function renderBracket(kind,title){
+  const br=state.brackets[kind];
+  const finalId=finalMatchId(kind);
+  const final=br.matches[finalId];
+  const fw=final&&final.winner;
+  const champ=fw
+    ? `<div class="vchampion"><span class="label">冠军</span><span class="champ-body"><b class="players">${avatarStack(fw.p1,fw.p2)}<span class="players-text">${esc(fw.p1.name)} + ${esc(fw.p2.name)}</span></b>${fw.name?`<span class="team-tag">${esc(fw.name)}</span>`:""}${Number.isInteger(final.sa)?`<span class="champ-score">${final.sa}:${final.sb}</span>`:""}</span></div>`
+    : `<div class="vchampion"><span class="label">冠军</span><span class="champ-body"><b class="players">等待决赛</b></span></div>`;
+  const rounds=kind==="xd"?[4,3,2,1]:[3,2,1];
+  const thirdId=thirdMatchId(kind);
+  const block=(r)=>{
+    let ms=Object.values(br.matches).filter(m=>m.round===r);
+    if(r===rounds[0]) ms=ms.filter(m=>m.id===finalId);
+    ms.sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
+    let cards;
+    if(r===1){
+      cards=round1SlotItems(kind).map(it=>it.type==="match"?matchCard(kind,it.m,br):byeCardV(br,it.seed)).join("");
+    }else{
+      cards=ms.map(m=>matchCard(kind,m,br)).join("");
+    }
+    return `<div class="vround"><div class="vround-label"><b>${roundLabel(kind,r)}</b><i>${roundSubLabel(kind,r)}</i></div><div class="vrow">${cards}</div></div>`;
+  };
+  const finalBlock=block(rounds[0]);
+  const secondBlock=block(rounds[1]);
+  const thirdCard=`<div class="vthird">${matchCard(kind,br.matches[thirdId],br)}</div>`;
+  const stage=`<div class="vstage">${finalBlock}<div class="vconnector vspacer"></div>${secondBlock}<div class="vthird-line"></div>${thirdCard}</div>`;
+  const lower=rounds.slice(2).map(r=>`<div class="vconnector"></div>${block(r)}`).join("");
+  return `<div class="bracket"><div class="bracket-head"><h3>${title}</h3></div><div class="vbracket">${champ}<div class="vconnector"></div>${stage}${lower}</div></div>`;
+}
+function byeCardV(br,seedIndex){
+  const t=br.seeds[seedIndex-1];
+  if(!t) return "";
+  return `<div class="match bye"><div class="match-meta"><span>轮空 · 直接晋级</span><span></span></div><div class="team"><span class="players">${avatarStack(t.p1,t.p2)}<span class="players-text">${esc(t.p1.name)} + ${esc(t.p2.name)}</span></span>${t.name?`<span class="team-tag">${esc(t.name)}</span>`:""}</div></div>`;
+}
+
+function intlTeamRow(kind,m,t,side,br){
+  const ready=!!t;
+  const win=m.winner&&t&&m.winner.code===t.code;
+  const score=side==="a"?m.sa:m.sb;
+  const name=t?`${esc(t.p1.name)} + ${esc(t.p2.name)}`:"待定";
+  const val=Number.isInteger(score)?score:"";
+  const player=t?`<span class="intl-player">${avatarStack(t.p1,t.p2)}<span class="intl-name" title="${t.name?escAttr(t.name):""}">${name}</span></span>`:`<span class="intl-name">待定</span>`;
+  return `<div class="intl-team ${win?"win":m.winner?"loss":""}">${player}<input class="score intl-score" type="number" min="0" max="99" inputmode="numeric" data-kind="${kind}" data-mid="${m.id}" data-side="${side}" value="${val}" ${ready?"":"disabled"} aria-label="比分"></div>`;
+}
+function intlMatch(kind,m,br,extra=""){
+  const a=resolveRef(m.a,br),b=resolveRef(m.b,br);
+  const finalId=kind==="xd"?"m10":kind==="wd"?"m4":"m5";
+  const thirdId=kind==="xd"?"m11":kind==="wd"?"m5":"m6";
+  const tag=m.id===finalId?"决赛":m.id===thirdId?"3、4名":"";
+  return `<div class="intl-match ${extra}" data-kind="${kind}" data-mid="${m.id}"><div class="intl-meta"><span>${m.id.toUpperCase()}</span><span>${tag}</span></div>${intlTeamRow(kind,m,a,"a",br)}${intlTeamRow(kind,m,b,"b",br)}</div>`;
+}
+function intlBye(t,seed){
+  if(!t) return "";
+  return `<div class="intl-bye" data-bye="${seed??0}" title="第 1 轮轮空，直接进下一轮"><span>轮空</span><span class="intl-player">${avatarStack(t.p1,t.p2)}<b>${esc(t.p1.name)} + ${esc(t.p2.name)}</b></span></div>`;
+}
+function intlBracket(kind,title){
+  const br=state.brackets[kind];
+  const finalId=finalMatchId(kind);
+  const thirdId=thirdMatchId(kind);
+  const final=br.matches[finalId],third=br.matches[thirdId];
+  const rounds=kind==="xd"?[4,3,2,1]:[3,2,1];
+  const cols=[];
+  for(const r of rounds.slice().reverse()){
+    let ms=Object.values(br.matches).filter(m=>m.round===r);
+    if(r===rounds[0]) ms=ms.filter(m=>m.id===finalId);
+    ms.sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
+    let cards;
+    if(r===1){
+      cards=round1SlotItems(kind).map(it=>it.type==="match"?intlMatch(kind,it.m,br):intlBye(br.seeds[it.seed-1],it.seed)).join("");
+    }else{
+      cards=ms.map(m=>intlMatch(kind,m,br)).join("");
+    }
+    if(r===rounds[0]) cards+=intlMatch(kind,third,br,"intl-third");
+    cols.push(`<div class="intl-col"><div class="intl-col-label"><b>${roundLabel(kind,r)}</b><i>${roundSubLabel(kind,r)}</i></div><div class="intl-col-body">${cards}</div></div>`);
+  }
+  const fw=final&&final.winner;
+  const chScore=fw&&Number.isInteger(final.sa)?(final.winner.code===resolveRef(final.a,br).code?`${final.sa}:${final.sb}`:`${final.sb}:${final.sa}`):"";
+  cols.push(`<div class="intl-col champ"><div class="intl-col-label"><b>冠军</b><i>1 对</i></div><div class="intl-col-body"><div class="intl-champ" data-champ="1"><b>${fw?`<span class="intl-player">${avatarStack(fw.p1,fw.p2)}<span class="intl-name">${esc(fw.p1.name)} + ${esc(fw.p2.name)}</span></span>`:"待定"}</b>${chScore?`<b style="font-size:11px;color:var(--green-2)">${chScore}</b>`:""}</div></div></div>`);
+  return `<div class="intl-section" data-kind="${kind}"><h3>${title}</h3><div class="intl-wrap"><div class="intl-bracket">${cols.join("")}</div></div></div>`;
+}
+
+/* ---------------- 对阵图连接线 ----------------
+   画在卡片之间的空档里：来源卡右边缘 → 横线 → 竖线 → 横线 → 目标卡左边缘 */
+function drawIntlConnectors(){
+  const host=document.getElementById("brackets");
+  if(!host) return;
+  host.querySelectorAll("svg.intl-lines").forEach(s=>s.remove());
+  host.querySelectorAll(".intl-section").forEach(sec=>{
+    const kind=sec.dataset.kind;
+    const br=state.brackets[kind];
+    const bracket=sec.querySelector(".intl-bracket");
+    if(!br||!bracket) return;
+    const bb=bracket.getBoundingClientRect();
+    if(!bb.width||!bb.height) return;
+    const NS="http://www.w3.org/2000/svg";
+    const svg=document.createElementNS(NS,"svg");
+    svg.setAttribute("class","intl-lines");
+    svg.setAttribute("width",bb.width);
+    svg.setAttribute("height",bb.height);
+    svg.setAttribute("viewBox",`0 0 ${bb.width} ${bb.height}`);
+    const card=(mid)=>bracket.querySelector(`.intl-match[data-mid="${mid}"]`);
+    const bye=(n)=>bracket.querySelector(`.intl-bye[data-bye="${n}"]`);
+    const add=(fromCard,toEl,fromRow)=>{
+      if(!fromCard||!toEl) return;
+      const fr=fromCard.getBoundingClientRect();
+      const a={r:fr.right-bb.left, cy:fr.top+fr.height/2-bb.top};
+      if(fromRow){const rr=fromRow.getBoundingClientRect();a.cy=rr.top+rr.height/2-bb.top;}
+      const tr=toEl.getBoundingClientRect();
+      const b={l:tr.left-bb.left, cy:tr.top+tr.height/2-bb.top};
+      const gap=Math.max(4,b.l-a.r);
+      const k=gap*0.55;
+      const p=document.createElementNS(NS,"path");
+      p.setAttribute("d",`M${a.r} ${a.cy}C${a.r+k} ${a.cy} ${b.l-k} ${b.cy} ${b.l} ${b.cy}`);
+      svg.appendChild(p);
+    };
+    const thirdId=kind==="xd"?"m11":kind==="wd"?"m5":"m6";
+    for(const m of Object.values(br.matches)){
+      if(m.round<2) continue;
+      if(m.id===thirdId) continue;   /* 3、4 名不连线，避免交叉 */
+      const target=card(m.id);
+      if(!target) continue;
+      for(const ref of [m.a,m.b]){
+        if(!ref) continue;
+        const src=ref.t==="seed"?bye(ref.i):card(ref.m);
+        if(!src) continue;
+        /* 主线取来源卡的胜者行，线就有了语义 */
+        let row=null;
+        if(src.classList.contains("intl-match")) row=src.querySelector(".intl-team.win");
+        add(src,target,row);
+      }
+    }
+    const finalId=kind==="xd"?"m10":kind==="wd"?"m4":"m5";
+    const champ=bracket.querySelector(".intl-champ");
+    if(champ) add(card(finalId),champ);
+    bracket.appendChild(svg);
+  });
+}
+function scheduleConnectors(){
+  requestAnimationFrame(()=>{ try{drawIntlConnectors();}catch(e){} });
+}
+
+function renderBrackets(){
+  const box=document.getElementById("brackets");
+  if(!state.drawn){
+    box.innerHTML=`<div class="note">抽签后，三个项目的对阵图会出现在这里。</div>`;
+    return;
+  }
+  const title=(kind,label)=>{
+    const byes=roundByeCount(kind,1);
+    return `${label} · ${state.brackets[kind].seeds.length} 对 · 共 ${totalRounds(kind)} 轮`+(byes?` · 第 1 轮 ${byes} 对轮空`:"");
+  };
+  if(state.settings.bracketStyle==="international"){
+    box.innerHTML=intlBracket("md",title("md","男双"))+intlBracket("wd",title("wd","女双"))+intlBracket("xd",title("xd","混双"));
+    scheduleConnectors();
+    return;
+  }
+  box.innerHTML=renderBracket("md",title("md","男双"))+renderBracket("wd",title("wd","女双"))+renderBracket("xd",title("xd","混双"));
+}
+
+function championData(kind){
+  const br=state.brackets[kind];
+  if(!br) return null;
+  const finalId=kind==="xd"?"m10":kind==="wd"?"m4":"m5";
+  const thirdId=kind==="xd"?"m11":kind==="wd"?"m5":"m6";
+  const f=br.matches[finalId];
+  if(!f||!f.winner) return null;
+  const a=resolveRef(f.a,br), b=resolveRef(f.b,br);
+  if(!a||!b) return null;
+  const winner=f.winner, loser=winner.code===a.code?b:a;
+  const tm=br.matches[thirdId];
+  const finalScore=Number.isInteger(f.sa)&&Number.isInteger(f.sb)?(winner.code===a.code?`${f.sa}:${f.sb}`:`${f.sb}:${f.sa}`):"";
+  let thirdScore="";
+  if(tm&&tm.winner&&Number.isInteger(tm.sa)&&Number.isInteger(tm.sb)){
+    const ta=resolveRef(tm.a,br), tb=resolveRef(tm.b,br);
+    thirdScore=tm.winner.code===ta.code?`${tm.sa}:${tm.sb}`:`${tm.sb}:${tm.sa}`;
+  }
+  return {winner,loser,third:tm&&tm.winner?tm.winner:null,finalScore,thirdScore};
+}
+function renderChampions(){
+  const sec=document.getElementById("championsSec"), grid=document.getElementById("champGrid");
+  if(!sec||!grid) return;
+  if(!state.drawn){sec.hidden=true;grid.innerHTML="";return;}
+  const data={md:championData("md"),wd:championData("wd"),xd:championData("xd")};
+  if(!data.md||!data.wd||!data.xd){sec.hidden=true;grid.innerHTML="";return;}
+  const who=t=>t?`<b>${avatarStack(t.p1,t.p2)}<span class="players-text">${esc(t.p1.name)} + ${esc(t.p2.name)}</span></b>${t.name?`<small>${esc(t.name)}</small>`:""}`:"<b>待定</b>";
+  const line=(label,t,score,first)=>`<div class="champ-line${first?" first":""}"><span class="place">${label}</span><span class="who">${who(t)}</span><span class="champ-score">${score||""}</span></div>`;
+  const card=(label,d)=>`<div class="champ-card"><div class="champ-kind">${label}</div>${line("冠军",d.winner,d.finalScore,true)}${line("亚军",d.loser,"")}${line("季军",d.third,d.thirdScore)}</div>`;
+  grid.innerHTML=card("男双",data.md)+card("女双",data.wd)+card("混双",data.xd);
+  sec.hidden=false;
+}
+function fillRandomScores(){
+  for(const kind of ["md","wd","xd"]){
+    const br=state.brackets[kind];
+    const ms=Object.values(br.matches).sort((a,b)=>a.round-b.round || a.id.localeCompare(b.id,undefined,{numeric:true}));
+    for(const m of ms){
+      const a=resolveRef(m.a,br), b=resolveRef(m.b,br);
+      if(!a||!b) continue;
+      const loser=15+Math.floor(Math.random()*6);
+      const winner=loser===20?22:21;
+      const aWins=Math.random()<0.5;
+      m.sa=aWins?winner:loser;
+      m.sb=aWins?loser:winner;
+      m.winner=aWins?a:b;
+    }
+  }
+}
+function runDemo(){ if(!window.__isAdmin()) return;
+  doDraw(null,{demo:true,ignoreForced:true,done:()=>{
+    fillRandomScores();
+    save(); render();
+    const sec=document.getElementById("championsSec");
+    if(sec&&!sec.hidden) setTimeout(()=>sec.scrollIntoView({behavior:"smooth",block:"start"}),120);
+  }});
+}
+const SCHEDULE=[
+  [1,"09:00-09:13",["md","m1"],["wd","m1"]],
+  [2,"09:14-09:27",["md","m2"],["wd","m3"]],
+  [3,"09:28-09:41",["md","m3"],["wd","m2"]],
+  [4,"09:42-09:55",["md","m4"],null],
+  [5,"09:56-10:09",null,["wd","m5"]],
+  [6,"10:10-10:23",["md","m6"],["wd","m4"]],
+  [7,"10:24-10:37",["md","m5"],null],
+  [8,"10:45-10:58",["xd","m1"],["xd","m2"]],
+  [9,"10:59-11:12",["xd","m3"],null],
+  [10,"11:13-11:26",["xd","m4"],["xd","m5"]],
+  [11,"11:27-11:40",["xd","m6"],["xd","m7"]],
+  [12,"11:41-11:54",["xd","m8"],["xd","m9"]],
+  [13,"11:55-12:08",["xd","m10"],["xd","m11"]]
+];
+function scheduleCell(ref){
+  if(!ref) return `<td class="cell empty">休息 / 热身</td>`;
+  const [kind,mid]=ref;
+  if(!state.drawn) return `<td class="cell"><b>${({md:"男双",wd:"女双",xd:"混双"})[kind]} ${mid.toUpperCase()}</b><span>待抽签</span></td>`;
+  const br=state.brackets[kind], m=br.matches[mid];
+  const a=resolveRef(m.a,br), b=resolveRef(m.b,br);
+  const name=t=>t?`${esc(t.p1.name)} + ${esc(t.p2.name)}${t.name?` <span class="team-tag">${esc(t.name)}</span>`:""}`:"待定";
+  const stage=(k,id)=>{
+    if(id===finalMatchId(k)) return "决赛";
+    if(id===thirdMatchId(k)) return "3、4名";
+    const r=m.round;
+    if(r===1) return `第1轮 · ${roundMatchCount(k,1)} 场 + ${roundByeCount(k,1)} 轮空`;
+    return `${roundLabel(k,r)} · ${roundEnterCount(k,r)} 对`;
+  };
+  const tag=stage(kind,mid);
+  const hc=(a&&a.type==="mm")||(b&&b.type==="mm")?` · 让${state.settings.handicap}分`:"";
+  const sc=Number.isInteger(m.sa)&&Number.isInteger(m.sb)?` <i class="sc">${m.sa}:${m.sb}</i>`:"";
+  return `<td class="cell"><b>${name(a)} vs ${name(b)}${sc}</b><span>${({md:"男双",wd:"女双",xd:"混双"})[kind]} · ${tag}${hc}</span></td>`;
+}
+function parseHM(str){const [h,m]=String(str).split(":").map(Number);return (Number(h)||0)*60+(Number(m)||0);}
+function fmtMin(v){v=((v%1440)+1440)%1440;return `${String(Math.floor(v/60)).padStart(2,"0")}:${String(v%60).padStart(2,"0")}`;}
+function slotTime(i){
+  const s=state.settings;
+  const d=s.matchMin+s.intervalMin;
+  const brk=i>=7?s.blockBreakMin:0;
+  const st=parseHM(s.start)+i*d+brk;
+  return `${fmtMin(st)}-${fmtMin(st+s.matchMin)}`;
+}
+function renderSchedule(){
+  document.getElementById("scheduleBody").innerHTML=SCHEDULE.map(([r,t,a,b],idx)=>
+    `<tr><td class="round">T${r}<span class="time">${slotTime(idx)}</span></td>${scheduleCell(a)}${scheduleCell(b)}</tr>`
+  ).join("");
+}
+function renderState(){
+  const dot=document.getElementById("stateDot"), txt=document.getElementById("stateText");
+  if(state.drawn){dot.classList.add("live");txt.textContent=state.manualPairs?`手动搭档 · 对阵抽签 ${state.seed}`:`已抽签 · 种子 ${state.seed}`;}
+  else{dot.classList.remove("live");txt.textContent="还没抽签";}
+}
+function applySettings(){
+  const s=state.settings;
+  try{
+    const __t=document.querySelector(".event-title");
+    if(__t&&s.eventTitle){
+      const __sub=s.eventTitle.endsWith("羽球赛")?"羽球赛":"";
+      __t.innerHTML='<span class="huahua">'+esc(s.eventTitle.slice(0,s.eventTitle.length-__sub.length))+'</span>'+(__sub?'<span class="event-sub">'+__sub+'</span>':'');
+    }
+    const __f=document.getElementById("footTitle");
+    if(__f) __f.textContent=(s.eventTitle||"")+" · "+(s.date||"")+" · "+(s.venue||"");
+  }catch(e){}
+  const $=id=>document.getElementById(id);
+  if($("topDate")) $("topDate").textContent=s.date;
+  if($("heroMeta")) $("heroMeta").textContent=`${s.date} · ${s.start} 开始 · ${s.venue} 5/6 号场`;
+  if($("topVenue")) $("topVenue").textContent=`${s.venue} · 5/6 号场`;
+  document.title=`${s.eventTitle} · 抽签与对阵`;
+  if($("lede")) $("lede").textContent="男双 6 对 · 女双 5 对 · 混双 11 对（10 混双 + 1 男双）";
+  if($("rulePoints")) $("rulePoints").textContent=`${s.points} 分一局，每球得分；${s.points-1} 平后净胜 ${s.winBy} 分${s.cap?`，${s.cap} 分封顶`:"，不封顶"}，打到赢。`;
+  if($("ruleLimit")) $("ruleLimit").textContent=s.timeLimit>0?`每场 ${s.timeLimit} 分钟硬上限，到点领先者胜。`:`预计 ${s.matchMin} 分钟一局，按现场实际情况调整；不设时间上限，打到分出胜负。`;
+  if($("ruleInterval")) $("ruleInterval").textContent=`场间休息约 ${s.intervalMin} 分钟，按现场实际情况开下一轮。`;
+  if($("ruleHandicap")) $("ruleHandicap").textContent=`混双里的男双遇到混双，混双 ${s.handicap}:0 开局；男双让 ${s.handicap} 分。`;
+  if($("qaHandicap")) $("qaHandicap").textContent=s.handicap;
+  if($("qaHandicapScore")) $("qaHandicapScore").textContent=`${s.handicap}:0`;
+  if($("schedMeta")) $("schedMeta").textContent=`预计 ${s.matchMin} 分钟一局 · 上不封顶`;
+  if($("statEnd")) $("statEnd").textContent=slotTime(12).split("-")[1];
+  if($("rosterNote")){
+    const subs=[];
+    if(s.subMen) subs.push(`${avatarImg(s.subMen,"avatar avatar-sm")} ${esc(s.subMen)}（男）`);
+    if(s.subWomen) subs.push(`${avatarImg(s.subWomen,"avatar avatar-sm")} ${esc(s.subWomen)}（女）`);
+    $("rosterNote").innerHTML=subs.length?`候补：${subs.join("、")}`:"";
+  }
+}
+function renderDemoState(){
+  const on=!!state.demo;
+  const wm=document.getElementById("demoWatermark");
+  const bn=document.getElementById("demoBanner");
+  if(wm) wm.hidden=!on;
+  if(bn) bn.hidden=!on;
+  document.body.classList.toggle("demo-mode",on);
+  const ct=document.getElementById("champTitle");
+  if(ct) ct.innerHTML="冠军名单"+(on?' <span class="demo-tag">演示</span>':"");
+  const dt=document.getElementById("demoText");
+  if(dt) dt.textContent=isLocked()
+    ?"演示模式：随机抽签 + 随机比分，不是真实比赛结果。真实签表已锁定存好，点右边一键复原。"
+    :"演示模式：随机抽签 + 随机比分，不是真实比赛结果。";
+  const bt=document.getElementById("exitDemoBtn");
+  if(bt){
+    bt.textContent=isLocked()?"一键复原锁定签表":"退出演示";
+    bt.classList.toggle("restore",isLocked());
+  }
+}
+function render(){
+  renderRoster();renderState();renderPairs();renderBrackets();renderChampions();renderDemoState();renderSchedule();applySettings();
+  document.getElementById("seedInput").value=state.seed||"";
+  const locked=isLocked();
+  const db=document.getElementById("drawBtn");
+  if(db){
+    db.textContent=locked?(state.demo?"抽签（先复原）":"已锁定"):((state.manualPairs&&state.drawn)?"抽对阵":"抽签");
+    db.classList.toggle("is-locked",locked);
+  }
+  const si=document.getElementById("seedInput"); if(si) si.disabled=locked;
+  const chip=document.getElementById("lockChip");
+  if(chip){
+    chip.hidden=!locked;
+    chip.title=locked?`锁定于 ${lockTimeText()}，种子 ${state.lock.seed}`:"";
+  }
+  const sb=document.getElementById("styleBtn"); if(sb) sb.textContent=state.settings.bracketStyle==="international"?"纵向签表":"国际签表";
+  const el=document.getElementById("saveState");
+  if(el) el.textContent=state.savedAt?("已保存 "+new Date(state.savedAt).toLocaleTimeString("zh-CN",{hour12:false})):"未保存";
+}
+
+function readManualSections(raw){
+  const sections={md:[],wd:[],xd:[]}; let cur=null;
+  for(const line of String(raw||"").split(/\n/)){
+    const t=line.trim();
+    if(!t||t.startsWith("#")) continue;
+    if(/^男双/.test(t)){ cur="md"; continue; }
+    if(/^女双/.test(t)){ cur="wd"; continue; }
+    if(/^混双/.test(t)){ cur="xd"; continue; }
+    if(!cur) throw new Error("先写项目名：男双 / 女双 / 混双");
+    const parts=t.split(/[+，,\/\t]/).map(x=>x.trim()).filter(Boolean);
+    if(parts.length<2) throw new Error("这一行看不懂："+t);
+    sections[cur].push([parts[0],parts[1]]);
+  }
+  return sections;
+}
+function applyManualDraw(){
+  if(isLocked()){ alert("签表已锁定：先在「设置 → 签表锁」点解锁，才能重新导入对阵"); return; }
+  try{
+    const sec=readManualSections(document.getElementById("manualDraw").value);
+    if(sec.md.length!==6) throw new Error(`男双需要 6 对，现在 ${sec.md.length} 对`);
+    if(sec.wd.length!==5) throw new Error(`女双需要 5 对，现在 ${sec.wd.length} 对`);
+    if(sec.xd.length!==11) throw new Error(`混双需要 11 对，现在 ${sec.xd.length} 对`);
+    const usedM=new Set(), usedW=new Set();
+    const md=sec.md.map(([a,b],i)=>{
+      const p1=findByName(MEN,a), p2=findByName(MEN,b);
+      if(!p1||!p2) throw new Error(`男双第 ${i+1} 对找不到：${a} + ${b}`);
+      if(p1===p2||usedM.has(p1.name)||usedM.has(p2.name)) throw new Error(`男双重复：${a} + ${b}`);
+      usedM.add(p1.name); usedM.add(p2.name);
+      return pair(p1,p2,"M"+(i+1));
+    });
+    if(usedM.size!==12) throw new Error("男双没有用满 12 个男生");
+    usedW.clear();
+    const wd=sec.wd.map(([a,b],i)=>{
+      const p1=findByName(WOMEN,a), p2=findByName(WOMEN,b);
+      if(!p1||!p2) throw new Error(`女双第 ${i+1} 对找不到：${a} + ${b}`);
+      if(p1===p2||usedW.has(p1.name)||usedW.has(p2.name)) throw new Error(`女双重复：${a} + ${b}`);
+      usedW.add(p1.name); usedW.add(p2.name);
+      return pair(p1,p2,"W"+(i+1));
+    });
+    if(usedW.size!==10) throw new Error("女双没有用满 10 个女生");
+    usedM.clear(); usedW.clear();
+    let mm=null;
+    const xd=sec.xd.map(([a,b],i)=>{
+      const m1=findByName(MEN,a), m2=findByName(MEN,b);
+      const w1=findByName(WOMEN,a), w2=findByName(WOMEN,b);
+      let p1,p2,isMM=false;
+      if(m1&&m2){ p1=m1; p2=m2; isMM=true; }
+      else if(m1&&w2){ p1=m1; p2=w2; }
+      else if(w1&&m2){ p1=m2; p2=w1; }
+      else throw new Error(`混双第 ${i+1} 对找不到或性别不对：${a} + ${b}`);
+      if(isMM){
+        if(mm) throw new Error("混双只能有 1 对男双");
+        if(usedM.has(p1.name)||usedM.has(p2.name)) throw new Error(`混双重复：${a} + ${b}`);
+        usedM.add(p1.name); usedM.add(p2.name);
+      }else{
+        if(usedM.has(p1.name)||usedW.has(p2.name)) throw new Error(`混双重复：${a} + ${b}`);
+        usedM.add(p1.name); usedW.add(p2.name);
+      }
+      const pr=pair(p1,p2,"X"+(i+1));
+      if(isMM){ pr.type="mm"; mm=pr; }
+      return pr;
+    });
+    if(!mm) throw new Error("混双里必须有 1 对男双（两个男生）");
+    if(usedM.size!==12||usedW.size!==10) throw new Error("混双没有用满 12 男 10 女");
+    const seed=Math.floor(Math.random()*900000+100000);
+    const rnd=mulberry32(seed);
+    const mdS=arrangePairs(md,"M",rnd);
+    const wdS=arrangePairs(wd,"W",rnd);
+    const xdS=arrangePairs(xd,"X",rnd);
+    const mmS=xdS.find(p=>p.type==="mm");
+    state.seed=seed; state.drawn=true; state.demo=false; state.manualPairs=true;
+    state.byes=mmS?[mmS.p1.name,mmS.p2.name]:[];
+    state.pairs={md:mdS,wd:wdS,xd:xdS};
+    state.brackets={md:buildBracket("md",mdS),wd:buildBracket("wd",wdS),xd:buildBracket("xd",xdS)};
+    takeLock("import");
+    closeSettings();
+    prepareDrawView();
+    playDrawAnimation(null,()=>{ scrollToPairs(); animatePairs(); });
+  }catch(e){
+    alert("手动签表有问题："+e.message);
+  }
+}
+function fillSubSelectors(){
+  const out=document.getElementById("subOut"), inn=document.getElementById("subIn");
+  if(!out||!inn) return;
+  out.innerHTML=`<option value="">选择缺阵球员</option>`+
+    MEN.map(p=>`<option value="${escAttr(p.name)}">${esc(p.name)}（男）</option>`).join("")+
+    WOMEN.map(p=>`<option value="${escAttr(p.name)}">${esc(p.name)}（女）</option>`).join("");
+  inn.innerHTML=`<option value="">先选缺阵球员</option>`;
+}
+function updateSubIn(){
+  const out=document.getElementById("subOut"), inn=document.getElementById("subIn");
+  if(!out||!inn) return;
+  const name=out.value;
+  if(!name){ inn.innerHTML=`<option value="">先选缺阵球员</option>`; return; }
+  const isMan=MEN.some(p=>p.name===name);
+  const sub=isMan?state.settings.subMen:state.settings.subWomen;
+  inn.innerHTML=sub?`<option value="${escAttr(sub)}">${esc(sub)}</option>`:`<option value="">没有可用候补</option>`;
+}
+function applySub(){
+  const out=document.getElementById("subOut"), inn=document.getElementById("subIn");
+  const oldName=out.value, subName=inn.value;
+  if(!oldName||!subName){ alert("请选择缺阵球员和候补"); return; }
+  const isMan=MEN.some(p=>p.name===oldName);
+  const pool=isMan?MEN:WOMEN;
+  const p=pool.find(x=>x.name===oldName);
+  if(!p){ alert("找不到缺阵球员"); return; }
+  if(MEN.concat(WOMEN).some(x=>x.name===subName)){ alert("这个候补已经在场上了"); return; }
+  const oldLv=p.lv;
+  p.name=subName;
+  p.lv=oldLv;
+  for(const kind of ["md","wd","xd"]){
+    for(const pr of state.pairs[kind]||[]){
+      if(pr.p1===p||pr.p2===p) pr.sum=Number((pr.p1.lv+pr.p2.lv).toFixed(1));
+    }
+  }
+  state.byes=(state.byes||[]).map(n=>n===oldName?subName:n);
+  for(const key of ["forcedMd","forcedWd","forcedXd"]){
+    const raw=state.settings[key]||"";
+    if(raw) state.settings[key]=raw.replace(new RegExp(oldName.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"g"),subName);
+  }
+  if(isMan && state.settings.subMen===subName) state.settings.subMen="";
+  if(!isMan && state.settings.subWomen===subName) state.settings.subWomen="";
+  refreshLockSnapshot();
+  save(); render(); fillSettings();
+  alert(`已替换：${oldName} → ${subName}`);
+}
+function fillSettings(){
+  const s=state.settings, $=id=>document.getElementById(id);
+  $("setTitle").value=s.eventTitle; $("setDate").value=s.date; $("setVenue").value=s.venue; $("setStart").value=s.start;
+  $("setPoints").value=s.points; $("setWinBy").value=s.winBy; $("setCap").value=s.cap; $("setTimeLimit").value=s.timeLimit;
+  $("setMatchMin").value=s.matchMin; $("setIntervalMin").value=s.intervalMin; $("setBreakMin").value=s.blockBreakMin; $("setHandicap").value=s.handicap;
+  $("setPairMode").value=s.pairMode; $("setByeMode").value=s.byeMode;
+  if($("setForcedOn")) $("setForcedOn").checked=s.forcedEnabled!==false;
+  if($("setForcedMd")) $("setForcedMd").value=s.forcedMd||"";
+  if($("setForcedWd")) $("setForcedWd").value=s.forcedWd||"";
+  if($("setForcedXd")) $("setForcedXd").value=s.forcedXd||"";
+  $("setSubMen").value=s.subMen; $("setSubWomen").value=s.subWomen; $("setReferee").value=s.referee;
+  if($("setPreview")) $("setPreview").textContent=`混双 ${s.handicap}:0 开局，男双让 ${s.handicap} 分`;
+  $("setMen").value=MEN.map(p=>`${p.name},${p.lv.toFixed(1)}`).join("\n");
+  $("setWomen").value=WOMEN.map(p=>`${p.name},${p.lv.toFixed(1)}`).join("\n");
+  fillSubSelectors();
+  const lk=$("lockHint"), ub=$("unlockBtn"), rb=$("restoreBtn");
+  if(lk){
+    lk.textContent=isLocked()
+      ?`已锁定：${lockTimeText()} · 种子 ${state.lock.seed} · 演示里的改动不会影响它`
+      :"当前未锁定：抽签完成后会自动上锁";
+  }
+  if(ub){ ub.disabled=!isLocked(); ub.textContent=isLocked()?"解锁（允许重新抽签）":"未锁定"; }
+  if(rb) rb.disabled=!isLocked();
+}
+function openSettings(){ if(!window.__isAdmin()){toast("仅管理员可操作");return;}fillSettings();document.getElementById("settingsDialog").showModal();}
+function closeSettings(){const d=document.getElementById("settingsDialog");if(d&&d.open)d.close();}
+function readRoster(id){
+  return document.getElementById(id).value.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(line=>{
+    const parts=line.split(/[,，]/).map(x=>x.trim());
+    return {name:parts[0]||"",lv:Number(parts[1])};
+  }).filter(p=>p.name && Number.isFinite(p.lv));
+}
+function saveSettings(){ if(!window.__isAdmin()){toast("仅管理员可操作");return;}
+  const g=id=>document.getElementById(id).value;
+  const num=(id,def)=>{const n=Number(g(id));return Number.isFinite(n)?n:def;};
+  const next={...state.settings,
+    eventTitle:g("setTitle").trim()||DEFAULT_SETTINGS.eventTitle,
+    date:g("setDate").trim()||DEFAULT_SETTINGS.date,
+    venue:g("setVenue").trim()||DEFAULT_SETTINGS.venue,
+    start:g("setStart")||DEFAULT_SETTINGS.start,
+    points:Math.max(1,Math.trunc(num("setPoints",21))),
+    winBy:Math.max(1,Math.trunc(num("setWinBy",2))),
+    cap:Math.max(0,Math.trunc(num("setCap",0))),
+    timeLimit:Math.max(0,Math.trunc(num("setTimeLimit",0))),
+    matchMin:Math.max(1,Math.trunc(num("setMatchMin",13))),
+    intervalMin:Math.max(0,Math.trunc(num("setIntervalMin",1))),
+    blockBreakMin:Math.max(0,Math.trunc(num("setBreakMin",7))),
+    handicap:Math.max(0,Math.trunc(num("setHandicap",4))),
+    pairMode:g("setPairMode"), byeMode:g("setByeMode"),
+    forcedEnabled:document.getElementById("setForcedOn").checked,
+    forcedMd:g("setForcedMd").trim(), forcedWd:g("setForcedWd").trim(), forcedXd:g("setForcedXd").trim(),
+    subMen:g("setSubMen").trim(), subWomen:g("setSubWomen").trim(), referee:g("setReferee").trim()
+  };
+  const men=readRoster("setMen"), women=readRoster("setWomen");
+  if(men.length!==12||women.length!==10){alert(`男生需要 12 人、女生需要 10 人（现在 ${men.length} / ${women.length}）`);return;}
+  const forcedError=next.forcedEnabled?(validateForced(next.forcedMd,"md",men,women)||validateForced(next.forcedWd,"wd",men,women)||validateForced(next.forcedXd,"xd",men,women)):"";
+  if(forcedError){alert("手动配对有问题："+forcedError);return;}
+  const drawChanged = next.pairMode!==state.settings.pairMode || next.byeMode!==state.settings.byeMode ||
+    next.forcedEnabled!==state.settings.forcedEnabled || next.forcedMd!==state.settings.forcedMd || next.forcedWd!==state.settings.forcedWd || next.forcedXd!==state.settings.forcedXd ||
+    JSON.stringify(men)!==JSON.stringify(MEN) || JSON.stringify(women)!==JSON.stringify(WOMEN);
+  if(drawChanged && state.drawn && isLocked()){
+    alert("签表已锁定：要改名单、搭档方式或轮空方式，请先在「设置 → 签表锁」点解锁");
+    return;
+  }
+  MEN.length=0; MEN.push(...men); WOMEN.length=0; WOMEN.push(...women);
+  state.settings=next;
+  closeSettings();
+  if(drawChanged && state.drawn) reset(); else { save(); render(); }
+}
+document.getElementById("demoBtn").addEventListener("click",runDemo);
+document.getElementById("posterBtn").addEventListener("click",generatePoster);
+document.getElementById("styleBtn").addEventListener("click",()=>{state.settings.bracketStyle=state.settings.bracketStyle==="international"?"vertical":"international";save();render();});
+function closePoster(){document.getElementById("posterOverlay").hidden=true;}
+document.getElementById("posterClose").addEventListener("click",closePoster);
+document.getElementById("posterClose2").addEventListener("click",closePoster);
+document.getElementById("exitDemoBtn").addEventListener("click",restoreLocked);
+document.getElementById("unlockBtn").addEventListener("click",unlockDraw);
+document.getElementById("restoreBtn").addEventListener("click",()=>{ restoreLocked(); closeSettings(); });
+document.getElementById("settingsBtn").addEventListener("click",openSettings);
+document.getElementById("subOut").addEventListener("change",updateSubIn);
+document.getElementById("subApply").addEventListener("click",applySub);
+document.getElementById("manualApply").addEventListener("click",applyManualDraw);
+document.getElementById("redrawBracketBtn").addEventListener("click",redrawBracket);
+document.getElementById("setClose").addEventListener("click",closeSettings);
+document.getElementById("setDefault").addEventListener("click",()=>{
+  const s=DEFAULT_SETTINGS, $=id=>document.getElementById(id);
+  $("setTitle").value=s.eventTitle; $("setDate").value=s.date; $("setVenue").value=s.venue; $("setStart").value=s.start;
+  $("setPoints").value=s.points; $("setWinBy").value=s.winBy; $("setCap").value=s.cap; $("setTimeLimit").value=s.timeLimit;
+  $("setMatchMin").value=s.matchMin; $("setIntervalMin").value=s.intervalMin; $("setBreakMin").value=s.blockBreakMin; $("setHandicap").value=s.handicap;
+  $("setPairMode").value=s.pairMode; $("setByeMode").value=s.byeMode;
+  if($("setForcedOn")) $("setForcedOn").checked=s.forcedEnabled!==false;
+  if($("setForcedMd")) $("setForcedMd").value=s.forcedMd||"";
+  if($("setForcedWd")) $("setForcedWd").value=s.forcedWd||"";
+  if($("setForcedXd")) $("setForcedXd").value=s.forcedXd||"";
+  $("setSubMen").value=s.subMen; $("setSubWomen").value=s.subWomen; $("setReferee").value=s.referee;
+  if($("setPreview")) $("setPreview").textContent=`混双 ${s.handicap}:0 开局，男双让 ${s.handicap} 分`;
+  $("setMen").value=DEFAULT_MEN.map(p=>`${p.name},${p.lv.toFixed(1)}`).join("\n");
+  $("setWomen").value=DEFAULT_WOMEN.map(p=>`${p.name},${p.lv.toFixed(1)}`).join("\n");
+});
+document.getElementById("setHandicap").addEventListener("input",()=>{
+  const v=Math.max(0,Math.min(20,Number(document.getElementById("setHandicap").value)||0));
+  document.getElementById("setPreview").textContent=`混双 ${v}:0 开局，男双让 ${v} 分`;
+});
+document.getElementById("setSave").addEventListener("click",saveSettings);
+document.getElementById("drawBtn").addEventListener("click",()=>{
+  if(state.manualPairs && state.drawn){ redrawBracket(); return; }
+  const v=document.getElementById("seedInput").value.trim();
+  const s=v?Number(v):null;
+  doDraw(s&&Number.isFinite(s)?s:null);
+});
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  if((isLocked()||state.drawn) && !confirm("重置会清空当前签表和锁定，确定要重置吗？")) return;
+  reset();
+});
+document.getElementById("exportBtn").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify({...state,skin:skinId()},null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`huahuabei-${state.seed||"state"}.json`;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+});
+document.getElementById("importBtn").addEventListener("click",()=>document.getElementById("importFile").click());
+document.getElementById("importFile").addEventListener("change",async e=>{
+  const f=e.target.files[0];
+  if(!f) return;
+  try{
+    const obj=JSON.parse(await f.text());
+    if(!obj.drawn||!obj.brackets) throw new Error("不是有效的签表文件");
+    Object.assign(state,normalize(obj));
+    if(obj.skin && SKINS.some(x=>x.id===obj.skin)) setSkin(obj.skin,true);
+    if(state.drawn && !state.demo && !isLocked()) takeLock("import");
+    save(); render();
+    if(isLocked()) toast("已导入并锁定 · 种子 "+state.seed);
+  }catch(err){
+    alert("导入失败："+err.message);
+  }finally{
+    e.target.value="";
+  }
+});
+document.getElementById("brackets").addEventListener("change",e=>{
+  const inp=e.target.closest(".score");
+  if(!inp) return;
+  setScore(inp.dataset.kind,inp.dataset.mid,inp.dataset.side,inp.value);
+});
+document.getElementById("brackets").addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&e.target.classList.contains("score")) e.target.blur();
+});
+document.getElementById("pairsSec").addEventListener("change",e=>{
+  const inp=e.target.closest(".tname");
+  if(!inp) return;
+  const code=inp.dataset.code;
+  for(const kind of ["md","wd","xd"]){
+    const p=state.pairs[kind].find(x=>x.code===code);
+    if(p){ p.name=inp.value.trim(); break; }
+  }
+  save(); render();
+});
+
+let _rzT=null;
+window.addEventListener("resize",()=>{clearTimeout(_rzT);_rzT=setTimeout(scheduleConnectors,120);});
+renderSkinList();
+syncPosterPalette();
+renderRoster();
+if(!load()) reset();
+else{
+  if(state.drawn && !state.demo && !isLocked()){ takeLock("legacy"); save(); }
+  render();
+}
+const qs=new URLSearchParams(location.search);
+if(qs.has('skin')) setSkin(qs.get('skin'),true);
+if(qs.get('view')) setTimeout(()=>{const el=document.getElementById(qs.get('view')+'Sec');if(el)el.scrollIntoView();},120);
+if(qs.has('scroll')) setTimeout(()=>{const el=document.getElementById(qs.get('scroll')+'Sec');if(el)el.scrollIntoView({block:'start'});},700);
+
+};
+</script>
+
+
+
+
+<div id="gate">
+  <div class="gate-card">
+    <h1>赛事看板</h1>
+    <p>请输入口令进入<br><span style="font-size:12px;color:#9aa79e">（观看口令 / 管理口令）</span></p>
+    <input id="gatePwd" type="password" autocomplete="current-password" placeholder="口令">
+    <button id="gateBtn" type="button">进入</button>
+    <div class="err" id="gateErr"></div>
+    <div class="foot">仅限参赛人员查看</div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var gate = document.getElementById('gate');
+  var input = document.getElementById('gatePwd');
+  var btn = document.getElementById('gateBtn');
+  var err = document.getElementById('gateErr');
+  var busy = false, meta = null;
+
+  function b64(s) {
+    var bin = atob(s), u = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return u;
+  }
+  function setErr(t) { err.textContent = t || ''; }
+
+  async function deriveKey(pw, salt) {
+    var base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt: b64(salt), iterations: 150000, hash: 'SHA-256' },
+      base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
+    );
+  }
+
+  async function unlock(pw) {
+    for (var i = 0; i < meta.wraps.length; i++) {
+      var w = meta.wraps[i];
+      try {
+        var kek = await deriveKey(pw, w.salt);
+        var raw = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(w.iv) }, kek, b64(w.ct));
+        var ck = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
+        var plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(meta.data.iv) }, ck, b64(meta.data.ct));
+        return { role: w.role, bundle: JSON.parse(new TextDecoder().decode(plain)) };
+      } catch (e) { /* wrong password for this wrap */ }
+    }
+    return null;
+  }
+
+  async function loadMeta() {
+    var res = await fetch('data.enc.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('data ' + res.status);
+    return res.json();
+  }
+
+  async function submit() {
+    if (busy) return;
+    busy = true; btn.disabled = true; setErr('');
+    try {
+      if (!meta) meta = await loadMeta();
+      var r = await unlock(input.value.trim());
+      if (!r) {
+        setErr('口令不对，请确认后重试');
+        busy = false; btn.disabled = false; input.select();
+        return;
+      }
+      window.__ROLE = r.role;
+      window.__PAGE_DATA = {
+        men: r.bundle.men,
+        women: r.bundle.women,
+        subs: r.bundle.subs,
+        avatars: r.bundle.avatars,
+        settings: r.bundle.settings
+      };
+      window.__PD = function () { return window.__PAGE_DATA; };
+      window.__isAdmin = function () { return window.__ROLE === 'admin'; };
+
+      if (r.bundle.preload) {
+        var STORE = 'huahuabei-knockout-v3', PUB = 'hzb-pub';
+        var seen = null;
+        try { seen = localStorage.getItem(PUB); } catch (e) {}
+        var hasLocal = false;
+        try { hasLocal = !!localStorage.getItem(STORE); } catch (e) {}
+        if (r.role === 'viewer' || !hasLocal || seen !== meta.publishId) {
+          try {
+            localStorage.setItem(STORE, JSON.stringify(r.bundle.preload));
+            localStorage.setItem(PUB, meta.publishId);
+          } catch (e) {}
+        }
+      }
+
+      document.documentElement.setAttribute('data-role', r.role);
+      document.documentElement.setAttribute('data-authed', '');
+      if (gate) gate.remove();
+      window.__startApp();
+
+      if (r.role !== 'admin') {
+        document.addEventListener('click', function (e) {
+          var t = e.target && e.target.closest && e.target.closest('#drawBtn,#resetBtn,#importBtn,#demoBtn,#settingsBtn,#restoreBtn,#unlockBtn,#seedInput');
+          if (t) { e.preventDefault(); e.stopPropagation(); }
+        }, true);
+        document.querySelectorAll('input.score,input.tname').forEach(function (el) {
+          el.readOnly = true;
+          el.disabled = true;
+        });
+      }
+    } catch (e) {
+      setErr('加载失败：' + ((e && e.message) || e));
+      busy = false; btn.disabled = false;
+    }
+  }
+
+  btn.addEventListener('click', submit);
+  input.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
+  input.focus();
+  loadMeta().catch(function (e) { setErr('初始化失败：' + ((e && e.message) || e)); });
+})();
+</script>
+</body>
+</html>
