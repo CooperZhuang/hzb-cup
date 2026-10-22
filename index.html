@@ -810,6 +810,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
       <span id="stateText">还没抽签</span>
       <span class="lock-chip" id="lockChip" hidden>🔒 已锁定</span>
       <span id="saveState" style="font-size:10px;color:var(--muted);margin-left:8px">未保存</span>
+      <span id="publishMeta" style="font-size:10px;color:var(--muted);margin-left:8px"></span>
     </div>
     <div class="seedbox">
       <label for="seedInput">种子</label>
@@ -823,6 +824,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
       </span>
       <span class="act-sep"></span>
       <span class="act-group">
+        <button class="btn btn-ghost" id="reloadBtn">刷新</button>
         <button class="btn btn-ghost" id="roleBtn">管理端</button>
         <button class="btn btn-ghost" id="settingsBtn">设置</button>
         <button class="btn btn-ghost" id="resetBtn">重置</button>
@@ -2937,8 +2939,25 @@ window.__render=function(){render();};
     if (gate) gate.remove();
     window.__startApp();
     setRoleUI(false);
+    updatePublishMeta();
+    var rb = document.getElementById('reloadBtn');
+    if (rb) rb.addEventListener('click', function () { location.reload(); });
     if (role !== 'admin') attachViewerGuards();
     startPolling();
+  }
+  function fmtTime(iso) {
+    try {
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    } catch (e) { return ''; }
+  }
+  function updatePublishMeta(prefix) {
+    var el = document.getElementById('publishMeta');
+    if (!el) return;
+    if (prefix) { el.textContent = prefix; return; }
+    var t = meta && fmtTime(meta.generatedAt);
+    el.textContent = t ? ('更新于 ' + t) : '';
   }
   function startPolling() {
     setInterval(async function () {
@@ -2948,9 +2967,10 @@ window.__render=function(){render();};
         if (m2.publishId === meta.publishId) return;
         var b = await decryptData(keyBytes, m2);
         seedPreload(b, m2, true);
-        location.reload();
+        showToast('发现新版本，正在刷新…');
+        setTimeout(function () { location.reload(); }, 1200);
       } catch (e) {}
-    }, 45000);
+    }, 30000);
   }
   function openModal(title, hint, isPassword) {
     return new Promise(function (resolve) {
@@ -3048,6 +3068,7 @@ window.__render=function(){render();};
         });
         if (put.ok) {
           meta = meta2;
+          updatePublishMeta('刚刚发布');
           showToast('已发布，约 1 分钟后所有人同步（页面会自动刷新）');
           return;
         }
