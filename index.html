@@ -2988,6 +2988,31 @@ window.__render=function(){render();};
     if (window.__PAT_HINT) { /* noop */ }
     showToast('已切换回观看模式');
   }
+  function ghHeaders(pat) { return { Authorization: 'Bearer ' + pat, Accept: 'application/vnd.github+json' }; }
+  async function ghGetSha(pat, api) {
+    var r = await fetch(api + '?ref=main', { headers: ghHeaders(pat), cache: 'no-store' });
+    if (r.ok) return (await r.json()).sha;
+    if (r.status === 404) return null;
+    throw new Error('读取远端失败 ' + r.status);
+  }
+  async function buildMeta(fresh) {
+    var bundle = {
+      men: window.__PAGE_DATA.men,
+      women: window.__PAGE_DATA.women,
+      subs: window.__PAGE_DATA.subs,
+      avatars: window.__PAGE_DATA.avatars,
+      settings: window.__PAGE_DATA.settings,
+      preload: window.__exportSnapshot()
+    };
+    var sealed = await encryptData(keyBytes, JSON.stringify(bundle));
+    return {
+      v: 1, kdf: fresh.kdf,
+      publishId: (await sha256Hex(b64ToU8(sealed.ct))).slice(0, 16),
+      generatedAt: new Date().toISOString(),
+      data: sealed,
+      wraps: fresh.wraps
+    };
+  }
   async function publishNow() {
     if (role !== 'admin') return;
     if (!window.__exportSnapshot) { alert('页面还没准备好'); return; }
@@ -3000,46 +3025,50 @@ window.__render=function(){render();};
       if (!pat) return;
       try { localStorage.setItem(PATK, pat); } catch (e) {}
     }
-    try {
-      var bundle = {
-        men: window.__PAGE_DATA.men,
-        women: window.__PAGE_DATA.women,
-        subs: window.__PAGE_DATA.subs,
-        avatars: window.__PAGE_DATA.avatars,
-        settings: window.__PAGE_DATA.settings,
-        preload: window.__exportSnapshot()
-      };
-      var sealed = await encryptData(keyBytes, JSON.stringify(bundle));
-      var meta2 = {
-        v: 1, kdf: meta.kdf,
-        publishId: (await sha256Hex(b64ToU8(sealed.ct))).slice(0, 16),
-        generatedAt: new Date().toISOString(),
-        data: sealed,
-        wraps: meta.wraps
-      };
-      var api = 'https://api.github.com/repos/CooperZhuang/hzb-cup/contents/data.enc.json';
-      var h = { Authorization: 'Bearer ' + pat, Accept: 'application/vnd.github+json' };
-      var gr = await fetch(api + '?ref=main', { headers: h });
-      var sha = null;
-      if (gr.ok) { sha = (await gr.json()).sha; }
-      else if (gr.status !== 404) { throw new Error('读取远端失败 ' + gr.status); }
-      var body = {
-        message: 'publish ' + meta2.publishId,
-        content: u8ToB64(new TextEncoder().encode(JSON.stringify(meta2))),
-        branch: 'main'
-      };
-      if (sha) body.sha = sha;
-      var put = await fetch(api, { method: 'PUT', headers: Object.assign({ 'Content-Type': 'application/json' }, h), body: JSON.stringify(body) });
-      if (!put.ok) {
+    var api = 'https://api.github.com/repos/CooperZhuang/hzb-cup/contents/data.enc.json';
+    var lastErr = '';
+    for (var attempt = 0; attempt < 3; attempt++) {
+      try {
+        var fresh = await fetchMeta();
+        try { await decryptData(keyBytes, fresh); }
+        catch (e) { showToast('页面已过期：请刷新页面后再发布'); return; }
+        var meta2 = await buildMeta(fresh);
+        var sha = await ghGetSha(pat, api);
+        var body = {
+          message: 'publish ' + meta2.publishId,
+          content: u8ToB64(new TextEncoder().encode(JSON.stringify(meta2))),
+          branch: 'main'
+        };
+        if (sha) body.sha = sha;
+        var put = await fetch(api, {
+          method: 'PUT',
+          headers: Object.assign({ 'Content-Type': 'application/json' }, ghHeaders(pat)),
+          body: JSON.stringify(body),
+          cache: 'no-store'
+        });
+        if (put.ok) {
+          meta = meta2;
+          showToast('已发布，约 1 分钟后所有人同步（页面会自动刷新）');
+          return;
+        }
         var txt = await put.text();
-        if (put.status === 401 || put.status === 403) { try { localStorage.removeItem(PATK); } catch (e) {} try { localStorage.removeItem('hzb-pat'); } catch (e) {} }
-        throw new Error('发布失败 ' + put.status + ' ' + txt.slice(0, 180));
+        if (put.status === 401 || put.status === 403) {
+          try { localStorage.removeItem(PATK); } catch (e) {}
+          throw new Error('Token 被拒绝（' + put.status + '），已清除，请重新输入');
+        }
+        if (put.status === 409) {
+          lastErr = '远端刚有更新，正在重试';
+          await new Promise(function (r) { setTimeout(r, 800); });
+          continue;
+        }
+        throw new Error('发布失败 ' + put.status + ' ' + txt.slice(0, 160));
+      } catch (e) {
+        lastErr = (e && e.message) || String(e);
+        if (attempt >= 2) break;
+        await new Promise(function (r) { setTimeout(r, 900); });
       }
-      meta = meta2;
-      showToast('已发布，约 1 分钟后所有人同步（页面会自动刷新）');
-    } catch (e) {
-      showToast('发布失败：' + (e.message || e));
     }
+    showToast('发布失败：' + lastErr);
   }
 
   async function submitGate() {
