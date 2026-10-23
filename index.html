@@ -905,10 +905,10 @@ body.checkin-open{overflow:hidden}
 .checkin-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .checkin-block{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
 .checkin-block h3{margin:0 0 8px;font-size:12px;letter-spacing:.08em;color:var(--green-2)}
-.checkin-row{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.checkin-row{display:flex;align-items:center;gap:9px;font-size:12.5px;padding:5px 0;border-bottom:1px dashed var(--line)}
 .checkin-row:last-child{border-bottom:0}
 .checkin-row input{accent-color:var(--green);flex:none}
-.checkin-row .avatar{flex:none}
+.checkin-row .avatar{flex:none;margin-right:1px}
 .checkin-row .ci-name{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .checkin-row .ci-lv{color:var(--muted);font-size:11px;flex:none}
 .checkin-row .ci-sign{flex:1;border-bottom:1px solid var(--line);height:16px;margin-left:6px}
@@ -967,7 +967,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
-<script>window.__BUILD_ID__="7f5e4839579a";</script>
+<script>window.__BUILD_ID__="9d867d7fd07d";</script>
 </head>
 <body>
 <div class="wrap">
@@ -4101,7 +4101,7 @@ function renderCheckin(){
   const block=(title,people)=>{
     const rows=people.map(p=>{
       const at=map[p.name];
-      return `<label class="checkin-row${at?" done":""}">${avatarImg(p.name,"avatar avatar-sm")}<input type="checkbox" data-checkin="${escAttr(p.name)}"${at?" checked":""}><span class="ci-name">${esc(p.name)}</span><span class="ci-lv">${p.lv!=null?p.lv.toFixed(1):""}</span><span class="ci-sign"></span>${at?`<span class="ci-time">${fmtCheckinTime(at)}</span>`:""}</label>`;
+      return `<label class="checkin-row${at?" done":""}"><input type="checkbox" data-checkin="${escAttr(p.name)}"${at?" checked":""}>${avatarImg(p.name,"avatar avatar-sm")}<span class="ci-name">${esc(p.name)}</span><span class="ci-lv">${p.lv!=null?p.lv.toFixed(1):""}</span><span class="ci-sign"></span>${at?`<span class="ci-time">${fmtCheckinTime(at)}</span>`:""}</label>`;
     }).join("");
     return `<div class="checkin-block"><h3>${esc(title)}</h3>${rows||'<p class="set-hint">（空）</p>'}</div>`;
   };
