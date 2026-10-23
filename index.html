@@ -363,6 +363,8 @@ section{padding-top:34px}
 .team{display:flex;align-items:center;justify-content:flex-start;gap:8px}
 .tie{font-size:9.5px;color:var(--tie);font-weight:700;margin-top:2px}
 .match.badscore,.intl-match.badscore{border-color:var(--tie);box-shadow:0 0 0 3px rgba(163,51,34,.10)}
+.intl-match.is-skip{border-style:dashed;border-color:var(--tie);opacity:.92}
+.mt-btn.mt-skip.on{background:var(--tie);border-color:var(--tie);color:#fff}
 .match.badscore .score,.intl-match.badscore .score{border-color:var(--tie);background:rgba(163,51,34,.06);color:var(--tie)}
 .badscore-note{font-size:9.5px;color:var(--tie);font-weight:700;line-height:1.45;margin-top:2px}
 .intl-match .badscore-note{font-size:9px;text-align:center}
@@ -954,7 +956,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
-<script>window.__BUILD_ID__="1936373829ff";</script>
+<script>window.__BUILD_ID__="a4e2dde6aad1";</script>
 </head>
 <body>
 <div class="wrap">
@@ -1105,8 +1107,8 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
       <details><summary>轮空算赢吗？不记比分怎么算？</summary><p>算直接晋级，不用上场，也不填比分；对阵图里用虚线框写在“轮空”，下一轮的格子里就是这一对。</p></details>
       <details><summary>混双里的男双让几分？</summary><p>默认让 <span id="qaHandicap">6</span> 分，混双从 <span id="qaHandicapScore">6:0</span> 开始；在“设置”里可以改。</p></details>
       <details><summary>比分填让分前还是让分后？</summary><p>填最终比分。比如混双从让分后的比分开始，最后打到 21:15，就填 21 和 15。</p></details>
-      <details><summary>打到多少分算赢？20 平、25 平怎么算？</summary><p>21 分一局；20 平后要净胜 2 分；打到 25 平，谁先再得 1 分谁赢，最高 26 分。所以 25:24 还没打完，26:24 或 26:25 才算；弃权记 21:0。</p></details>
-      <details><summary>比分没填到终局会怎样？</summary><p>页面上没打完或多打的比分（比如 25:24、27:25）会标红并提示还没结束，不会判胜晋级；改成终局比分后才生效。</p></details>
+      <details><summary id="faqWinSummary">打到多少分算赢？20 平、25 平怎么算？</summary><p id="faqWinScore">21 分一局；20 平后要净胜 2 分；打到 25 平，谁先再得 1 分谁赢，最高 26 分。所以 25:24 还没打完，26:24 或 26:25 才算；弃权记 21:0。</p></details>
+      <details><summary>比分没填到终局会怎样？</summary><p id="faqBadScore">页面上没打完或多打的比分（比如 25:24、27:25）会标红并提示还没结束，不会判胜晋级；改成终局比分后才生效。</p></details>
       <details><summary>同一个人能打男双和混双吗？</summary><p>可以。男双和混双是两个项目；赛程已经把男双、女双分开，混双放在最后。</p></details>
       <details><summary>输了还能打吗？</summary><p>正常输了就结束（3、4 名比赛除外，那是给决赛前一轮负者打的）。唯一的例外：有人临时缺席、指定候补又不够用时，可以从这个项目里已经输掉、人还在场的人里<b>抽签</b>顶上——抽签决定，不能自己挑，而且只顶缺阵球员那个项目。</p></details>
       <details><summary>换手机或电脑怎么看？</summary><p>线上版用同一个口令登录就能看（发布过的赛果会自动拉下来）。本机只在当前浏览器里记登录状态和自己的编辑，换设备重新输一次口令即可；管理端的“导出 / 导入”JSON 是备份和搬家用的。</p></details>
@@ -1392,7 +1394,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
         <ul class="ops-list">
           <li><b>场地被别人占了 / 只剩一片场</b>先找场馆换场或换时段；换不了就串行——先打完男双女双，再打混双，结束时间整体顺延，休息照旧不压缩。<span class="ops-ui">页面：设置 → 时间与让分 → 改「开始时间」，赛程时间自动重算；比赛顺序不变。</span></li>
           <li><b>下雨 / 灯光不足 / 场地在室外</b>当天早上就定，别拖到开赛。改室内或整体顺延，然后群里统一通知一次，别口头各说各话。<span class="ops-ui">页面：设置 → 赛事 → 改「开始时间」。</span></li>
-          <li><b>有人临时缺席</b>先问一句「能不能来」；来不了就候补顶上，顶不上就把他从名单里去掉。人少不凑错，宁可少打一场。<span class="ops-ui">页面：设置 → 候补替换：优先用「指定候补」直接换（赛前也能换）；指定候补用掉后，从该项目已输掉、还在场的人里抽（选项目 → 取消勾选已提前走的人 → 抽签 → 用抽中的人替换，只顶该项目）。如果这个项目还没人输完，先把缺人的这场往后放，让下一场先打（对阵图 → 上场 / 5 / 6 手动排场），等败者出来再回来抽。改完记得重新公示。</span></li>
+          <li><b>有人临时缺席</b>先问一句「能不能来」；来不了就候补顶上，顶不上就把他从名单里去掉。人少不凑错，宁可少打一场。<span class="ops-ui">页面：设置 → 候补替换：优先用「指定候补」直接换（赛前也能换）；指定候补用掉后，从该项目已输掉、还在场的人里抽（选项目 → 取消勾选已提前走的人 → 抽签 → 用抽中的人替换，只顶该项目）。如果这个项目还没人输完，先把缺人的这场往后放（对阵图这张卡片上点「跳过」，「赛务状态 → 该打了 / 下一场」会自动跳到别的场；让下一场先打，对阵图里点「上场 / 5 / 6」手动排场），等败者出来再回来抽、抽完点「取消跳过」。改完记得重新公示。</span></li>
           <li><b>缺席太多，对数不够</b>某个项目凑不满就直接砍掉这个项目；落单的人并进别的队要当场宣布并记下来。改完名单必须重抽对阵。<span class="ops-ui">页面：设置 → 签表锁 → 解锁 → 点「抽签」重抽（会换掉全部对阵，重抽完必须重新公示给全场）。</span></li>
           <li><b>有人迟到</b>还没开赛的项目可以等 10 分钟；已经叫号没到，判该场弃权（对方 <span id="opsForfeitScore"></span>），当场宣布。<span class="ops-ui">页面：不用动，直接在群里说明。</span></li>
           <li><b>有人受伤</b>先停赛、照顾伤者：这场按弃权处理；后面还打不了就按「有人临时缺席」换候补（指定候补 / 从该项目已淘汰、还在场的人里抽签，只顶该项目）；要整场作废再解锁重抽对阵（搭档不变）。<span class="ops-ui">页面：设置 → 候补替换 或 设置 → 签表锁 → 解锁 → 只重抽对阵。</span></li>
@@ -1498,7 +1500,8 @@ const state = {
   courts:{"5":null,"6":null},
   subList:{men:DEFAULT_SUB_LIST.men.slice(),women:DEFAULT_SUB_LIST.women.slice()},
   subRecords:[],
-  checkin:{}
+  checkin:{},
+  skipped:{}
 };
 
 /* ---------------- 签表安全锁 ---------------- */
@@ -1854,6 +1857,24 @@ function isFinalScore(sa,sb,s){
   if(cap>0 && cap<=pts && w===cap) return true;
   return false;
 }
+function faqSummaryText(s){
+  const p=Number(s.points)||21, cap=Number(s.cap)||0;
+  return `打到多少分算赢？${p-1} 平${cap>p?`、${cap-1} 平`:""}怎么算？`;
+}
+function faqWinScoreText(s){
+  const p=Number(s.points)||21, w=Math.max(1,Number(s.winBy)||2), cap=Number(s.cap)||0;
+  const notFinal=`${p}:${p-1}`;
+  const normalLegal=`${p}:${Math.max(0,p-w)}`;
+  if(cap>p) return `${p} 分一局；${p-1} 平后要净胜 ${w} 分；打到 ${cap-1} 平，谁先再得 1 分谁赢，最高 ${cap} 分。所以 ${notFinal} 还没打完，${normalLegal} 或 ${cap}:${cap-1} 才算；弃权记 ${p}:0。`;
+  if(cap>0) return `${p} 分一局；${p-1} 平后要净胜 ${w} 分；${cap} 分封顶，先到 ${cap} 分即胜。所以 ${notFinal} 还没打完，${cap}:${cap-1} 才算；弃权记 ${p}:0。`;
+  return `${p} 分一局；${p-1} 平后要净胜 ${w} 分，不封顶。所以 ${notFinal} 还没打完，${normalLegal} 才算（平分继续打）；弃权记 ${p}:0。`;
+}
+function faqBadScoreText(s){
+  const p=Number(s.points)||21, cap=Number(s.cap)||0;
+  const notFinal=`${p}:${p-1}`;
+  const over=cap>p?`${cap+1}:${cap-1}`:`${p+1}:${p-2}`;
+  return `页面上没打完或多打的比分（比如 ${notFinal}、${over}）会标红并提示还没结束，不会判胜晋级；改成终局比分后才生效。`;
+}
 function finalRuleHint(s){
   const base=`${s.points} 分一局，${s.points-1} 平后净胜 ${s.winBy} 分`;
   return s.cap>s.points?`${base}；${s.cap-1} 平后一球定胜负（最高 ${s.cap} 分）`:`${base}${s.cap?`；${s.cap} 分封顶`:""}`;
@@ -1864,6 +1885,7 @@ function recomputeWinner(m,br){
   m.winner=isFinalScore(m.sa,m.sb,state.settings)?(m.sa>m.sb?a:b):null;
 }
 function setScore(kind,mid,side,raw){
+  if(state.skipped&&state.skipped[tKey(kind,mid)]) delete state.skipped[tKey(kind,mid)];
   const br=state.brackets[kind], m=br.matches[mid];
   const n=raw===""?null:Number(raw);
   if(n!==null && (!Number.isFinite(n)||n<0||n>99)) return;
@@ -2535,6 +2557,7 @@ function normalize(s){
   }
   if(!Array.isArray(s.subRecords)) s.subRecords=[];
   if(!s.checkin||typeof s.checkin!=="object") s.checkin={};
+  if(!s.skipped||typeof s.skipped!=="object") s.skipped={};
   if(s.pairs){for(const kind of ["md","wd","xd"]){ (s.pairs[kind]||[]).forEach(p=>{ if(p.name===undefined) p.name=""; }); }}
   for(const kind of ["md","wd","xd"]){
     const br=s.brackets[kind];
@@ -2615,7 +2638,7 @@ function intlMatch(kind,m,br,extra=""){
   const li=(LIVE&&LIVE.byKey[tKey(kind,m.id)])||null;
   const filled=Number.isInteger(m.sa)&&Number.isInteger(m.sb);
   const bad=filled&&m.sa!==m.sb&&!isFinalScore(m.sa,m.sb,state.settings);
-  const cls=(li?`${li.running||li.now?" is-now":""}${li.next?" is-next":""}`:"")+(bad?" badscore":"");
+  const cls=(li?`${li.running||li.now?" is-now":""}${li.next?" is-next":""}`:"")+(bad?" badscore":"")+(isSkipped(kind,m.id)?" is-skip":"");
   const note=bad?`<div class="badscore-note" title="${escAttr(finalRuleHint(state.settings))}">按规则还没结束：${m.sa}:${m.sb}</div>`:"";
   return `<div class="intl-match ${extra}${cls}" data-kind="${kind}" data-mid="${m.id}"><div class="intl-meta"><span>${m.id.toUpperCase()}</span><span>${tag}</span></div>${intlTeamRow(kind,m,a,"a",br)}${intlTeamRow(kind,m,b,"b",br)}${note}${mtLine(kind,m)}</div>`;
 }
@@ -2882,6 +2905,9 @@ function applySettings(){
   document.title=`${s.eventTitle} · 抽签与对阵`;
   if($("lede")) $("lede").textContent="男双 6 对 · 女双 5 对 · 混双 11 对（10 混双 + 1 男双）";
   if($("rulePoints")) $("rulePoints").textContent=pointsRuleText(s);
+  if($("faqWinSummary")) $("faqWinSummary").textContent=faqSummaryText(s);
+  if($("faqWinScore")) $("faqWinScore").textContent=faqWinScoreText(s);
+  if($("faqBadScore")) $("faqBadScore").textContent=faqBadScoreText(s);
   if($("ruleLimit")) $("ruleLimit").textContent=s.timeLimit>0?`每场 ${s.timeLimit} 分钟硬上限，到点领先者胜。`:`预计 ${s.matchMin} 分钟一局，按现场实际情况调整；不设时间上限，打到分出胜负。`;
   if($("ruleInterval")) $("ruleInterval").textContent=`场间休息约 ${s.intervalMin} 分钟，按现场实际情况开下一轮。`;
   if($("ruleHandicap")) $("ruleHandicap").textContent=`混双里的男双遇到混双，混双 ${s.handicap}:0 开局；男双让 ${s.handicap} 分。`;
@@ -3496,6 +3522,7 @@ document.getElementById("brackets").addEventListener("click",e=>{
   if(!btn) return;
   e.preventDefault();
   const act=btn.dataset.tact;
+  if(act==="skip"){ toggleSkip(btn.dataset.kind,btn.dataset.mid); return; }
   if(act==="court5"){ assignCourt(btn.dataset.kind,btn.dataset.mid,"5"); return; }
   if(act==="court6"){ assignCourt(btn.dataset.kind,btn.dataset.mid,"6"); return; }
   setTiming(btn.dataset.kind,btn.dataset.mid,act);
@@ -3532,6 +3559,16 @@ document.getElementById("pairsSec").addEventListener("change",e=>{
    记录每场的实际开始/结束时间，后续时段按实际偏差自动顺延或提前；
    对阵图里高亮"正在打/该打了/下一场"，并且可以手动指定哪一场在几号场地。 */
 function tKey(kind,mid){return kind+":"+mid;}
+function isSkipped(kind,mid){return !!(state.skipped&&state.skipped[tKey(kind,mid)]);}
+function toggleSkip(kind,mid){
+  if(window.__isAdmin&&!window.__isAdmin()) return;
+  if(!state.skipped||typeof state.skipped!=="object") state.skipped={};
+  const key=tKey(kind,mid);
+  if(state.skipped[key]) delete state.skipped[key];
+  else state.skipped[key]=new Date().toISOString();
+  save(); render();
+  toast(state.skipped[key]?"已标记：这场先跳过（赛务状态会自动跳到下一场）":"已取消跳过");
+}
 function tGet(kind,mid){const t=state.timing&&state.timing[tKey(kind,mid)];return t||null;}
 function tClock(ts){const d=new Date(ts);return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;}
 function tMinOfDay(ts){const d=new Date(ts);return d.getHours()*60+d.getMinutes();}
@@ -3603,7 +3640,8 @@ function matchTable(){
         assigned:!!courtOf(key),
         played:!!(t&&(t.s!=null||t.e!=null)),
         running:!!(t&&t.s!=null&&t.e==null),
-        ended:!!(t&&t.e!=null)
+        ended:!!(t&&t.e!=null),
+        skipped:isSkipped(kind,mid)
       });
     });
   });
@@ -3623,15 +3661,15 @@ function liveInfo(){
   // 手动指定了场地的，就是"现在在打"
   list.forEach(x=>{if(x.assigned){byKey[x.key].now=true;nowKeys.add(x.key);}});
   if(curSlot>=0) list.forEach(x=>{
-    if(x.slot===curSlot&&x.ready&&!x.scored){byKey[x.key].now=true;nowKeys.add(x.key);}
+    if(x.slot===curSlot&&x.ready&&!x.scored&&!x.skipped){byKey[x.key].now=true;nowKeys.add(x.key);}
   });
   let next=null;
-  for(const x of list){if(x.ready&&!x.scored&&!x.played&&!nowKeys.has(x.key)){next=x;break;}}
+  for(const x of list){if(x.ready&&!x.scored&&!x.played&&!x.skipped&&!nowKeys.has(x.key)){next=x;break;}}
   if(next&&byKey[next.key]) byKey[next.key].next=true;
   // 每片场的"下一场"（不看时钟）：该片场第一个还没打过、对手已定的场次
   const courtNext={};
   list.forEach(x=>{
-    if(!courtNext[x.court]&&x.ready&&!x.scored&&!x.played){
+    if(!courtNext[x.court]&&x.ready&&!x.scored&&!x.played&&!x.skipped){
       courtNext[x.court]=x;
       byKey[x.key].courtNext=true;
     }
@@ -3642,6 +3680,7 @@ function setTiming(kind,mid,act){
   if(window.__isAdmin&&!window.__isAdmin()) return;
   if(!state.timing) state.timing={};
   const key=tKey(kind,mid);
+  if((act==="start"||act==="end")&&state.skipped) delete state.skipped[key];
   const t=state.timing[key]||{};
   const now=Date.now();
   if(act==="start"){
@@ -3666,6 +3705,7 @@ function setTiming(kind,mid,act){
 function assignCourt(kind,mid,court){
   if(window.__isAdmin&&!window.__isAdmin()) return;
   const key=tKey(kind,mid);
+  if(state.skipped) delete state.skipped[key];
   const cur=courtOf(key);
   if(cur&&cur===court){ courtAssign(court,null); save(); render(); return; }  // 再点一次＝撤下
   const other=court==="5"?"6":"5";
@@ -3709,12 +3749,14 @@ function mtLine(kind,m){
   const court=li.court;
   const free=courtFree();
   const badge=li.running?`<span class="mt-badge now">进行中</span>`
+    :li.skipped?`<span class="mt-badge wait">先跳过</span>`
     :(li.played&&!li.scored)?`<span class="mt-badge wait">待录分</span>`
     :(mtActive()&&(li.now||li.courtNext))?`<span class="mt-badge now">该打了</span>`
     :(mtActive()&&li.next)?`<span class="mt-badge next">下一场</span>`:"";
   const courtChip=court?`<span class="mt-badge court">${court} 号场</span>`:"";
   const showControls=!!(t||court||li.running);
-  if(!badge&&!t&&!court&&!(mtActive()&&li.ready&&!li.played&&!li.scored)) return "";
+  const showSkip=li.skipped||(!li.scored&&!li.played&&li.ready);
+  if(!badge&&!t&&!court&&!li.skipped&&!(mtActive()&&li.ready&&!li.played&&!li.scored)) return "";
   const plan=li.plan?`计划 ${fmtMin(li.plan.st)}–${fmtMin(li.plan.ed)}`:"";
   const adj=(li.plan&&li.plan.delay)?`${li.plan.delay>0?"顺延":"提前"} ${fmtMin(li.plan.adjSt)}–${fmtMin(li.plan.adjEd)}`:"";
   let act="";
@@ -3731,12 +3773,14 @@ function mtLine(kind,m){
   else main=`<button type="button" class="mt-btn mt-btn-go" data-tact="start" data-kind="${kind}" data-mid="${m.id}">${(free&&!court)?"上场":"开始"}</button>`;
   const courtBtns=showControls?`<button type="button" class="mt-btn mt-court${court==="5"?" on":""}" data-tact="court5" data-kind="${kind}" data-mid="${m.id}" title="排到 5 号场">5</button><button type="button" class="mt-btn mt-court${court==="6"?" on":""}" data-tact="court6" data-kind="${kind}" data-mid="${m.id}" title="排到 6 号场">6</button>`:"";
   const clr=(t||court)?`<button type="button" class="mt-btn mt-btn-x" data-tact="clear" data-kind="${kind}" data-mid="${m.id}" title="清除计时和场地">×</button>`:"";
-  return `<div class="mt-line">${courtChip}${badge}<span class="mt-time">${plan}</span>${adj?`<span class="mt-time adj">${adj}</span>`:""}${act?`<span class="mt-time act">${act}</span>`:""}${elapsed}${main}${courtBtns}${clr}</div>`;
+  const skipBtn=showSkip?`<button type="button" class="mt-btn mt-skip${li.skipped?" on":""}" data-tact="skip" data-kind="${kind}" data-mid="${m.id}" title="${li.skipped?"取消跳过":"这场先不打：赛务状态会自动跳到下一场"}">${li.skipped?"取消跳过":"跳过"}</button>`:"";
+  return `<div class="mt-line">${courtChip}${badge}<span class="mt-time">${plan}</span>${adj?`<span class="mt-time adj">${adj}</span>`:""}${act?`<span class="mt-time act">${act}</span>`:""}${elapsed}${main}${skipBtn}${courtBtns}${clr}</div>`;
 }
 function mtStatusChip(kind,mid){
   const li=(LIVE&&LIVE.byKey[tKey(kind,mid)])||null;
   if(!li) return "";
   if(li.running) return `<span class="mt-badge now">进行中</span>`;
+  if(li.skipped) return `<span class="mt-badge wait">先跳过</span>`;
   if(li.played&&!li.scored) return `<span class="mt-badge wait">待录分</span>`;
   if(!mtActive()) return "";
   if(li.now||li.courtNext) return `<span class="mt-badge now">该打了</span>`;
@@ -3776,7 +3820,7 @@ function opsMatchInfo(ref){
   const a=m?resolveRef(m.a,br):null;
   const b=m?resolveRef(m.b,br):null;
   const scored=!!(m&&isFinalScore(m.sa,m.sb,state.settings));
-  return {kind,mid,label:OPS_KIND[kind]||kind,m,a,b,scored,sa:m?m.sa:null,sb:m?m.sb:null,
+  return {kind,mid,label:OPS_KIND[kind]||kind,m,a,b,scored,skipped:isSkipped(kind,mid),sa:m?m.sa:null,sb:m?m.sb:null,
           hc:!!((a&&a.type==="mm")||(b&&b.type==="mm")),
           text:m?`${opsTeamName(a)} vs ${opsTeamName(b)}`:"待抽签"};
 }
@@ -3795,6 +3839,7 @@ function opsTodayText(){const n=new Date();return `${n.getFullYear()}-${String(n
 function opsCellHtml(mi){
   if(!mi) return `<td class="ops-t">休息 / 热身</td>`;
   const sc=mi.scored?` <span class="ops-sc">${mi.sa}:${mi.sb}</span>`:"";
+  const sk=mi.skipped?` <span class="ops-chip">先跳过</span>`:"";
   const hc=mi.hc?` <span class="ops-chip">让 ${state.settings.handicap} 分</span>`:"";
   const chip=mtStatusChip(mi.kind,mi.mid);
   const t=tGet(mi.kind,mi.mid);
@@ -3804,7 +3849,7 @@ function opsCellHtml(mi){
     else if(t.s!=null) act=`开始 ${tClock(t.s)}`;
     else if(t.e!=null) act=`结束 ${tClock(t.e)}`;
   }
-  return `<td class="ops-m">${mi.text}${sc}${hc}${chip?`<br>${chip}`:""}${act?`<br><span style="color:var(--green-2);font-weight:700">${esc(act)}</span>`:""}</td>`;
+  return `<td class="ops-m">${mi.text}${sc}${sk}${hc}${chip?`<br>${chip}`:""}${act?`<br><span style="color:var(--green-2);font-weight:700">${esc(act)}</span>`:""}</td>`;
 }
 function opsMatchList(){
   const list=[];
@@ -3843,7 +3888,7 @@ function renderOpsNow(){
   const curS=cur>=0?`现在 ${nowTxt}，这一时段正在进行${LIVE.plan[cur].delay?`（已顺延 ${LIVE.plan[cur].delay} 分钟）`:""}`
     :(now<0?`今天 ${opsTodayText()} 不是比赛日，赛程按 ${s.date} 算`
     :(now<opsSlotRange(0)[0]?`${s.date} ${s.start} 开打，现在 ${nowTxt}`:`颁奖 / 收尾阶段，现在 ${nowTxt}`));
-  const runV=running.length?running.map(x=>`${x.court} ${({md:"男双",wd:"女双",xd:"混双"})[x.kind]} ${x.mid.toUpperCase()}`).join(" / "):(next?`T${next.slot+1} · ${next.court||next.courtPlan}`:"没有待打的场次了");
+  const runV=running.length?running.map(x=>`${x.court} ${({md:"男双",wd:"女双",xd:"混双"})[x.kind]} ${x.mid.toUpperCase()}`).join(" / "):(next?`T${next.slot+1} · ${next.court||next.courtPlan}`:(list.some(x=>x.skipped&&!x.scored)?"其余场次都标了「先跳过」":"没有待打的场次了"));
   const runS=running.length?running.map(x=>`${({md:"男双",wd:"女双",xd:"混双"})[x.kind]}：${x.a?`${esc(x.a.p1.name)} + ${esc(x.a.p2.name)}`:""} vs ${x.b?`${esc(x.b.p1.name)} + ${esc(x.b.p2.name)}`:""}（已打 ${tElapsedText(x.t.s)}）`).join("　")
     :(next?`${({md:"男双",wd:"女双",xd:"混双"})[next.kind]}：${next.a?`${esc(next.a.p1.name)} + ${esc(next.a.p2.name)}`:""} vs ${next.b?`${esc(next.b.p1.name)} + ${esc(next.b.p2.name)}`:""}`:"收尾、发奖");
   const courtTxt=["5","6"].map(c=>{
