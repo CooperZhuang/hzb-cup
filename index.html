@@ -1015,7 +1015,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
   </section>
 
   <section id="scheduleSec">
-    <div class="sec-head"><h2>赛程</h2><p id="schedMeta">预计 13 分钟一局 · 上不封顶</p></div>
+    <div class="sec-head"><h2>赛程</h2><p id="schedMeta">预计 13 分钟一局 · 不设时间上限</p></div>
     <div id="courtBoard"></div>
     <table class="schedule">
       <thead><tr><th style="width:110px">时段</th><th>5 号场</th><th>6 号场</th></tr></thead>
@@ -1055,7 +1055,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
   <section id="rulesSec">
     <div class="sec-head"><h2>规则</h2></div>
     <div class="rules">
-      <div class="rule"><b>计分</b><p id="rulePoints">21 分一局，每球得分；20 平后净胜 2 分，不封顶，打到赢。</p></div>
+      <div class="rule"><b>计分</b><p id="rulePoints">21 分一局，每球得分；20 平后净胜 2 分；25 平后一球定胜负（最高 26 分）。</p></div>
       <div class="rule"><b>限时</b><p id="ruleLimit">预计 13 分钟一局，按现场实际情况调整；不设时间上限，打到分出胜负。</p></div>
       <div class="rule"><b>间隔</b><p id="ruleInterval">场间休息约 1 分钟，按现场实际情况开下一轮。</p></div>
       <div class="rule"><b>名次</b><p>决赛胜者冠军、负者亚军；3、4名比赛的胜者第三。</p></div>
@@ -1134,7 +1134,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
         <legend>赛制</legend>
         <div class="field"><label for="setPoints">每局分数</label><input id="setPoints" type="number" min="1" max="99"></div>
         <div class="field"><label for="setWinBy">平分后净胜</label><input id="setWinBy" type="number" min="1" max="10"></div>
-        <div class="field"><label for="setCap">封顶分（0=不封顶）</label><input id="setCap" type="number" min="0" max="99"></div>
+        <div class="field"><label for="setCap">封顶分（0=不封顶；26=25 平后一球定胜负）</label><input id="setCap" type="number" min="0" max="99"></div>
         <div class="field"><label for="setTimeLimit">时间上限分钟（0=不限）</label><input id="setTimeLimit" type="number" min="0" max="120"></div>
       </fieldset>
       <fieldset>
@@ -2383,6 +2383,7 @@ function save(){
 function normalize(s){
   if(!s || !s.brackets) return s;
   const hadStyleVersion=s.settings&&s.settings.bracketStyleVersion;
+  const hadCapVersion=s.settings&&s.settings.capVersion;   // 合并默认值前判断，否则 DEFAULT 里的 capVersion 会把旧存档也当成新版
   s.settings={...DEFAULT_SETTINGS,...(s.settings||{})};
   if(s.locked===undefined) s.locked=false;
   if(!s.lock || !s.lock.pairs || !s.lock.brackets){ s.locked=false; s.lock=null; }
@@ -2392,6 +2393,7 @@ function normalize(s){
   if(!s.courts["6"]) s.courts["6"]=null;
   if(!hadStyleVersion){s.settings.bracketStyle="international";s.settings.bracketStyleVersion=1;}
   if(!s.settings.handicapVersion || s.settings.handicapVersion<2){ s.settings.handicap=6; s.settings.handicapVersion=2; }
+  if(!hadCapVersion){ if(!s.settings.cap) s.settings.cap=(Number(s.settings.points)||21)+5; s.settings.capVersion=1; }
   if(s.pairs){for(const kind of ["md","wd","xd"]){ (s.pairs[kind]||[]).forEach(p=>{ if(p.name===undefined) p.name=""; }); }}
   for(const kind of ["md","wd","xd"]){
     const br=s.brackets[kind];
@@ -2765,6 +2767,12 @@ function renderState(){
   if(state.drawn){dot.classList.add("live");txt.textContent=state.manualPairs?`手动搭档 · 对阵抽签 ${state.seed}`:`已抽签 · 种子 ${state.seed}`;}
   else{dot.classList.remove("live");txt.textContent="还没抽签";}
 }
+function pointsRuleText(s){
+  const base=`${s.points} 分一局，每球得分；${s.points-1} 平后净胜 ${s.winBy} 分`;
+  if(!s.cap) return `${base}，不封顶，打到赢。`;
+  if(s.cap>s.points) return `${base}；${s.cap-1} 平后一球定胜负（最高 ${s.cap} 分）。`;
+  return `${base}，${s.cap} 分封顶。`;
+}
 function applySettings(){
   const s=state.settings;
   try{
@@ -2782,13 +2790,13 @@ function applySettings(){
   if($("topVenue")) $("topVenue").textContent=`${s.venue} · 5/6 号场`;
   document.title=`${s.eventTitle} · 抽签与对阵`;
   if($("lede")) $("lede").textContent="男双 6 对 · 女双 5 对 · 混双 11 对（10 混双 + 1 男双）";
-  if($("rulePoints")) $("rulePoints").textContent=`${s.points} 分一局，每球得分；${s.points-1} 平后净胜 ${s.winBy} 分${s.cap?`，${s.cap} 分封顶`:"，不封顶"}，打到赢。`;
+  if($("rulePoints")) $("rulePoints").textContent=pointsRuleText(s);
   if($("ruleLimit")) $("ruleLimit").textContent=s.timeLimit>0?`每场 ${s.timeLimit} 分钟硬上限，到点领先者胜。`:`预计 ${s.matchMin} 分钟一局，按现场实际情况调整；不设时间上限，打到分出胜负。`;
   if($("ruleInterval")) $("ruleInterval").textContent=`场间休息约 ${s.intervalMin} 分钟，按现场实际情况开下一轮。`;
   if($("ruleHandicap")) $("ruleHandicap").textContent=`混双里的男双遇到混双，混双 ${s.handicap}:0 开局；男双让 ${s.handicap} 分。`;
   if($("qaHandicap")) $("qaHandicap").textContent=s.handicap;
   if($("qaHandicapScore")) $("qaHandicapScore").textContent=`${s.handicap}:0`;
-  if($("schedMeta")) $("schedMeta").textContent=`预计 ${s.matchMin} 分钟一局 · 上不封顶`;
+  if($("schedMeta")) $("schedMeta").textContent=`预计 ${s.matchMin} 分钟一局 · 不设时间上限`;
   if($("statEnd")) $("statEnd").textContent=slotTime(12).split("-")[1];
   if($("rosterNote")){
     const subs=[];
@@ -3064,6 +3072,7 @@ function saveSettings(){ if(!window.__isAdmin()){toast("仅管理员可操作");
     intervalMin:Math.max(0,Math.trunc(num("setIntervalMin",1))),
     blockBreakMin:Math.max(0,Math.trunc(num("setBreakMin",7))),
     handicap:Math.max(0,Math.trunc(num("setHandicap",4))),
+    capVersion:1,
     pairMode:g("setPairMode"), byeMode:g("setByeMode"),
     forcedEnabled:document.getElementById("setForcedOn").checked,
     forcedMd:g("setForcedMd").trim(), forcedWd:g("setForcedWd").trim(), forcedXd:g("setForcedXd").trim(),
@@ -3561,7 +3570,7 @@ function renderOpsRules(){
   const ul=document.getElementById("opsRules"); if(!ul) return;
   const s=state.settings;
   const items=[
-    ["计分",`${s.points} 分一局，每球得分；${s.points-1} 平后净胜 ${s.winBy} 分${s.cap?`，${s.cap} 分封顶`:"，不封顶"}，打到赢。`],
+    ["计分",pointsRuleText(s)],
     ["时长",s.timeLimit>0?`每场 ${s.timeLimit} 分钟硬上限，到点领先者胜。`:`不设时间上限，计划每场 ${s.matchMin} 分钟，长局就打长局。`],
     ["间隔",`场间休息约 ${s.intervalMin} 分钟；男双 / 女双与混双之间休息 ${s.blockBreakMin} 分钟。`],
     ["让分",`混双遇到男双，混双 ${s.handicap}:0 开局，男双让 ${s.handicap} 分；比分填让分之后的最终比分。`],
@@ -3574,7 +3583,8 @@ function renderOpsRules(){
   ];
   ul.innerHTML=items.map(it=>`<li><b class="ops-label">${esc(it[0])}</b>${esc(it[1])}</li>`).join("");
   const sc=document.getElementById("opsScript");
-  if(sc) sc.textContent=`各位，规则我念一遍：${s.points} 分一局，每球得分，${s.points-1} 平以后要净胜 ${s.winBy} 分，打到分出胜负为止，不设时间上限。场间休息 ${s.intervalMin} 分钟，混双开打前有 ${s.blockBreakMin} 分钟休息。混双碰上男双，混双 ${s.handicap}:0 先开始，男双让 ${s.handicap} 分；比分请填最终比分。有争议先报比分，别停下来吵，我来判断。`;
+  const sd=(s.cap&&s.cap>s.points)?`；打到 ${s.cap-1} 平以后，谁先再得 1 分谁赢，最高 ${s.cap} 分`:"，打到分出胜负为止";
+  if(sc) sc.textContent=`各位，规则我念一遍：${s.points} 分一局，每球得分，${s.points-1} 平以后要净胜 ${s.winBy} 分${sd}，不设时间上限。场间休息 ${s.intervalMin} 分钟，混双开打前有 ${s.blockBreakMin} 分钟休息。混双碰上男双，混双 ${s.handicap}:0 先开始，男双让 ${s.handicap} 分；比分请填最终比分。有争议先报比分，别停下来吵，我来判断。`;
 }
 function opsApplyChk(){
   const st=opsChkGet();
