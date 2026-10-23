@@ -967,7 +967,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
-<script>window.__BUILD_ID__="7df3e283218c";</script>
+<script>window.__BUILD_ID__="7f5e4839579a";</script>
 </head>
 <body>
 <div class="wrap">
@@ -3764,8 +3764,9 @@ function liveInfo(){
   // 每片场的"下一场"（不看时钟）：该片场第一个还没打过、对手已定的场次
   const courtNext={};
   list.forEach(x=>{
-    if(!courtNext[x.court]&&x.ready&&!x.scored&&!x.played&&!x.skipped){
-      courtNext[x.court]=x;
+    const c=x.courtPlan||x.court;   // 按赛程里这片场的位置分组，两片场各标各的「该打了」
+    if(!courtNext[c]&&x.ready&&!x.scored&&!x.played&&!x.skipped){
+      courtNext[c]=x;
       byKey[x.key].courtNext=true;
     }
   });
@@ -3975,7 +3976,7 @@ function renderOpsNow(){
   const scored=list.filter(x=>x.scored).length, pending=total-scored;
   const cur=(LIVE&&LIVE.curSlot>=0)?LIVE.curSlot:-1;
   const running=list.filter(x=>x.running);
-  const next=(LIVE&&LIVE.nextKey)?LIVE.byKey[LIVE.nextKey]:null;
+  const nexts=["5 号场","6 号场"].map(c=>(LIVE&&LIVE.courtNext&&LIVE.courtNext[c])?LIVE.courtNext[c]:null).filter(Boolean);
   const planNow=(LIVE&&LIVE.plan)||slotPlan();
   const endMin=planNow.length?planNow[planNow.length-1].adjEd:opsSlotRange(SCHEDULE.length-1)[1];
   const nowTxt=`${String(new Date().getHours()).padStart(2,"0")}:${String(new Date().getMinutes()).padStart(2,"0")}`;
@@ -3984,9 +3985,12 @@ function renderOpsNow(){
   const curS=cur>=0?`现在 ${nowTxt}，这一时段正在进行${LIVE.plan[cur].delay?`（已顺延 ${LIVE.plan[cur].delay} 分钟）`:""}`
     :(now<0?`今天 ${opsTodayText()} 不是比赛日，赛程按 ${s.date} 算`
     :(now<opsSlotRange(0)[0]?`${s.date} ${s.start} 开打，现在 ${nowTxt}`:`颁奖 / 收尾阶段，现在 ${nowTxt}`));
-  const runV=running.length?running.map(x=>`${x.court} ${({md:"男双",wd:"女双",xd:"混双"})[x.kind]} ${x.mid.toUpperCase()}`).join(" / "):(next?`T${next.slot+1} · ${next.court||next.courtPlan}`:(list.some(x=>x.skipped&&!x.scored)?"其余场次都标了「先跳过」":"没有待打的场次了"));
+  const runV=running.length?running.map(x=>`${x.court} ${({md:"男双",wd:"女双",xd:"混双"})[x.kind]} ${x.mid.toUpperCase()}`).join(" / ")
+    :(nexts.length?nexts.map(x=>`T${x.slot+1} · ${x.courtPlan}`).join(" / ")
+      :(list.some(x=>x.skipped&&!x.scored)?"其余场次都标了「先跳过」":"没有待打的场次了"));
   const runS=running.length?running.map(x=>`${({md:"男双",wd:"女双",xd:"混双"})[x.kind]}：${x.a?`${esc(x.a.p1.name)} + ${esc(x.a.p2.name)}`:""} vs ${x.b?`${esc(x.b.p1.name)} + ${esc(x.b.p2.name)}`:""}（已打 ${tElapsedText(x.t.s)}）`).join("　")
-    :(next?`${({md:"男双",wd:"女双",xd:"混双"})[next.kind]}：${next.a?`${esc(next.a.p1.name)} + ${esc(next.a.p2.name)}`:""} vs ${next.b?`${esc(next.b.p1.name)} + ${esc(next.b.p2.name)}`:""}`:"收尾、发奖");
+    :(nexts.length?nexts.map(x=>`${x.courtPlan}：${({md:"男双",wd:"女双",xd:"混双"})[x.kind]} ${x.a?`${esc(x.a.p1.name)} + ${esc(x.a.p2.name)}`:""} vs ${x.b?`${esc(x.b.p1.name)} + ${esc(x.b.p2.name)}`:""}`).join("　")
+      :"收尾、发奖");
   const courtTxt=["5","6"].map(c=>{
     const key=courtGet(c);
     if(!key) return `${c} 号场空闲`;
