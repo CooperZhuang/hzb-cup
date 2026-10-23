@@ -809,7 +809,7 @@ html[data-role="viewer"] #courtBoard{display:none!important}
 .ops-hint{font-size:11px;color:var(--muted)}
 
 /* ---------------- 赛务说明（管理端专用，观看端不显示） ---------------- */
-html[data-role="viewer"] #opsBtn,html[data-role="viewer"] #opsPanel{display:none!important}
+html[data-role="viewer"] #opsBtn,html[data-role="viewer"] #opsPanel,html[data-role="viewer"] #checkinBtn,html[data-role="viewer"] #checkinPanel{display:none!important}
 body.ops-open{overflow:hidden}
 .ops-panel{
   position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;
@@ -889,6 +889,27 @@ table.ops-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:6
   body.ops-open .ops-nav,body.ops-open .ops-head-r{display:none}
   .ops-list li,.ops-steps li,.ops-card,.ops-table tr{break-inside:avoid}
 }
+body.checkin-open{overflow:hidden}
+.checkin-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.checkin-block{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.checkin-block h3{margin:0 0 8px;font-size:12px;letter-spacing:.08em;color:var(--green-2)}
+.checkin-row{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.checkin-row:last-child{border-bottom:0}
+.checkin-row input{accent-color:var(--green);flex:none}
+.checkin-row .ci-name{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.checkin-row .ci-lv{color:var(--muted);font-size:11px;flex:none}
+.checkin-row .ci-sign{flex:1;border-bottom:1px solid var(--line);height:16px;margin-left:6px}
+.checkin-row.done .ci-name{text-decoration:line-through;color:var(--muted)}
+.checkin-row .ci-time{color:var(--muted);font-size:10px;margin-left:6px;flex:none}
+@media print{
+  body.checkin-open{overflow:visible}
+  body.checkin-open>*:not(#checkinPanel){display:none!important}
+  body.checkin-open #checkinPanel{position:static;display:block;padding:0;background:#fff}
+  body.checkin-open #checkinPanel .ops-shell{width:100%;max-height:none;height:auto;box-shadow:none;border-radius:0;overflow:visible}
+  body.checkin-open #checkinPanel .ops-body{overflow:visible;padding-bottom:0}
+  body.checkin-open .ops-head-r{display:none}
+  .checkin-block{break-inside:avoid}
+}
 </style>
 <script>
 /* 皮肤：先读本地存的，刷新时不闪回默认色 */
@@ -933,6 +954,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
+<script>window.__BUILD_ID__="7d740a4f3e60";</script>
 </head>
 <body>
 <div class="wrap">
@@ -968,13 +990,12 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
       <span class="act-sep"></span>
       <span class="act-group">
         <button class="btn btn-ghost" id="demoBtn">演示模式</button>
-        <select id="posterStyle" class="poster-style" aria-label="海报样式"><option value="international">横版 · 国际签表</option><option value="vertical">竖版 · 手机</option></select>
         <button class="btn btn-ghost" id="posterBtn">生成对阵图</button>
-        <button class="btn btn-ghost" id="styleBtn">纵向签表</button>
       </span>
       <span class="act-sep"></span>
       <span class="act-group">
         <button class="btn btn-ghost" id="opsBtn">赛务说明</button>
+        <button class="btn btn-ghost" id="checkinBtn">签到表</button>
         <button class="btn btn-ghost" id="reloadBtn">刷新</button>
         <button class="btn btn-ghost" id="roleBtn">管理端</button>
         <button class="btn btn-ghost" id="settingsBtn">设置</button>
@@ -1164,8 +1185,6 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
         <legend>抽签</legend>
         <div class="field"><label for="setPairMode">搭档方式</label><select id="setPairMode"><option value="level">按等级强弱搭配</option><option value="random">完全随机</option></select></div>
         <div class="field"><label for="setByeMode">轮空方式</label><select id="setByeMode"><option value="random">随机轮空</option><option value="seeded">按等级种子</option></select></div>
-        <div class="field"><label for="setSubMen">男候补</label><input id="setSubMen" type="text"></div>
-        <div class="field"><label for="setSubWomen">女候补</label><input id="setSubWomen" type="text"></div>
         <div class="field"><label for="setReferee">裁判/计分</label><input id="setReferee" type="text"></div>
       </fieldset>
 
@@ -1177,6 +1196,11 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
           <button type="button" class="btn btn-ghost" id="unlockBtn">解锁（允许重新抽签）</button>
           <button type="button" class="btn btn-ghost" id="restoreBtn">复原锁定签表</button>
         </div>
+      </fieldset>
+      <fieldset style="grid-column:1/-1" id="syncFieldset">
+        <legend>自动同步</legend>
+        <label class="switch-line"><input type="checkbox" id="setAutoSync" checked> <span>改动后约 8 秒自动发布；所有观看端（手机）自动收到新记录</span></label>
+        <p class="set-hint">演示模式不会同步。关掉后只能点工具栏「发布」；第一次需要在「发布」里输入一次 GitHub Token。</p>
       </fieldset>
       <fieldset style="grid-column:1/-1">
         <legend>手动指定搭档（黑箱）</legend>
@@ -1218,14 +1242,20 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
           <button type="button" class="btn btn-primary" id="subDrawApply" disabled>② 用抽中的人替换</button>
         </div>
         <p class="set-hint" id="subDrawResult"></p>
+        <div class="field"><label>候补记录（重置比分不会清）</label><p class="set-hint" id="subHistory"></p></div>
       </fieldset>
 
       <fieldset style="grid-column:1/-1">
         <legend>名单（每行：名字,等级）</legend>
         <div class="set-two">
-          <div class="field"><label for="setMen">男生</label><textarea id="setMen" spellcheck="false"></textarea></div>
-          <div class="field"><label for="setWomen">女生</label><textarea id="setWomen" spellcheck="false"></textarea></div>
+          <div class="field"><label for="setMen">正式名单 · 男生</label><textarea id="setMen" spellcheck="false"></textarea></div>
+          <div class="field"><label for="setWomen">正式名单 · 女生</label><textarea id="setWomen" spellcheck="false"></textarea></div>
         </div>
+        <div class="set-two" style="margin-top:10px">
+          <div class="field"><label for="setSubMenList">补充候补名单 · 男生（每行一个名字）</label><textarea id="setSubMenList" spellcheck="false" style="min-height:70px"></textarea></div>
+          <div class="field"><label for="setSubWomenList">补充候补名单 · 女生（每行一个名字）</label><textarea id="setSubWomenList" spellcheck="false" style="min-height:70px"></textarea></div>
+        </div>
+        <p class="set-hint">候补名单是预留的替补：① 指定候补直接从里面拿，用完就少一个；换人时继承缺阵球员的等级（搭档总分不变）。</p>
       </fieldset>
     </div>
     <div class="set-actions">
@@ -1399,12 +1429,51 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
   </div>
 </div>
 
+<!-- ============ 签到表（管理端，可打印） ============ -->
+<div id="checkinPanel" class="ops-panel checkin-panel" hidden role="dialog" aria-modal="true" aria-label="签到表">
+  <div class="ops-shell">
+    <header class="ops-head">
+      <div class="ops-head-l">
+        <div class="ops-kicker">管理端 · 签到表（可打印）</div>
+        <h2>签到表</h2>
+        <p class="ops-sub" id="checkinSub"></p>
+      </div>
+      <div class="ops-head-r">
+        <button type="button" class="btn btn-ghost" id="checkinPrint">打印 / 存 PDF</button>
+        <button type="button" class="btn btn-ghost" id="checkinAll">全部到场</button>
+        <button type="button" class="btn btn-ghost" id="checkinClear">清空签到</button>
+        <button type="button" class="btn btn-ghost" id="checkinClose">关闭</button>
+      </div>
+    </header>
+    <div class="ops-body">
+      <section class="ops-sec">
+        <div class="ops-h2">到场核对<span class="ops-tag">点一下打勾，自动同步</span></div>
+        <p class="ops-desc" id="checkinStat"></p>
+        <div class="checkin-grid" id="checkinGrid"></div>
+        <p class="ops-foot-note">勾选状态随签表保存并同步给所有人；重置比分不会清签到。打印时只输出这一页，可当现场签到纸用。</p>
+      </section>
+    </div>
+  </div>
+</div>
+
 <script>
 window.__startApp = function(){
 "use strict";
 const MEN = __PD().men;
 const WOMEN = __PD().women;
 const SUBS = __PD().subs;
+const DEFAULT_SUB_LIST = {men:[SUBS.men],women:[SUBS.women]};
+function readSubList(id){
+  const raw=document.getElementById(id);
+  if(!raw) return [];
+  const out=[],seen=new Set();
+  for(const line of String(raw.value||"").split(/\n+/)){
+    const name=line.trim().replace(/[,，].*$/,"").trim();
+    if(!name||seen.has(name)) continue;
+    seen.add(name); out.push(name);
+  }
+  return out;
+}
 const AVATARS = __PD().avatars;
 Object.values(AVATARS).forEach(src=>{const im=new Image();im.src=src;});
 const __drawBg=new Image();__drawBg.src="assets/draw-blur.jpg";
@@ -1426,7 +1495,10 @@ const state = {
   locked:false,
   lock:null,
   timing:{},
-  courts:{"5":null,"6":null}
+  courts:{"5":null,"6":null},
+  subList:{men:DEFAULT_SUB_LIST.men.slice(),women:DEFAULT_SUB_LIST.women.slice()},
+  subRecords:[],
+  checkin:{}
 };
 
 /* ---------------- 签表安全锁 ---------------- */
@@ -2369,16 +2441,15 @@ async function generatePoster(){
   if(!state.drawn){alert("先抽签再生成对阵图");return;}
   if(btn){btn.disabled=true;btn.textContent="生成中…";}
   try{
-    const style=document.getElementById("posterStyle")?document.getElementById("posterStyle").value:"international";
-    const blob=style==="international"?await buildIntlPosterBlob():await buildPosterBlob();
+    const blob=await buildIntlPosterBlob();
     if(!blob) throw new Error("图片生成失败");
     if(posterUrl) URL.revokeObjectURL(posterUrl);
     posterUrl=URL.createObjectURL(blob);
     document.getElementById("posterImg").src=posterUrl;
     const skinName=skinInfo(skinId()).name;
-    const t=document.getElementById("posterTitle"); if(t) t.textContent=`对阵图 · ${style==="international"?"横版":"竖版"} · ${skinName}`;
+    const t=document.getElementById("posterTitle"); if(t) t.textContent=`对阵图 · 横版国际签表 · ${skinName}`;
     const a=document.getElementById("posterDownload");
-    a.href=posterUrl;a.download=`${__cupTitle()}-对阵图-${style==="international"?"横版":"竖版"}-${skinName}-${state.seed}.png`;
+    a.href=posterUrl;a.download=`${__cupTitle()}-对阵图-横版-${skinName}-${state.seed}.png`;
     document.getElementById("posterOverlay").hidden=false;
   }catch(e){alert("生成失败："+e.message);}
   finally{if(btn){btn.disabled=false;btn.textContent="生成对阵图";}}
@@ -2416,6 +2487,20 @@ function doDraw(forceSeed,opts={}){ if(!window.__isAdmin()) return false;
     if(opts.done) setTimeout(opts.done,80);
   });
 }
+/* 重置按钮默认只清比分和计时：签表、搭档、锁定、签到、候补记录都保留。
+   要重抽签 / 改对阵，只能去设置 → 签表锁解除。 */
+function resetScores(){
+  if(!state.drawn){ toast("还没抽签，没有比分可重置"); return; }
+  for(const kind of ["md","wd","xd"]){
+    const br=state.brackets[kind];
+    if(!br||!br.matches) continue;
+    for(const m of Object.values(br.matches)){ m.sa=null; m.sb=null; m.winner=null; }
+  }
+  state.timing={};
+  state.courts={"5":null,"6":null};
+  save(); render();
+  toast("已清空比分和计时（签表、搭档、锁定、候补记录都保留）");
+}
 function reset(){
   state.seed=null;state.drawn=false;state.demo=false;state.manualPairs=false;state.byes=[];
   state.pairs={md:[],wd:[],xd:[]};state.brackets={md:null,wd:null,xd:null};
@@ -2427,10 +2512,11 @@ function save(){
   try{localStorage.setItem(STORE,JSON.stringify(state));}catch(e){}
   const el=document.getElementById("saveState");
   if(el) el.textContent="已保存 "+new Date().toLocaleTimeString("zh-CN",{hour12:false});
+  // 管理端：改动后自动同步给所有观看端（演示模式不同步）
+  if(window.__queuePublish && !state.demo){ try{ window.__queuePublish(); }catch(e){} }
 }
 function normalize(s){
   if(!s || !s.brackets) return s;
-  const hadStyleVersion=s.settings&&s.settings.bracketStyleVersion;
   const hadCapVersion=s.settings&&s.settings.capVersion;   // 合并默认值前判断，否则 DEFAULT 里的 capVersion 会把旧存档也当成新版
   s.settings={...DEFAULT_SETTINGS,...(s.settings||{})};
   if(s.locked===undefined) s.locked=false;
@@ -2439,9 +2525,16 @@ function normalize(s){
   if(!s.courts || typeof s.courts!=="object") s.courts={"5":null,"6":null};
   if(!s.courts["5"]) s.courts["5"]=null;
   if(!s.courts["6"]) s.courts["6"]=null;
-  if(!hadStyleVersion){s.settings.bracketStyle="international";s.settings.bracketStyleVersion=1;}
   if(!s.settings.handicapVersion || s.settings.handicapVersion<2){ s.settings.handicap=6; s.settings.handicapVersion=2; }
   if(!hadCapVersion){ if(!s.settings.cap) s.settings.cap=(Number(s.settings.points)||21)+5; s.settings.capVersion=1; }
+  if(!s.subList||typeof s.subList!=="object"||!Array.isArray(s.subList.men)||!Array.isArray(s.subList.women)){
+    s.subList={men:[],women:[]};
+    const lm=(s.settings&&s.settings.subMen)||SUBS.men, lw=(s.settings&&s.settings.subWomen)||SUBS.women;
+    if(lm) s.subList.men.push(lm);
+    if(lw) s.subList.women.push(lw);
+  }
+  if(!Array.isArray(s.subRecords)) s.subRecords=[];
+  if(!s.checkin||typeof s.checkin!=="object") s.checkin={};
   if(s.pairs){for(const kind of ["md","wd","xd"]){ (s.pairs[kind]||[]).forEach(p=>{ if(p.name===undefined) p.name=""; }); }}
   for(const kind of ["md","wd","xd"]){
     const br=s.brackets[kind];
@@ -2505,69 +2598,6 @@ function roundLabel(kind,r){
   const finalR=kind==="xd"?4:3;
   return r===finalR?"决赛":`第${r}轮`;
 }
-function matchCard(kind,m,br){
-  const a=resolveRef(m.a,br), b=resolveRef(m.b,br);
-  const ready=!!(a&&b);
-  const win=(t)=>m.winner&&t&&m.winner.code===t.code;
-  const filled=Number.isInteger(m.sa)&&Number.isInteger(m.sb);
-  const tie=filled&&m.sa===m.sb;
-  const bad=filled&&!tie&&!isFinalScore(m.sa,m.sb,state.settings);
-  const label=(t)=>{
-    if(!t) return `<span class="tbd">待定</span>`;
-    const players=`<span class="players">${avatarStack(t.p1,t.p2)}<span class="players-text">${esc(t.p1.name)} + ${esc(t.p2.name)}</span></span>`;
-    const team=t.name?`<span class="team-tag">${esc(t.name)}</span>`:"";
-    const hcp=t.type==="mm"?` <span class="mm" title="混双里的男双，让${state.settings.handicap}分">让${state.settings.handicap}</span>`:"";
-    return players+team+hcp;
-  };
-  const finalId=kind==="xd"?"m10":kind==="wd"?"m4":"m5";
-  const thirdId=kind==="xd"?"m11":kind==="wd"?"m5":"m6";
-  const tag=m.id===finalId?"":m.id===thirdId?"3、4名":"";
-  const score=(side)=>`<input class="score" type="number" min="0" max="99" inputmode="numeric" data-kind="${kind}" data-mid="${m.id}" data-side="${side}" value="${m[side==="a"?"sa":"sb"]??""}" ${ready?"":"disabled"} aria-label="比分">`;
-  const li=(LIVE&&LIVE.byKey[tKey(kind,m.id)])||null;
-  const cls=(li?`${li.running?" is-now":""}${li.now&&!li.running?" is-now":""}${li.next?" is-next":""}`:"")+(bad?" badscore":"");
-  return `<div class="match${cls}" data-kind="${kind}" data-mid="${m.id}">
-    <div class="match-meta"><span>${m.id.toUpperCase()}</span><span>${tag}</span></div>
-    <div class="teamline"><span class="team${win(a)?" win":m.winner?" loss":""}">${label(a)}</span>${score("a")}</div>
-    <div class="teamline"><span class="team${win(b)?" win":m.winner?" loss":""}">${label(b)}</span>${score("b")}</div>
-    ${mtLine(kind,m)}
-    ${bad?`<div class="badscore-note">按规则这局还没结束：${esc(finalRuleHint(state.settings))}；当前 ${m.sa}:${m.sb} 不算终局</div>`:(tie?'<div class="tie">平分，请改比分</div>':"")}
-  </div>`;
-}
-function renderBracket(kind,title){
-  const br=state.brackets[kind];
-  const finalId=finalMatchId(kind);
-  const final=br.matches[finalId];
-  const fw=final&&final.winner;
-  const champ=fw
-    ? `<div class="vchampion"><span class="label">冠军</span><span class="champ-body"><b class="players">${avatarStack(fw.p1,fw.p2)}<span class="players-text">${esc(fw.p1.name)} + ${esc(fw.p2.name)}</span></b>${fw.name?`<span class="team-tag">${esc(fw.name)}</span>`:""}${Number.isInteger(final.sa)?`<span class="champ-score">${final.sa}:${final.sb}</span>`:""}</span></div>`
-    : `<div class="vchampion"><span class="label">冠军</span><span class="champ-body"><b class="players">等待决赛</b></span></div>`;
-  const rounds=kind==="xd"?[4,3,2,1]:[3,2,1];
-  const thirdId=thirdMatchId(kind);
-  const block=(r)=>{
-    let ms=Object.values(br.matches).filter(m=>m.round===r);
-    if(r===rounds[0]) ms=ms.filter(m=>m.id===finalId);
-    ms.sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
-    let cards;
-    if(r===1){
-      cards=round1SlotItems(kind).map(it=>it.type==="match"?matchCard(kind,it.m,br):byeCardV(br,it.seed)).join("");
-    }else{
-      cards=ms.map(m=>matchCard(kind,m,br)).join("");
-    }
-    return `<div class="vround"><div class="vround-label"><b>${roundLabel(kind,r)}</b><i>${roundSubLabel(kind,r)}</i></div><div class="vrow">${cards}</div></div>`;
-  };
-  const finalBlock=block(rounds[0]);
-  const secondBlock=block(rounds[1]);
-  const thirdCard=`<div class="vthird">${matchCard(kind,br.matches[thirdId],br)}</div>`;
-  const stage=`<div class="vstage">${finalBlock}<div class="vconnector vspacer"></div>${secondBlock}<div class="vthird-line"></div>${thirdCard}</div>`;
-  const lower=rounds.slice(2).map(r=>`<div class="vconnector"></div>${block(r)}`).join("");
-  return `<div class="bracket"><div class="bracket-head"><h3>${title}</h3></div><div class="vbracket">${champ}<div class="vconnector"></div>${stage}${lower}</div></div>`;
-}
-function byeCardV(br,seedIndex){
-  const t=br.seeds[seedIndex-1];
-  if(!t) return "";
-  return `<div class="match bye"><div class="match-meta"><span>轮空 · 直接晋级</span><span></span></div><div class="team"><span class="players">${avatarStack(t.p1,t.p2)}<span class="players-text">${esc(t.p1.name)} + ${esc(t.p2.name)}</span></span>${t.name?`<span class="team-tag">${esc(t.name)}</span>`:""}</div></div>`;
-}
-
 function intlTeamRow(kind,m,t,side,br){
   const ready=!!t;
   const win=m.winner&&t&&m.winner.code===t.code;
@@ -2689,12 +2719,8 @@ function renderBrackets(){
     const byes=roundByeCount(kind,1);
     return `${label} · ${state.brackets[kind].seeds.length} 对 · 共 ${totalRounds(kind)} 轮`+(byes?` · 第 1 轮 ${byes} 对轮空`:"");
   };
-  if(state.settings.bracketStyle==="international"){
-    box.innerHTML=intlBracket("md",title("md","男双"))+intlBracket("wd",title("wd","女双"))+intlBracket("xd",title("xd","混双"));
-    scheduleConnectors();
-    return;
-  }
-  box.innerHTML=renderBracket("md",title("md","男双"))+renderBracket("wd",title("wd","女双"))+renderBracket("xd",title("xd","混双"));
+  box.innerHTML=intlBracket("md",title("md","男双"))+intlBracket("wd",title("wd","女双"))+intlBracket("xd",title("xd","混双"));
+  scheduleConnectors();
 }
 
 function championData(kind){
@@ -2826,6 +2852,18 @@ function pointsRuleText(s){
   if(s.cap>s.points) return `${base}；${s.cap-1} 平后一球定胜负（最高 ${s.cap} 分）。`;
   return `${base}，${s.cap} 分封顶。`;
 }
+function renderSubHistory(){
+  const el=document.getElementById("subHistory");
+  if(!el) return;
+  const recs=(state.subRecords||[]).slice().reverse();
+  if(!recs.length){ el.textContent="还没有用过候补。"; return; }
+  const parts=recs.slice(0,8).map(r=>{
+    const when=(()=>{try{const d=new Date(r.at);return `${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;}catch(e){return "";}})();
+    const how=r.mode==="draw"?`抽签·${KIND_LABEL[r.scope]||""}`:"直接换";
+    return `${esc(r.absent)} → ${esc(r.sub)}（${how}${when?` · ${when}`:""}）`;
+  });
+  el.innerHTML=`已用 ${recs.length} 次：${parts.join("；")}${recs.length>8?" …":""}`;
+}
 function applySettings(){
   const s=state.settings;
   try{
@@ -2853,9 +2891,9 @@ function applySettings(){
   if($("statEnd")) $("statEnd").textContent=slotTime(12).split("-")[1];
   if($("rosterNote")){
     const subs=[];
-    if(s.subMen) subs.push(`${avatarImg(s.subMen,"avatar avatar-sm")} ${esc(s.subMen)}（男）`);
-    if(s.subWomen) subs.push(`${avatarImg(s.subWomen,"avatar avatar-sm")} ${esc(s.subWomen)}（女）`);
-    $("rosterNote").innerHTML=subs.length?`候补：${subs.join("、")}`:"";
+    for(const n of (state.subList&&state.subList.men)||[]) subs.push(`${avatarImg(n,"avatar avatar-sm")} ${esc(n)}（男）`);
+    for(const n of (state.subList&&state.subList.women)||[]) subs.push(`${avatarImg(n,"avatar avatar-sm")} ${esc(n)}（女）`);
+    $("rosterNote").innerHTML=subs.length?`候补：${subs.join("、")}`:`候补：已用完`;
   }
 }
 function renderDemoState(){
@@ -2893,7 +2931,6 @@ function render(){
     chip.hidden=!locked;
     chip.title=locked?`锁定于 ${lockTimeText()}，种子 ${state.lock.seed}`:"";
   }
-  const sb=document.getElementById("styleBtn"); if(sb) sb.textContent=state.settings.bracketStyle==="international"?"纵向签表":"国际签表";
   const el=document.getElementById("saveState");
   if(el) el.textContent=state.savedAt?("已保存 "+new Date(state.savedAt).toLocaleTimeString("zh-CN",{hour12:false})):"未保存";
   const opsDlg=document.getElementById("opsPanel");
@@ -2992,14 +3029,20 @@ function fillSubSelectors(){
   subDrawReset();
   fillSubKindSelect();
 }
+function availableSubs(isMan){
+  const list=(state.subList&&state.subList[isMan?"men":"women"])||[];
+  return list.filter(n=>n && !MEN.concat(WOMEN).some(p=>p.name===n));
+}
 function updateSubIn(){
   const out=document.getElementById("subOut"), inn=document.getElementById("subIn");
   if(!out||!inn) return;
   const name=out.value;
   if(!name){ inn.innerHTML=`<option value="">先选缺阵球员</option>`; return; }
   const isMan=MEN.some(p=>p.name===name);
-  const sub=isMan?state.settings.subMen:state.settings.subWomen;
-  inn.innerHTML=sub?`<option value="${escAttr(sub)}">${esc(sub)}</option>`:`<option value="">没有可用候补</option>`;
+  const subs=availableSubs(isMan);
+  inn.innerHTML=subs.length
+    ? subs.map(n=>`<option value="${escAttr(n)}">${esc(n)}</option>`).join("")
+    : `<option value="">没有可用候补</option>`;
 }
 /* 名单快照：把当前 MEN/WOMEN 写进 state，随签表一起保存/导出/发布，
    刷新页面或本地重建后名单不会再退回内置默认值 */
@@ -3146,7 +3189,7 @@ function fillSubPool(){
   SUB_DRAW.candidates=(absent&&kind)?subCandidates(kind,absent):[];
   SUB_DRAW.kind=kind||"";
   if(!SUB_DRAW.candidates.length){
-    const noSub=!!(absent&&(MEN.some(p=>p.name===absent)?state.settings.subMen:state.settings.subWomen));
+    const noSub=!!(absent&&availableSubs(MEN.some(p=>p.name===absent)).length);
     box.innerHTML=kind?`<p class="set-hint" style="margin:0">${KIND_LABEL[kind]}里现在还没有「已输完、还在场」的同性别选手。${noSub?"可以先用上面①指定候补；":""}如果指定候补也用完了：<b>先把下一场打完</b>（对阵图里录终局比分，比赛顺序可以手动排，不用等这场），等这场败者出来再回来抽。</p>`:"";
   }else{
     box.innerHTML=SUB_DRAW.candidates.map(c=>
@@ -3232,6 +3275,8 @@ function applyDrawnSub(){
   if(!confirm(`确认用「${sub}」替换 ${label} 里的「${absent}」？只改${label}，不影响其他项目。`)) return;
   const slots=renameInKind(kind,absent,sub);
   subLogPush({at:new Date().toISOString(),action:"apply",absent,kind,picked:sub,draws:SUB_DRAW.draws});
+  if(!Array.isArray(state.subRecords)) state.subRecords=[];
+  state.subRecords.push({at:new Date().toISOString(),mode:"draw",absent:absent,sub:sub,scope:kind,draws:SUB_DRAW.draws});
   save(); render(); fillSettings();
   alert(slots?`已替换：${label} ${absent} → ${sub}（签表 ${slots} 处，只改了${label}）`:`${label} 里没找到「${absent}」`);
 }
@@ -3239,7 +3284,7 @@ function applySub(){
   const out=document.getElementById("subOut"), inn=document.getElementById("subIn");
   const oldName=out.value, subName=inn.value;
   if(!oldName||!subName){
-    const hasSub=oldName?(MEN.some(p=>p.name===oldName)?state.settings.subMen:state.settings.subWomen):"";
+    const hasSub=oldName?availableSubs(MEN.some(p=>p.name===oldName)).length:0;
     alert(!oldName?"请先选择缺阵球员":(hasSub?"请选择上场候补":"这个性别的指定候补已经用完了：用下面的②抽签；如果现在还没人输完，先把下一场打完再回来抽"));
     return;
   }
@@ -3249,6 +3294,7 @@ function applySub(){
   const p=pool.find(x=>x.name===oldName);
   if(!p){ alert("找不到缺阵球员"); return; }
   if(MEN.concat(WOMEN).some(x=>x.name===subName)){ alert("这个候补已经在场上了"); return; }
+  if(!availableSubs(isMan).includes(subName)){ alert("这个候补不在候补名单里（可能已经用过了）"); return; }
   const oldLv=p.lv;
   const slots=renamePairRefs(oldName,subName);
   p.name=subName;
@@ -3264,8 +3310,10 @@ function applySub(){
     const raw=state.settings[key]||"";
     if(raw) state.settings[key]=raw.replace(new RegExp(oldName.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"g"),subName);
   }
-  if(isMan && state.settings.subMen===subName) state.settings.subMen="";
-  if(!isMan && state.settings.subWomen===subName) state.settings.subWomen="";
+  const subKey=isMan?"men":"women";
+  state.subList[subKey]=(state.subList[subKey]||[]).filter(n=>n!==subName);
+  if(!Array.isArray(state.subRecords)) state.subRecords=[];
+  state.subRecords.push({at:new Date().toISOString(),mode:"direct",absent:oldName,sub:subName,scope:"all"});
   rosterRef();
   save(); render(); fillSettings();
   if(state.drawn && !slots){ alert(`签表里没有找到「${oldName}」：只更新了名单，请确认是否已经替换过`); return; }
@@ -3273,6 +3321,12 @@ function applySub(){
 }
 function fillSettings(){
   const s=state.settings, $=id=>document.getElementById(id);
+  const syncFs=document.getElementById("syncFieldset");
+  if(syncFs){
+    syncFs.hidden=!(window.__queuePublish||window.__isAutoSync);
+    const cb=document.getElementById("setAutoSync");
+    if(cb && window.__isAutoSync) cb.checked=window.__isAutoSync();
+  }
   $("setTitle").value=s.eventTitle; $("setDate").value=s.date; $("setVenue").value=s.venue; $("setStart").value=s.start;
   $("setPoints").value=s.points; $("setWinBy").value=s.winBy; $("setCap").value=s.cap; $("setTimeLimit").value=s.timeLimit;
   $("setMatchMin").value=s.matchMin; $("setIntervalMin").value=s.intervalMin; $("setBreakMin").value=s.blockBreakMin; $("setHandicap").value=s.handicap;
@@ -3281,7 +3335,10 @@ function fillSettings(){
   if($("setForcedMd")) $("setForcedMd").value=s.forcedMd||"";
   if($("setForcedWd")) $("setForcedWd").value=s.forcedWd||"";
   if($("setForcedXd")) $("setForcedXd").value=s.forcedXd||"";
-  $("setSubMen").value=s.subMen; $("setSubWomen").value=s.subWomen; $("setReferee").value=s.referee;
+  $("setReferee").value=s.referee;
+  if($("setSubMenList")) $("setSubMenList").value=((state.subList&&state.subList.men)||[]).join("\n");
+  if($("setSubWomenList")) $("setSubWomenList").value=((state.subList&&state.subList.women)||[]).join("\n");
+  renderSubHistory();
   if($("setPreview")) $("setPreview").textContent=`混双 ${s.handicap}:0 开局，男双让 ${s.handicap} 分`;
   $("setMen").value=MEN.map(p=>`${p.name},${p.lv.toFixed(1)}`).join("\n");
   $("setWomen").value=WOMEN.map(p=>`${p.name},${p.lv.toFixed(1)}`).join("\n");
@@ -3323,8 +3380,9 @@ function saveSettings(){ if(!window.__isAdmin()){toast("仅管理员可操作");
     pairMode:g("setPairMode"), byeMode:g("setByeMode"),
     forcedEnabled:document.getElementById("setForcedOn").checked,
     forcedMd:g("setForcedMd").trim(), forcedWd:g("setForcedWd").trim(), forcedXd:g("setForcedXd").trim(),
-    subMen:g("setSubMen").trim(), subWomen:g("setSubWomen").trim(), referee:g("setReferee").trim()
+    referee:g("setReferee").trim()
   };
+  delete next.subMen; delete next.subWomen;
   const men=readRoster("setMen"), women=readRoster("setWomen");
   if(men.length!==12||women.length!==10){alert(`男生需要 12 人、女生需要 10 人（现在 ${men.length} / ${women.length}）`);return;}
   const forcedError=next.forcedEnabled?(validateForced(next.forcedMd,"md",men,women)||validateForced(next.forcedWd,"wd",men,women)||validateForced(next.forcedXd,"xd",men,women)):"";
@@ -3338,13 +3396,13 @@ function saveSettings(){ if(!window.__isAdmin()){toast("仅管理员可操作");
   }
   MEN.length=0; MEN.push(...men); WOMEN.length=0; WOMEN.push(...women);
   state.settings=next;
+  state.subList={men:readSubList("setSubMenList"),women:readSubList("setSubWomenList")};
   rosterRef();
   closeSettings();
   if(drawChanged && state.drawn) reset(); else { save(); render(); }
 }
 document.getElementById("demoBtn").addEventListener("click",runDemo);
 document.getElementById("posterBtn").addEventListener("click",generatePoster);
-document.getElementById("styleBtn").addEventListener("click",()=>{state.settings.bracketStyle=state.settings.bracketStyle==="international"?"vertical":"international";save();render();});
 function closePoster(){document.getElementById("posterOverlay").hidden=true;}
 document.getElementById("posterClose").addEventListener("click",closePoster);
 document.getElementById("posterClose2").addEventListener("click",closePoster);
@@ -3374,7 +3432,9 @@ document.getElementById("setDefault").addEventListener("click",()=>{
   if($("setForcedMd")) $("setForcedMd").value=s.forcedMd||"";
   if($("setForcedWd")) $("setForcedWd").value=s.forcedWd||"";
   if($("setForcedXd")) $("setForcedXd").value=s.forcedXd||"";
-  $("setSubMen").value=s.subMen; $("setSubWomen").value=s.subWomen; $("setReferee").value=s.referee;
+  $("setReferee").value=s.referee;
+  if($("setSubMenList")) $("setSubMenList").value=DEFAULT_SUB_LIST.men.join("\n");
+  if($("setSubWomenList")) $("setSubWomenList").value=DEFAULT_SUB_LIST.women.join("\n");
   if($("setPreview")) $("setPreview").textContent=`混双 ${s.handicap}:0 开局，男双让 ${s.handicap} 分`;
   $("setMen").value=DEFAULT_MEN.map(p=>`${p.name},${p.lv.toFixed(1)}`).join("\n");
   $("setWomen").value=DEFAULT_WOMEN.map(p=>`${p.name},${p.lv.toFixed(1)}`).join("\n");
@@ -3384,6 +3444,10 @@ document.getElementById("setHandicap").addEventListener("input",()=>{
   document.getElementById("setPreview").textContent=`混双 ${v}:0 开局，男双让 ${v} 分`;
 });
 document.getElementById("setSave").addEventListener("click",saveSettings);
+document.getElementById("setAutoSync").addEventListener("change",e=>{
+  if(window.__setAutoSync) window.__setAutoSync(e.target.checked);
+  toast(e.target.checked?"自动同步已开启":"自动同步已关闭，只能手动点「发布」");
+});
 document.getElementById("drawBtn").addEventListener("click",()=>{
   if(state.manualPairs && state.drawn){ redrawBracket(); return; }
   const v=document.getElementById("seedInput").value.trim();
@@ -3391,8 +3455,8 @@ document.getElementById("drawBtn").addEventListener("click",()=>{
   doDraw(s&&Number.isFinite(s)?s:null);
 });
 document.getElementById("resetBtn").addEventListener("click",()=>{
-  if((isLocked()||state.drawn) && !confirm("重置会清空当前签表和锁定，确定要重置吗？")) return;
-  reset();
+  if(!confirm("只清空比分和计时，不动签表/搭档/锁定/候补记录。要重新抽签请去设置 → 签表锁解锁。确定清空比分？")) return;
+  resetScores();
 });
 document.getElementById("exportBtn").addEventListener("click",()=>{
   const blob=new Blob([JSON.stringify({...state,skin:skinId()},null,2)],{type:"application/json"});
@@ -3407,6 +3471,7 @@ document.getElementById("importFile").addEventListener("change",async e=>{
   const f=e.target.files[0];
   if(!f) return;
   try{
+    if(state.drawn && isLocked() && !state.demo && !confirm("签表已锁定：导入会覆盖当前签表。先在设置 → 签表锁解锁再导入更安全，仍要继续吗？")) return;
     const obj=JSON.parse(await f.text());
     if(!obj.drawn||!obj.brackets) throw new Error("不是有效的签表文件");
     Object.assign(state,normalize(obj));
@@ -3851,6 +3916,7 @@ function renderOps(){
   renderOpsStatic();renderOpsNow();renderOpsTimeline();renderOpsRules();opsApplyChk();
 }
 function openOps(){
+  closeCheckin();
   renderOps();
   const p=document.getElementById("opsPanel");
   if(!p) return;
@@ -3865,6 +3931,79 @@ function closeOps(){
   document.body.classList.remove("ops-open");
   document.removeEventListener("keydown",opsEscKey);
 }
+/* ---------------- 签到表 ---------------- */
+function fmtCheckinTime(iso){
+  try{const d=new Date(iso);return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;}catch(e){return "";}
+}
+function checkinEntries(){
+  const subs=[];
+  for(const n of (state.subList&&state.subList.men)||[]) subs.push({name:n,lv:null,male:true,sub:true});
+  for(const n of (state.subList&&state.subList.women)||[]) subs.push({name:n,lv:null,male:false,sub:true});
+  return {men:MEN.map(p=>({name:p.name,lv:p.lv,male:true,sub:false})),women:WOMEN.map(p=>({name:p.name,lv:p.lv,male:false,sub:false})),subs};
+}
+function renderCheckin(){
+  const grid=document.getElementById("checkinGrid"); if(!grid) return;
+  const s=state.settings;
+  const subEl=document.getElementById("checkinSub");
+  if(subEl) subEl.textContent=`${s.eventTitle} · ${s.date} · ${s.start} 开始 · ${s.venue}`;
+  const E=checkinEntries();
+  const map=state.checkin||{};
+  const rosterAll=[...E.men,...E.women];
+  const doneRoster=rosterAll.filter(p=>map[p.name]).length;
+  const doneSubs=E.subs.filter(p=>map[p.name]).length;
+  const stat=document.getElementById("checkinStat");
+  if(stat) stat.textContent=`正式名单 ${doneRoster} / ${rosterAll.length} 已签到${E.subs.length?` · 候补 ${doneSubs} / ${E.subs.length}`:""}`;
+  const block=(title,people)=>{
+    const rows=people.map(p=>{
+      const at=map[p.name];
+      return `<label class="checkin-row${at?" done":""}"><input type="checkbox" data-checkin="${escAttr(p.name)}"${at?" checked":""}><span class="ci-name">${esc(p.name)}</span><span class="ci-lv">${p.lv!=null?p.lv.toFixed(1):""}</span><span class="ci-sign"></span>${at?`<span class="ci-time">${fmtCheckinTime(at)}</span>`:""}</label>`;
+    }).join("");
+    return `<div class="checkin-block"><h3>${esc(title)}</h3>${rows||'<p class="set-hint">（空）</p>'}</div>`;
+  };
+  grid.innerHTML=block("正式名单 · 男生",E.men)+block("正式名单 · 女生",E.women)
+    +block("候补名单 · 男生",E.subs.filter(x=>x.male))+block("候补名单 · 女生",E.subs.filter(x=>!x.male));
+}
+function toggleCheckin(name,on){
+  if(!state.checkin||typeof state.checkin!=="object") state.checkin={};
+  if(on) state.checkin[name]=new Date().toISOString(); else delete state.checkin[name];
+  save(); renderCheckin();
+}
+function openCheckin(){ if(!window.__isAdmin()){toast("仅管理员可操作");return;}
+  closeOps();
+  renderCheckin();
+  const p=document.getElementById("checkinPanel");
+  if(!p) return;
+  p.hidden=false;
+  document.body.classList.add("checkin-open");
+  document.addEventListener("keydown",checkinEscKey);
+}
+function closeCheckin(){
+  const p=document.getElementById("checkinPanel");
+  if(!p) return;
+  p.hidden=true;
+  document.body.classList.remove("checkin-open");
+  document.removeEventListener("keydown",checkinEscKey);
+}
+function checkinEscKey(e){ if(e.key==="Escape") closeCheckin(); }
+document.getElementById("checkinBtn").addEventListener("click",openCheckin);
+document.getElementById("checkinClose").addEventListener("click",closeCheckin);
+document.getElementById("checkinPrint").addEventListener("click",()=>window.print());
+document.getElementById("checkinAll").addEventListener("click",()=>{
+  const E=checkinEntries(); const all=[...E.men,...E.women,...E.subs].map(p=>p.name);
+  if(!state.checkin||typeof state.checkin!=="object") state.checkin={};
+  const now=new Date().toISOString();
+  all.forEach(n=>{ if(!state.checkin[n]) state.checkin[n]=now; });
+  save(); renderCheckin();
+});
+document.getElementById("checkinClear").addEventListener("click",()=>{
+  if(!confirm("清空所有签到勾选？")) return;
+  state.checkin={}; save(); renderCheckin();
+});
+document.getElementById("checkinPanel").addEventListener("change",e=>{
+  const cb=e.target.closest&&e.target.closest("input[data-checkin]");
+  if(!cb) return;
+  toggleCheckin(cb.dataset.checkin,cb.checked);
+});
 function opsEscKey(e){if(e.key==="Escape")closeOps();}
 document.getElementById("opsBtn").addEventListener("click",openOps);
 document.getElementById("opsClose").addEventListener("click",closeOps);
@@ -3887,6 +4026,15 @@ document.querySelectorAll(".ops-nav button").forEach(b=>{
   });
 });
 
+/* 观看端收到新发布：原地替换 state 并重绘，避免手机反复整页刷新 */
+window.__applyPublished=function(preload){
+  try{
+    if(!preload||!preload.brackets) return;
+    Object.assign(state,normalize(cloneDeep(preload)));
+    applyRoster();
+    render();
+  }catch(e){}
+};
 let _rzT=null;
 window.addEventListener("resize",()=>{clearTimeout(_rzT);_rzT=setTimeout(scheduleConnectors,120);});
 renderSkinList();
@@ -3951,6 +4099,12 @@ window.__render=function(){render();};
 
   var busy = false, meta = null, keyBytes = null, role = 'viewer', started = false;
   var modalResolve = null;
+  var PAGE_BUILD = window.__BUILD_ID__ || '';
+  var AUTOSYNC_KEY = 'hzb-autosync';
+  var autoSyncOn = true;
+  try { autoSyncOn = localStorage.getItem(AUTOSYNC_KEY) !== '0'; } catch (e) {}
+  var syncTimer = null, syncing = false, lastPublishedHash = null;
+  var lastVer = null, lastFullCheck = 0, lastBuildWarn = '';
 
   function b64ToU8(s) { var bin = atob(s), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
   function u8ToB64(u) { var s = ''; for (var i = 0; i < u.length; i += 8192) s += String.fromCharCode.apply(null, u.subarray(i, i + 8192)); return btoa(s); }
@@ -4028,7 +4182,7 @@ window.__render=function(){render();};
   function attachViewerGuards() {
     document.addEventListener('click', function (e) {
       if (role === 'admin') return;
-      var t = e.target && e.target.closest && e.target.closest('#drawBtn,#resetBtn,#importBtn,#demoBtn,#settingsBtn,#restoreBtn,#unlockBtn,#seedInput,#publishBtn');
+      var t = e.target && e.target.closest && e.target.closest('#drawBtn,#resetBtn,#importBtn,#demoBtn,#settingsBtn,#restoreBtn,#unlockBtn,#seedInput,#publishBtn,#checkinBtn');
       if (t) { e.preventDefault(); e.stopPropagation(); }
     }, true);
   }
@@ -4046,6 +4200,10 @@ window.__render=function(){render();};
     var rb = document.getElementById('reloadBtn');
     if (rb) rb.addEventListener('click', function () { location.reload(); });
     if (role !== 'admin') attachViewerGuards();
+    window.__queuePublish = queuePublish;
+    window.__setAutoSync = setAutoSync;
+    window.__isAutoSync = function () { return autoSyncOn; };
+    window.__publishNowNow = function () { return publishNow({}); };
     startPolling();
   }
   function fmtTime(iso) {
@@ -4062,18 +4220,94 @@ window.__render=function(){render();};
     var t = meta && fmtTime(meta.generatedAt);
     el.textContent = t ? ('更新于 ' + t) : '';
   }
-  function startPolling() {
-    setInterval(async function () {
-      if (role !== 'viewer' || !keyBytes) return;
-      try {
-        var m2 = await fetchMeta();
-        if (m2.publishId === meta.publishId) return;
+  async function currentSnapshotHash() {
+    try {
+      if (!window.__exportSnapshot) return null;
+      return await sha256Hex(new TextEncoder().encode(JSON.stringify(window.__exportSnapshot())));
+    } catch (e) { return null; }
+  }
+  function setAutoSync(on) {
+    autoSyncOn = !!on;
+    try { localStorage.setItem(AUTOSYNC_KEY, autoSyncOn ? '1' : '0'); } catch (e) {}
+    if (!autoSyncOn && syncTimer) { clearTimeout(syncTimer); syncTimer = null; }
+    updatePublishMeta();
+  }
+  function queuePublish() {
+    if (role !== 'admin' || !keyBytes) return;
+    if (!autoSyncOn) return;
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(autoPublish, 8000);
+  }
+  async function autoPublish() {
+    if (syncing) { queuePublish(); return; }
+    if (role !== 'admin' || !keyBytes) return;
+    var snap = window.__exportSnapshot ? window.__exportSnapshot() : null;
+    if (!snap || snap.demo) return;
+    var hash = await currentSnapshotHash();
+    if (hash && hash === lastPublishedHash) return;
+    var pat = null;
+    try { pat = localStorage.getItem(PATK); } catch (e) {}
+    if (!pat) { updatePublishMeta('有改动未同步 · 点「发布」输一次 Token 后自动同步'); return; }
+    syncing = true;
+    updatePublishMeta('自动同步中…');
+    var ok = false;
+    try { ok = await publishNow({ auto: true }); } catch (e) { ok = false; }
+    syncing = false;
+    if (ok) { lastPublishedHash = hash; updatePublishMeta('已同步 ' + fmtTime(new Date().toISOString())); }
+    else { updatePublishMeta('自动同步失败 · 点「发布」重试'); }
+  }
+  async function fetchVersion() {
+    try {
+      var r = await fetch('data.enc.json', { method: 'HEAD', cache: 'no-store' });
+      if (!r.ok) return null;
+      return r.headers.get('etag') || r.headers.get('last-modified') || r.headers.get('content-length') || null;
+    } catch (e) { return null; }
+  }
+  function reloadForUpdate(buildId) {
+    var key = 'hzb-build-reload-' + buildId;
+    var n = 0;
+    try { n = Number(sessionStorage.getItem(key) || 0); } catch (e) {}
+    if (n >= 2) { showToast('页面已更新：请手动刷新一下'); return; }
+    try { sessionStorage.setItem(key, String(n + 1)); } catch (e) {}
+    showToast('页面已更新，正在刷新…');
+    setTimeout(function () { location.replace(location.pathname + '?v=' + encodeURIComponent(buildId)); }, 400);
+  }
+  async function pollOnce() {
+    if (!started) return;
+    try {
+      var ver = await fetchVersion();
+      if (!ver) { if (Date.now() - lastFullCheck < 25000) return; lastFullCheck = Date.now(); }
+      if (ver && lastVer && ver === lastVer) return;
+      var m2 = await fetchMeta();
+      if (!m2) return;
+      if (ver) lastVer = ver;
+      if (m2.buildId && PAGE_BUILD && m2.buildId !== PAGE_BUILD) {
+        if (role === 'viewer') { reloadForUpdate(m2.buildId); return; }
+        if (m2.buildId !== lastBuildWarn) { lastBuildWarn = m2.buildId; showToast('页面有新版本：点工具栏「刷新」后生效'); }
+        return;
+      }
+      if (m2.publishId === meta.publishId) return;
+      if (role === 'viewer') {
         var b = await decryptData(keyBytes, m2);
+        meta = m2;
         seedPreload(b, m2, true);
-        showToast('发现新版本，正在刷新…');
-        setTimeout(function () { location.reload(); }, 1200);
-      } catch (e) {}
-    }, 30000);
+        if (window.__applyPublished) { window.__applyPublished(b.preload); updatePublishMeta(); showToast('已同步最新记录'); }
+        else { showToast('发现新版本，正在刷新…'); setTimeout(function () { location.reload(); }, 800); }
+      } else {
+        meta = m2;
+        lastPublishedHash = null;
+        updatePublishMeta('有更新（其他设备发布）');
+      }
+    } catch (e) {}
+  }
+  function startPolling() {
+    fetchVersion().then(function (v) { if (v) lastVer = v; });
+    setInterval(function () { if (document.hidden) return; pollOnce(); }, 8000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) pollOnce(); });
+    window.addEventListener('focus', pollOnce);
+    window.addEventListener('pageshow', pollOnce);
+    window.addEventListener('online', pollOnce);
+    setTimeout(pollOnce, 1500);
   }
   function openModal(title, hint, isPassword) {
     return new Promise(function (resolve) {
@@ -4132,20 +4366,25 @@ window.__render=function(){render();};
       v: 1, kdf: fresh.kdf,
       publishId: (await sha256Hex(b64ToU8(sealed.ct))).slice(0, 16),
       generatedAt: new Date().toISOString(),
+      buildId: fresh.buildId || PAGE_BUILD || '',
       data: sealed,
       wraps: fresh.wraps
     };
   }
-  async function publishNow() {
-    if (role !== 'admin') return;
-    if (!window.__exportSnapshot) { alert('页面还没准备好'); return; }
+  async function publishNow(opts) {
+    opts = opts || {};
+    if (role !== 'admin') return false;
+    if (!window.__exportSnapshot) { if (!opts.auto) alert('页面还没准备好'); return false; }
+    var snap = window.__exportSnapshot();
+    if (snap && snap.demo) { showToast('演示模式不发布，退出演示后再试'); if (!opts.auto) alert('演示模式不发布：先退出演示再发布'); return false; }
     var pat = null;
     try { pat = localStorage.getItem(PATK); } catch (e) {}
     if (!pat) {
+      if (opts.auto) return false;
       pat = window.prompt('首次发布需要 GitHub Token（只保存在本机浏览器，只需一次）\n\n建议用 Fine-grained token，只勾选 hzb-cup 仓库的 Contents: Read and write');
-      if (!pat) return;
+      if (!pat) return false;
       pat = pat.trim();
-      if (!pat) return;
+      if (!pat) return false;
       try { localStorage.setItem(PATK, pat); } catch (e) {}
     }
     var api = 'https://api.github.com/repos/CooperZhuang/hzb-cup/contents/data.enc.json';
@@ -4154,7 +4393,7 @@ window.__render=function(){render();};
       try {
         var fresh = await fetchMeta();
         try { await decryptData(keyBytes, fresh); }
-        catch (e) { showToast('页面已过期：请刷新页面后再发布'); return; }
+        catch (e) { showToast('页面已过期：请刷新页面后再发布'); return false; }
         var meta2 = await buildMeta(fresh);
         var sha = await ghGetSha(pat, api);
         var body = {
@@ -4171,9 +4410,10 @@ window.__render=function(){render();};
         });
         if (put.ok) {
           meta = meta2;
+          try { lastPublishedHash = await currentSnapshotHash(); } catch (e) {}
           updatePublishMeta('刚刚发布');
-          showToast('已发布，约 1 分钟后所有人同步（页面会自动刷新）');
-          return;
+          showToast(opts.auto ? '已自动同步给所有人' : '已发布，约 1 分钟后所有人同步（页面会自动刷新）');
+          return true;
         }
         var txt = await put.text();
         if (put.status === 401 || put.status === 403) {
@@ -4193,6 +4433,7 @@ window.__render=function(){render();};
       }
     }
     showToast('发布失败：' + lastErr);
+    return false;
   }
 
   async function submitGate() {
@@ -4225,6 +4466,7 @@ window.__render=function(){render();};
     }
     try {
       meta = await fetchMeta();
+      if (meta.buildId && PAGE_BUILD && meta.buildId !== PAGE_BUILD) { reloadForUpdate(meta.buildId); return; }
       if (sess) {
         try {
           keyBytes = b64ToU8(sess.key);
@@ -4257,7 +4499,7 @@ window.__render=function(){render();};
   var roleBtn = document.getElementById('roleBtn');
   if (roleBtn) roleBtn.addEventListener('click', function () { if (role === 'admin') exitAdmin(); else switchToAdmin(); });
   var publishBtn = document.getElementById('publishBtn');
-  if (publishBtn) publishBtn.addEventListener('click', publishNow);
+  if (publishBtn) publishBtn.addEventListener('click', function () { publishNow({}); });
 
   boot();
 })();
