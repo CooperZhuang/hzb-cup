@@ -362,6 +362,10 @@ section{padding-top:34px}
 .score::-webkit-outer-spin-button,.score::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .team{display:flex;align-items:center;justify-content:flex-start;gap:8px}
 .tie{font-size:9.5px;color:var(--tie);font-weight:700;margin-top:2px}
+.match.badscore,.intl-match.badscore{border-color:var(--tie);box-shadow:0 0 0 3px rgba(163,51,34,.10)}
+.match.badscore .score,.intl-match.badscore .score{border-color:var(--tie);background:rgba(163,51,34,.06);color:var(--tie)}
+.badscore-note{font-size:9.5px;color:var(--tie);font-weight:700;line-height:1.45;margin-top:2px}
+.intl-match .badscore-note{font-size:9px;text-align:center}
 .sc{font-style:normal;color:var(--green-2);font-weight:800;margin-left:4px;font-variant-numeric:tabular-nums}
 @media (max-width:560px){.match{width:min(100%,340px)}}
 
@@ -1762,25 +1766,41 @@ function clearDownstream(kind,mid){
     }
   }
 }
+/* 比分是不是「已经打完」的终局比分（按当前赛制）：
+   - 正常：到 points 分且净胜 winBy 分，且上一分还没到终局（防 22:19、25:22 这种多打）
+   - 封顶：cap-1 平后一球定胜负（如 26:25）；超过 cap 的比分一定算多打
+   不是终局的比分不给 winner，避免 25:24 / 27:25 直接判胜晋级。 */
+function isFinalScore(sa,sb,s){
+  if(!Number.isInteger(sa)||!Number.isInteger(sb)||sa===sb) return false;
+  const w=Math.max(sa,sb), l=Math.min(sa,sb), lead=w-l;
+  const pts=Number(s.points)||21, need=Math.max(1,Number(s.winBy)||2), cap=Number(s.cap)||0;
+  if(cap>0 && w>cap) return false;
+  if(w>=pts && lead>=need && (w-1<pts || (w-1-l)<need)) return true;
+  if(cap>pts && w===cap && l===cap-1) return true;
+  if(cap>0 && cap<=pts && w===cap) return true;
+  return false;
+}
+function finalRuleHint(s){
+  const base=`${s.points} 分一局，${s.points-1} 平后净胜 ${s.winBy} 分`;
+  return s.cap>s.points?`${base}；${s.cap-1} 平后一球定胜负（最高 ${s.cap} 分）`:`${base}${s.cap?`；${s.cap} 分封顶`:""}`;
+}
 function recomputeWinner(m,br){
   const a=resolveRef(m.a,br), b=resolveRef(m.b,br);
   if(!a||!b){ m.winner=null; return; }
-  const sa=m.sa, sb=m.sb;
-  if(Number.isInteger(sa)&&Number.isInteger(sb)&&sa!==sb) m.winner=sa>sb?a:b;
-  else m.winner=null;
+  m.winner=isFinalScore(m.sa,m.sb,state.settings)?(m.sa>m.sb?a:b):null;
 }
 function setScore(kind,mid,side,raw){
   const br=state.brackets[kind], m=br.matches[mid];
   const n=raw===""?null:Number(raw);
   if(n!==null && (!Number.isFinite(n)||n<0||n>99)) return;
-  const wasDone=Number.isInteger(m.sa)&&Number.isInteger(m.sb);
+  const wasDone=isFinalScore(m.sa,m.sb,state.settings);
   m[side==="a"?"sa":"sb"]=n;
   const before=m.winner?m.winner.code:null;
   recomputeWinner(m,br);
   const after=m.winner?m.winner.code:null;
   if(before!==after) clearDownstream(kind,mid);
   // 比分刚填满 = 这场刚打完：已经点过「开始」的话，把结束时间记成现在
-  const nowDone=Number.isInteger(m.sa)&&Number.isInteger(m.sb);
+  const nowDone=isFinalScore(m.sa,m.sb,state.settings);
   if(!wasDone&&nowDone){
     const t=tGet(kind,mid);
     if(t&&t.s!=null&&t.e==null){t.e=Date.now();if(!state.timing)state.timing={};state.timing[tKey(kind,mid)]=t;}
@@ -2487,7 +2507,9 @@ function matchCard(kind,m,br){
   const a=resolveRef(m.a,br), b=resolveRef(m.b,br);
   const ready=!!(a&&b);
   const win=(t)=>m.winner&&t&&m.winner.code===t.code;
-  const tie=Number.isInteger(m.sa)&&Number.isInteger(m.sb)&&m.sa===m.sb;
+  const filled=Number.isInteger(m.sa)&&Number.isInteger(m.sb);
+  const tie=filled&&m.sa===m.sb;
+  const bad=filled&&!tie&&!isFinalScore(m.sa,m.sb,state.settings);
   const label=(t)=>{
     if(!t) return `<span class="tbd">待定</span>`;
     const players=`<span class="players">${avatarStack(t.p1,t.p2)}<span class="players-text">${esc(t.p1.name)} + ${esc(t.p2.name)}</span></span>`;
@@ -2500,13 +2522,13 @@ function matchCard(kind,m,br){
   const tag=m.id===finalId?"":m.id===thirdId?"3、4名":"";
   const score=(side)=>`<input class="score" type="number" min="0" max="99" inputmode="numeric" data-kind="${kind}" data-mid="${m.id}" data-side="${side}" value="${m[side==="a"?"sa":"sb"]??""}" ${ready?"":"disabled"} aria-label="比分">`;
   const li=(LIVE&&LIVE.byKey[tKey(kind,m.id)])||null;
-  const cls=li?`${li.running?" is-now":""}${li.now&&!li.running?" is-now":""}${li.next?" is-next":""}`:"";
+  const cls=(li?`${li.running?" is-now":""}${li.now&&!li.running?" is-now":""}${li.next?" is-next":""}`:"")+(bad?" badscore":"");
   return `<div class="match${cls}" data-kind="${kind}" data-mid="${m.id}">
     <div class="match-meta"><span>${m.id.toUpperCase()}</span><span>${tag}</span></div>
     <div class="teamline"><span class="team${win(a)?" win":m.winner?" loss":""}">${label(a)}</span>${score("a")}</div>
     <div class="teamline"><span class="team${win(b)?" win":m.winner?" loss":""}">${label(b)}</span>${score("b")}</div>
     ${mtLine(kind,m)}
-    ${tie?'<div class="tie">平分，请改比分</div>':""}
+    ${bad?`<div class="badscore-note">按规则这局还没结束：${esc(finalRuleHint(state.settings))}；当前 ${m.sa}:${m.sb} 不算终局</div>`:(tie?'<div class="tie">平分，请改比分</div>':"")}
   </div>`;
 }
 function renderBracket(kind,title){
@@ -2559,8 +2581,11 @@ function intlMatch(kind,m,br,extra=""){
   const thirdId=kind==="xd"?"m11":kind==="wd"?"m5":"m6";
   const tag=m.id===finalId?"决赛":m.id===thirdId?"3、4名":"";
   const li=(LIVE&&LIVE.byKey[tKey(kind,m.id)])||null;
-  const cls=li?`${li.running||li.now?" is-now":""}${li.next?" is-next":""}`:"";
-  return `<div class="intl-match ${extra}${cls}" data-kind="${kind}" data-mid="${m.id}"><div class="intl-meta"><span>${m.id.toUpperCase()}</span><span>${tag}</span></div>${intlTeamRow(kind,m,a,"a",br)}${intlTeamRow(kind,m,b,"b",br)}${mtLine(kind,m)}</div>`;
+  const filled=Number.isInteger(m.sa)&&Number.isInteger(m.sb);
+  const bad=filled&&m.sa!==m.sb&&!isFinalScore(m.sa,m.sb,state.settings);
+  const cls=(li?`${li.running||li.now?" is-now":""}${li.next?" is-next":""}`:"")+(bad?" badscore":"");
+  const note=bad?`<div class="badscore-note" title="${escAttr(finalRuleHint(state.settings))}">按规则还没结束：${m.sa}:${m.sb}</div>`:"";
+  return `<div class="intl-match ${extra}${cls}" data-kind="${kind}" data-mid="${m.id}"><div class="intl-meta"><span>${m.id.toUpperCase()}</span><span>${tag}</span></div>${intlTeamRow(kind,m,a,"a",br)}${intlTeamRow(kind,m,b,"b",br)}${note}${mtLine(kind,m)}</div>`;
 }
 function intlBye(t,seed){
   if(!t) return "";
@@ -2708,12 +2733,12 @@ function fillRandomScores(){
     for(const m of ms){
       const a=resolveRef(m.a,br), b=resolveRef(m.b,br);
       if(!a||!b) continue;
-      const loser=15+Math.floor(Math.random()*6);
-      const winner=loser===20?22:21;
+      const loser=15+Math.floor(Math.random()*6);   // 15..20
+      const winner=loser===20?22:21;                // 21:15..21:19 / 22:20，都是合法终局
       const aWins=Math.random()<0.5;
       m.sa=aWins?winner:loser;
       m.sb=aWins?loser:winner;
-      m.winner=aWins?a:b;
+      recomputeWinner(m,br);
     }
   }
 }
@@ -3489,7 +3514,7 @@ function matchTable(){
       list.push({
         key:key,kind:kind,mid:mid,slot:i,court:ci===0?"5 号场":"6 号场",
         a:a,b:b,ready:!!(a&&b),
-        scored:!!(m&&Number.isInteger(m.sa)&&Number.isInteger(m.sb)),
+        scored:!!(m&&isFinalScore(m.sa,m.sb,state.settings)),
         t:t||null,
         court:courtOf(key),
         assigned:!!courtOf(key),
@@ -3667,7 +3692,7 @@ function opsMatchInfo(ref){
   const m=br?br.matches[mid]:null;
   const a=m?resolveRef(m.a,br):null;
   const b=m?resolveRef(m.b,br):null;
-  const scored=!!(m&&Number.isInteger(m.sa)&&Number.isInteger(m.sb));
+  const scored=!!(m&&isFinalScore(m.sa,m.sb,state.settings));
   return {kind,mid,label:OPS_KIND[kind]||kind,m,a,b,scored,sa:m?m.sa:null,sb:m?m.sb:null,
           hc:!!((a&&a.type==="mm")||(b&&b.type==="mm")),
           text:m?`${opsTeamName(a)} vs ${opsTeamName(b)}`:"待抽签"};
