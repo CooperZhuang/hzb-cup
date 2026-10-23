@@ -954,7 +954,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
-<script>window.__BUILD_ID__="7d740a4f3e60";</script>
+<script>window.__BUILD_ID__="1936373829ff";</script>
 </head>
 <body>
 <div class="wrap">
@@ -999,7 +999,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
         <button class="btn btn-ghost" id="reloadBtn">刷新</button>
         <button class="btn btn-ghost" id="roleBtn">管理端</button>
         <button class="btn btn-ghost" id="settingsBtn">设置</button>
-        <button class="btn btn-ghost" id="resetBtn">重置</button>
+        <button class="btn btn-ghost" id="resetBtn" title="只清空比分和计时；签表/锁定/签到/候补记录都保留，重抽签请去设置解锁">重置比分</button>
         <button class="btn btn-ghost" id="exportBtn">导出</button>
         <button class="btn btn-ghost" id="publishBtn">发布</button>
         <button class="btn btn-ghost" id="importBtn">导入</button>
@@ -1346,7 +1346,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
         <div class="ops-check-group">
           <h3>赛前 3 小时 ~ 开赛前</h3>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-b1"><span>提前 30 分钟到场：铺网、贴场号、试拍、检查灯光 / 通风 / 地面</span></label>
-          <label class="ops-chk"><input type="checkbox" data-chk="pre-b2"><span>签到点名：确认到场人数；缺席的当场决定——指定候补顶上，用完就从该项目已淘汰、还在场的人里抽签（只顶该项目），或者从名单去掉</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-b2"><span>签到点名：打开工具栏「签到表」逐人打勾（可打印）；缺席的当场决定——指定候补顶上，用完就从该项目已淘汰、还在场的人里抽签（只顶该项目），或者从名单去掉</span></label>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-b3"><span>核对设置：开始时间、每场分钟、场间分钟、中场休息、让分、局分 / 平分后净胜 / 封顶分、搭档方式、轮空方式</span></label>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-b4"><span>抽签（抽完自动上锁）→ 把签表举给全场看一圈再开始</span></label>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-b5"><span>奖品摆到显眼处；指定每片场记分员，说明「听到叫号才上场」</span></label>
@@ -1362,7 +1362,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
       <section class="ops-sec" id="opsRunSec">
         <div class="ops-h2">现场流程<span class="ops-tag">从签到到颁奖</span></div>
         <ol class="ops-steps">
-          <li><b>签到点名</b>：对着名单点人，缺席的当场定性（候补顶上 / 去掉 / 弃权），把结论记下来。候补优先用指定候补；指定候补用掉后，从该项目已输掉、人还在场的人里抽签，抽中的只顶该项目。</li>
+          <li><b>签到点名</b>：打开工具栏「签到表」逐人打勾（可打印 / 存 PDF），缺席的当场定性（候补顶上 / 去掉 / 弃权），把结论记下来。候补优先用指定候补（设置 → 候补名单里可以有多人）；指定候补用掉后，从该项目已输掉、人还在场的人里抽签，抽中的只顶该项目。</li>
           <li><b>抽签并公示</b>：点「抽签」，抽完自动上锁（防止现场误点重抽）。<b>把种子数字记下来</b>，出问题时能原样重抽回来。签表举手机给全场看一圈。</li>
           <li><b>宣读规则</b>：照「规则口径」里的口播稿念一遍，只念一次，别零散解释。</li>
           <li><b>开赛</b>：按时间线 T1 开始叫号，两片场同时开打。</li>
@@ -3471,7 +3471,7 @@ document.getElementById("importFile").addEventListener("change",async e=>{
   const f=e.target.files[0];
   if(!f) return;
   try{
-    if(state.drawn && isLocked() && !state.demo && !confirm("签表已锁定：导入会覆盖当前签表。先在设置 → 签表锁解锁再导入更安全，仍要继续吗？")) return;
+    if(state.drawn && isLocked() && !state.demo){ alert("签表已锁定：要替换签表请先在「设置 → 签表锁」点解锁，再导入"); e.target.value=""; return; }
     const obj=JSON.parse(await f.text());
     if(!obj.drawn||!obj.brackets) throw new Error("不是有效的签表文件");
     Object.assign(state,normalize(obj));
