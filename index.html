@@ -956,7 +956,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
-<script>window.__BUILD_ID__="a4e2dde6aad1";</script>
+<script>window.__BUILD_ID__="3167663e4347";</script>
 </head>
 <body>
 <div class="wrap">
@@ -4149,7 +4149,7 @@ window.__render=function(){render();};
   var autoSyncOn = true;
   try { autoSyncOn = localStorage.getItem(AUTOSYNC_KEY) !== '0'; } catch (e) {}
   var syncTimer = null, syncing = false, lastPublishedHash = null;
-  var lastVer = null, lastFullCheck = 0, lastBuildWarn = '';
+  var lastVer = null, lastFullCheck = 0, lastBuildWarn = '', lastBuildTag = null, buildFileOk = null;
 
   function b64ToU8(s) { var bin = atob(s), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; }
   function u8ToB64(u) { var s = ''; for (var i = 0; i < u.length; i += 8192) s += String.fromCharCode.apply(null, u.subarray(i, i + 8192)); return btoa(s); }
@@ -4301,11 +4301,20 @@ window.__render=function(){render();};
     if (ok) { lastPublishedHash = hash; updatePublishMeta('已同步 ' + fmtTime(new Date().toISOString())); }
     else { updatePublishMeta('自动同步失败 · 点「发布」重试'); }
   }
-  async function fetchVersion() {
+  async function headTag(url) {
     try {
-      var r = await fetch('data.enc.json', { method: 'HEAD', cache: 'no-store' });
+      var r = await fetch(url, { method: 'HEAD', cache: 'no-store' });
       if (!r.ok) return null;
       return r.headers.get('etag') || r.headers.get('last-modified') || r.headers.get('content-length') || null;
+    } catch (e) { return null; }
+  }
+  async function fetchVersion() { return headTag('data.enc.json'); }
+  async function fetchBuildVersion() {
+    try {
+      var r = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) return null;
+      var j = await r.json();
+      return (j && j.buildId) || null;
     } catch (e) { return null; }
   }
   function reloadForUpdate(buildId) {
@@ -4322,11 +4331,23 @@ window.__render=function(){render();};
     try {
       var ver = await fetchVersion();
       if (!ver) { if (Date.now() - lastFullCheck < 25000) return; lastFullCheck = Date.now(); }
+      // 页面版本（独立文件，只由部署更新，不会被「发布」覆盖）——每次都要检查
+      var buildTag = await headTag('version.json');
+      if (buildTag && buildTag !== lastBuildTag) {
+        lastBuildTag = buildTag;
+        var pv = await fetchBuildVersion();
+        if (pv) buildFileOk = true;
+        if (pv && PAGE_BUILD && pv !== PAGE_BUILD) {
+          if (role === 'viewer') { reloadForUpdate(pv); return; }
+          if (pv !== lastBuildWarn) { lastBuildWarn = pv; showToast('页面有新版本：点工具栏「刷新」后生效'); }
+          return;
+        }
+      }
       if (ver && lastVer && ver === lastVer) return;
       var m2 = await fetchMeta();
       if (!m2) return;
       if (ver) lastVer = ver;
-      if (m2.buildId && PAGE_BUILD && m2.buildId !== PAGE_BUILD) {
+      if (!buildFileOk && m2.buildId && PAGE_BUILD && m2.buildId !== PAGE_BUILD) {
         if (role === 'viewer') { reloadForUpdate(m2.buildId); return; }
         if (m2.buildId !== lastBuildWarn) { lastBuildWarn = m2.buildId; showToast('页面有新版本：点工具栏「刷新」后生效'); }
         return;
@@ -4347,6 +4368,8 @@ window.__render=function(){render();};
   }
   function startPolling() {
     fetchVersion().then(function (v) { if (v) lastVer = v; });
+    headTag('version.json').then(function (v) { lastBuildTag = v; });
+    fetchBuildVersion().then(function (v) { buildFileOk = !!v; });
     setInterval(function () { if (document.hidden) return; pollOnce(); }, 8000);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) pollOnce(); });
     window.addEventListener('focus', pollOnce);
@@ -4411,7 +4434,6 @@ window.__render=function(){render();};
       v: 1, kdf: fresh.kdf,
       publishId: (await sha256Hex(b64ToU8(sealed.ct))).slice(0, 16),
       generatedAt: new Date().toISOString(),
-      buildId: fresh.buildId || PAGE_BUILD || '',
       data: sealed,
       wraps: fresh.wraps
     };
@@ -4511,7 +4533,10 @@ window.__render=function(){render();};
     }
     try {
       meta = await fetchMeta();
-      if (meta.buildId && PAGE_BUILD && meta.buildId !== PAGE_BUILD) { reloadForUpdate(meta.buildId); return; }
+      var pageVer = await fetchBuildVersion();
+      buildFileOk = !!pageVer;
+      if (pageVer && PAGE_BUILD && pageVer !== PAGE_BUILD) { reloadForUpdate(pageVer); return; }
+      if (!pageVer && meta.buildId && PAGE_BUILD && meta.buildId !== PAGE_BUILD) { reloadForUpdate(meta.buildId); return; }
       if (sess) {
         try {
           keyBytes = b64ToU8(sess.key);
