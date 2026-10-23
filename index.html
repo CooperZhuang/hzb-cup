@@ -1072,7 +1072,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
       <div class="rule"><b>计分</b><p id="rulePoints">21 分一局，每球得分；20 平后净胜 2 分；25 平后一球定胜负（最高 26 分）。</p></div>
       <div class="rule"><b>限时</b><p id="ruleLimit">预计 13 分钟一局，按现场实际情况调整；不设时间上限，打到分出胜负。</p></div>
       <div class="rule"><b>间隔</b><p id="ruleInterval">场间休息约 1 分钟，按现场实际情况开下一轮。</p></div>
-      <div class="rule"><b>名次</b><p>决赛胜者冠军、负者亚军；3、4名比赛的胜者第三。</p></div>
+      <div class="rule"><b>名次</b><p>决赛胜者冠军、负者亚军；3、4 名比赛的胜者第三、负者第四。</p></div>
       <div class="rule"><b>让分</b><p id="ruleHandicap">混双里的男双遇到混双，混双 6:0 开局；男双让 6 分。</p></div>
     </div>
 
@@ -1084,9 +1084,11 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
       <details><summary>轮空算赢吗？不记比分怎么算？</summary><p>算直接晋级，不用上场，也不填比分；对阵图里用虚线框写在“轮空”，下一轮的格子里就是这一对。</p></details>
       <details><summary>混双里的男双让几分？</summary><p>默认让 <span id="qaHandicap">6</span> 分，混双从 <span id="qaHandicapScore">6:0</span> 开始；在“设置”里可以改。</p></details>
       <details><summary>比分填让分前还是让分后？</summary><p>填最终比分。比如混双从让分后的比分开始，最后打到 21:15，就填 21 和 15。</p></details>
+      <details><summary>打到多少分算赢？20 平、25 平怎么算？</summary><p>21 分一局；20 平后要净胜 2 分；打到 25 平，谁先再得 1 分谁赢，最高 26 分。所以 25:24 还没打完，26:24 或 26:25 才算；弃权记 21:0。</p></details>
+      <details><summary>比分没填到终局会怎样？</summary><p>页面上没打完或多打的比分（比如 25:24、27:25）会标红并提示还没结束，不会判胜晋级；改成终局比分后才生效。</p></details>
       <details><summary>同一个人能打男双和混双吗？</summary><p>可以。男双和混双是两个项目；赛程已经把男双、女双分开，混双放在最后。</p></details>
-      <details><summary>输了还能打吗？</summary><p>淘汰赛输了就结束。3、4 名比赛是给决赛前一轮的负者打的，不影响决赛。</p></details>
-      <details><summary>换手机或电脑怎么看？</summary><p>签表存在当前浏览器里。点“导出”存一个 JSON 文件，在新设备点“导入”就能恢复。</p></details>
+      <details><summary>输了还能打吗？</summary><p>正常输了就结束（3、4 名比赛除外，那是给决赛前一轮负者打的）。唯一的例外：有人临时缺席、指定候补又不够用时，可以从这个项目里已经输掉、人还在场的人里<b>抽签</b>顶上——抽签决定，不能自己挑，而且只顶缺阵球员那个项目。</p></details>
+      <details><summary>换手机或电脑怎么看？</summary><p>线上版用同一个口令登录就能看（发布过的赛果会自动拉下来）。本机只在当前浏览器里记登录状态和自己的编辑，换设备重新输一次口令即可；管理端的“导出 / 导入”JSON 是备份和搬家用的。</p></details>
     </div>
   </section>
 
@@ -1169,7 +1171,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 
       <fieldset style="grid-column:1/-1">
         <legend>签表锁</legend>
-        <p class="set-hint">真实抽签完成后自动上锁：抽签按钮、种子、只重抽对阵、手动导入都会被挡住，防止现场误点。演示模式不受影响，随时可以一键复原。</p>
+        <p class="set-hint">真实抽签完成后自动上锁：抽签按钮、种子、只重抽对阵、手动导入都会被挡住，防止现场误点。演示模式不受影响，随时可以一键复原；但演示模式下不能做候补替换 / 抽签。</p>
         <div class="lock-line"><span id="lockHint">当前未锁定</span></div>
         <div class="set-btns">
           <button type="button" class="btn btn-ghost" id="unlockBtn">解锁（允许重新抽签）</button>
@@ -1305,7 +1307,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
           <h3>赛前一天（T-24h）</h3>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-a1"><span>确认场地和时段：<b id="opsVenue"></b> 5 / 6 号场，当天可用（订场记录截图存好）</span></label>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-a2"><span>群发通知：日期、时间、场地号、集合点、带球拍和球鞋、带水，迟到怎么处理</span></label>
-          <label class="ops-chk"><input type="checkbox" data-chk="pre-a3"><span>核对到场名单：谁确认来、谁可能不来，候补（男 / 女）单独问一遍</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-a3"><span>核对到场名单：谁确认来、谁可能不来，候补（男 / 女）单独问一遍；顺便确认已经输掉的人里谁还在场（候补抽签只能从还在场的人里抽）</span></label>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-a4"><span>按奖品表采购：3 个项目 × 5 档（冠军 / 亚军 / 第三 / 第四 / 其他），件数按人头点一遍</span></label>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-a5"><span>准备耗材：球（6–8 筒）、球网、场号牌、记分牌或手机计分表、纸巾、饮用水</span></label>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-a6"><span>把这页打印 / 存 PDF 到手机，另存一份签表 JSON 当备份</span></label>
@@ -1314,15 +1316,15 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
         <div class="ops-check-group">
           <h3>赛前 3 小时 ~ 开赛前</h3>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-b1"><span>提前 30 分钟到场：铺网、贴场号、试拍、检查灯光 / 通风 / 地面</span></label>
-          <label class="ops-chk"><input type="checkbox" data-chk="pre-b2"><span>签到点名：确认到场人数；缺席的人当场决定是候补顶上还是从名单去掉</span></label>
-          <label class="ops-chk"><input type="checkbox" data-chk="pre-b3"><span>核对设置：开始时间、每场分钟、场间分钟、中场休息、让分、搭档方式、轮空方式</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-b2"><span>签到点名：确认到场人数；缺席的当场决定——指定候补顶上，用完就从该项目已淘汰、还在场的人里抽签（只顶该项目），或者从名单去掉</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-b3"><span>核对设置：开始时间、每场分钟、场间分钟、中场休息、让分、局分 / 平分后净胜 / 封顶分、搭档方式、轮空方式</span></label>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-b4"><span>抽签（抽完自动上锁）→ 把签表举给全场看一圈再开始</span></label>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-b5"><span>奖品摆到显眼处；指定每片场记分员，说明「听到叫号才上场」</span></label>
         </div>
         <div class="ops-check-group">
           <h3>开赛前 5 分钟</h3>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-c1"><span>宣读规则（下面「规则口径」里有口播稿，照着念）</span></label>
-          <label class="ops-chk"><input type="checkbox" data-chk="pre-c2"><span>强调三件事：比分填最终比分、混双遇男双的让分口径、轮空直接晋级</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-c2"><span>强调四件事：比分填最终比分、25 平后一球定胜负、混双遇男双的让分口径、轮空直接晋级</span></label>
           <label class="ops-chk"><input type="checkbox" data-chk="pre-c3"><span>手机调震动、打开计分页面、页面保持后台常驻（别锁屏丢比分）</span></label>
         </div>
       </section>
@@ -1330,19 +1332,19 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
       <section class="ops-sec" id="opsRunSec">
         <div class="ops-h2">现场流程<span class="ops-tag">从签到到颁奖</span></div>
         <ol class="ops-steps">
-          <li><b>签到点名</b>：对着名单点人，缺席的当场定性（候补顶上 / 去掉 / 弃权），把结论记下来。</li>
+          <li><b>签到点名</b>：对着名单点人，缺席的当场定性（候补顶上 / 去掉 / 弃权），把结论记下来。候补优先用指定候补；指定候补用掉后，从该项目已输掉、人还在场的人里抽签，抽中的只顶该项目。</li>
           <li><b>抽签并公示</b>：点「抽签」，抽完自动上锁（防止现场误点重抽）。<b>把种子数字记下来</b>，出问题时能原样重抽回来。签表举手机给全场看一圈。</li>
           <li><b>宣读规则</b>：照「规则口径」里的口播稿念一遍，只念一次，别零散解释。</li>
           <li><b>开赛</b>：按时间线 T1 开始叫号，两片场同时开打。</li>
-          <li><b>每场循环</b>：叫号 → 在对阵图那张卡片上点「<b>上场</b>」（排到空着的 5 / 6 号场，同时记下开打时间，卡片亮绿框并显示已打时长；两片场各点一次，就是两场同时打）→ 打球 → 报分 → 记分员确认 → 总裁判录比分（<b>录满比分时结束时间自动记成这一刻</b>）→ 再叫下一场。<b>录完分才放下一场</b>，否则队伍会散。</li>
+          <li><b>每场循环</b>：叫号 → 在对阵图那张卡片上点「<b>上场</b>」（排到空着的 5 / 6 号场，同时记下开打时间，卡片亮绿框并显示已打时长；两片场各点一次，就是两场同时打）→ 打球 → 报分 → 记分员确认 → 总裁判录比分（<b>录成终局比分时结束时间自动记成这一刻</b>；不是终局的比分——没打完或多打——页面会标红、不判胜）→ 再叫下一场。<b>录完终局比分才放下一场</b>，否则队伍会散。</li>
           <li><b>提前或落后都不用改计划时间</b>：每场实际开始/结束时间一记，后面的时段自动跟着走 —— 超时显示「顺延 → 新时间」，打得快显示「提前 → 新时间」，两个方向都会跟着走；想强制改开始时间，去设置里改「开始时间」。</li>
-          <li><b>更新赛程</b>：在「对阵图」卡片里填比分，页面自动更新胜者和进度；时间线这页也会跟着刷新。</li>
+          <li><b>更新赛程</b>：在「对阵图」卡片里填终局比分，页面自动更新胜者和进度；没打完或多打的比分会标红、不判胜，改到终局才生效。时间线这页也会跟着刷新。</li>
           <li><b>阶段发布</b>：每打完 2–3 个时段点一次「发布」，观看端约 1 分钟内自动刷新，不用挨个私聊。</li>
           <li><b>中场休息</b>：男双 / 女双打完、混双开打前休息 <span id="opsBreakMins"></span> 分钟，混双换人、补水、擦汗都在这会儿。</li>
           <li><b>收官</b>：3、4 名赛 → 决赛 → 冠军名单生成 → 颁奖。</li>
           <li><b>收尾</b>：走下面的「收尾清单」，别漏归还场地这一条。</li>
         </ol>
-        <p class="ops-foot-note">每场循环里最容易出错的是<b>比分录错</b>：填的是<b>最终比分</b>（让分之后的比分），改比分也是直接在卡片上改，改完下游会自动清空，把下游重录一遍即可。</p>
+        <p class="ops-foot-note">每场循环里最容易出错的是<b>比分录错</b>：填的是<b>最终比分</b>（让分之后的比分）；没打完或多打的比分（25:24、27:25）会标红、不判胜。改比分直接在卡片上改，改完下游会自动清空，把下游重录一遍即可。</p>
       </section>
 
       <section class="ops-sec" id="opsRulesSec">
@@ -1363,8 +1365,8 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
           <li><b>有人临时缺席</b>先问一句「能不能来」；来不了就候补顶上，顶不上就把他从名单里去掉。人少不凑错，宁可少打一场。<span class="ops-ui">页面：设置 → 候补替换：优先用「指定候补」；指定候补用掉后，从「输掉的人」里抽（选项目 → 取消勾选已提前走的人 → 抽签 → 用抽中的人替换，只顶该项目）。改完记得重新公示。</span></li>
           <li><b>缺席太多，对数不够</b>某个项目凑不满就直接砍掉这个项目；落单的人并进别的队要当场宣布并记下来。改完名单必须重抽对阵。<span class="ops-ui">页面：设置 → 签表锁 → 解锁 → 点「抽签」重抽（会换掉全部对阵，重抽完必须重新公示给全场）。</span></li>
           <li><b>有人迟到</b>还没开赛的项目可以等 10 分钟；已经叫号没到，判该场弃权（对方 <span id="opsForfeitScore"></span>），当场宣布。<span class="ops-ui">页面：不用动，直接在群里说明。</span></li>
-          <li><b>有人受伤</b>先停赛、照顾伤者，该场按弃权处理；需要整场作废重打再解锁重抽对阵（搭档不变）。<span class="ops-ui">页面：设置 → 签表锁 → 解锁 → 只重抽对阵（搭档不变）。</span></li>
-          <li><b>比分填错了</b>在「对阵图」对应卡片上改数字即可；改完下游场次会自动清空，把下游那几场重录一遍。<span class="ops-ui">页面：对阵图 → 那场的两个比分框 → 改完按回车。</span></li>
+          <li><b>有人受伤</b>先停赛、照顾伤者：这场按弃权处理；后面还打不了就按「有人临时缺席」换候补（指定候补 / 从该项目已淘汰、还在场的人里抽签，只顶该项目）；要整场作废再解锁重抽对阵（搭档不变）。<span class="ops-ui">页面：设置 → 候补替换 或 设置 → 签表锁 → 解锁 → 只重抽对阵。</span></li>
+          <li><b>比分填错了 / 没打完 / 多打</b>不是终局的比分（25:24、27:25 这种）页面会标红、不判胜，把数字改成终局比分即可；改完下游场次会自动清空，把下游那几场重录一遍。<span class="ops-ui">页面：对阵图 → 那场的两个比分框 → 改完按回车。</span></li>
           <li><b>想重抽签</b>重抽会让全场记住的签表作废，重抽完必须重新公示一次；同种子 + 同名单 = 同一个结果，所以先把原种子记下来。<span class="ops-ui">页面：设置 → 签表锁 → 解锁 → 「抽签」（全部重抽）或「只重抽对阵」（搭档不变）；种子填回原数字可原样重现。</span></li>
           <li><b>误进演示模式</b>演示数据带水印，<b>绝对不要发布</b>。<span class="ops-ui">页面：顶部横幅「退出演示」/「一键复原锁定签表」。</span></li>
           <li><b>发布失败 / 没网</b>看报错：409 是远端刚被改过，等 30 秒再点一次；Token 被拒就去 GitHub 重发一个 token；实在发不出去就用手机拍下对阵图照片 + 群里口头通知，别让全场干等。<span class="ops-ui">页面：工具栏「发布」；备用：本地 publish.sh。</span></li>
@@ -3516,6 +3518,7 @@ function matchTable(){
         a:a,b:b,ready:!!(a&&b),
         scored:!!(m&&isFinalScore(m.sa,m.sb,state.settings)),
         t:t||null,
+        courtPlan:ci===0?"5 号场":"6 号场",
         court:courtOf(key),
         assigned:!!courtOf(key),
         played:!!(t&&(t.s!=null||t.e!=null)),
@@ -3760,7 +3763,7 @@ function renderOpsNow(){
   const curS=cur>=0?`现在 ${nowTxt}，这一时段正在进行${LIVE.plan[cur].delay?`（已顺延 ${LIVE.plan[cur].delay} 分钟）`:""}`
     :(now<0?`今天 ${opsTodayText()} 不是比赛日，赛程按 ${s.date} 算`
     :(now<opsSlotRange(0)[0]?`${s.date} ${s.start} 开打，现在 ${nowTxt}`:`颁奖 / 收尾阶段，现在 ${nowTxt}`));
-  const runV=running.length?running.map(x=>`${x.court} ${({md:"男双",wd:"女双",xd:"混双"})[x.kind]} ${x.mid.toUpperCase()}`).join(" / "):(next?`T${next.slot+1} · ${next.court}`:"没有待打的场次了");
+  const runV=running.length?running.map(x=>`${x.court} ${({md:"男双",wd:"女双",xd:"混双"})[x.kind]} ${x.mid.toUpperCase()}`).join(" / "):(next?`T${next.slot+1} · ${next.court||next.courtPlan}`:"没有待打的场次了");
   const runS=running.length?running.map(x=>`${({md:"男双",wd:"女双",xd:"混双"})[x.kind]}：${x.a?`${esc(x.a.p1.name)} + ${esc(x.a.p2.name)}`:""} vs ${x.b?`${esc(x.b.p1.name)} + ${esc(x.b.p2.name)}`:""}（已打 ${tElapsedText(x.t.s)}）`).join("　")
     :(next?`${({md:"男双",wd:"女双",xd:"混双"})[next.kind]}：${next.a?`${esc(next.a.p1.name)} + ${esc(next.a.p2.name)}`:""} vs ${next.b?`${esc(next.b.p1.name)} + ${esc(next.b.p2.name)}`:""}`:"收尾、发奖");
   const courtTxt=["5","6"].map(c=>{
@@ -3808,7 +3811,8 @@ function renderOpsRules(){
   const s=state.settings;
   const items=[
     ["计分",pointsRuleText(s)],
-    ["时长",s.timeLimit>0?`每场 ${s.timeLimit} 分钟硬上限，到点领先者胜。`:`不设时间上限，计划每场 ${s.matchMin} 分钟，长局就打长局。`],
+    ["比分",`比分填最终比分。没打完或多打的比分（如 ${s.points}:${s.points-1}${s.cap>s.points?`、${s.cap+1}:${s.cap-1}`:""}）页面会标红、不判胜；改成终局比分（如 ${s.points}:${s.points-2}${s.cap>s.points?` 或 ${s.cap}:${s.cap-1}`:""}）才生效。`],
+    ["时长",s.timeLimit>0?`每场 ${s.timeLimit} 分钟硬上限，到点领先者胜。`:`不设时间上限，计划每场 ${s.matchMin} 分钟，打到终局为止${s.cap>s.points?`（局分最长 ${s.cap} 分）`:""}。`],
     ["间隔",`场间休息约 ${s.intervalMin} 分钟；男双 / 女双与混双之间休息 ${s.blockBreakMin} 分钟。`],
     ["让分",`混双遇到男双，混双 ${s.handicap}:0 开局，男双让 ${s.handicap} 分；比分填让分之后的最终比分。`],
     ["轮空",`轮空直接晋级，不用上场、不记比分，对阵图里是虚线框。`],
@@ -3821,7 +3825,7 @@ function renderOpsRules(){
   ul.innerHTML=items.map(it=>`<li><b class="ops-label">${esc(it[0])}</b>${esc(it[1])}</li>`).join("");
   const sc=document.getElementById("opsScript");
   const sd=(s.cap&&s.cap>s.points)?`；打到 ${s.cap-1} 平以后，谁先再得 1 分谁赢，最高 ${s.cap} 分`:"，打到分出胜负为止";
-  if(sc) sc.textContent=`各位，规则我念一遍：${s.points} 分一局，每球得分，${s.points-1} 平以后要净胜 ${s.winBy} 分${sd}，不设时间上限。场间休息 ${s.intervalMin} 分钟，混双开打前有 ${s.blockBreakMin} 分钟休息。混双碰上男双，混双 ${s.handicap}:0 先开始，男双让 ${s.handicap} 分；比分请填最终比分。有争议先报比分，别停下来吵，我来判断。`;
+  if(sc) sc.textContent=`各位，规则我念一遍：${s.points} 分一局，每球得分，${s.points-1} 平以后要净胜 ${s.winBy} 分${sd}，不设时间上限。场间休息 ${s.intervalMin} 分钟，混双开打前有 ${s.blockBreakMin} 分钟休息。混双碰上男双，混双 ${s.handicap}:0 先开始，男双让 ${s.handicap} 分；比分请填最终比分（打完整才算，没打完或多打的页面会标红）。有争议先报比分，别停下来吵，我来判断。`;
 }
 function opsApplyChk(){
   const st=opsChkGet();
