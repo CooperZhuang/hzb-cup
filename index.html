@@ -790,7 +790,8 @@ table.ops-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:6
 .ops-chip.ok{background:var(--win-bg);border-color:var(--win-line);color:var(--green)}
 .ops-list{margin:0;padding:0;list-style:none;display:grid;gap:9px}
 .ops-list li{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;font-size:12.5px;line-height:1.65;color:var(--ink-2)}
-.ops-list li>b{color:var(--ink);display:block;margin-bottom:3px}
+.ops-list li>b{color:var(--ink);font-weight:700}
+.ops-list li>b:first-child{display:block;margin-bottom:3px;font-size:12.5px;letter-spacing:.01em}
 .ops-list .ops-ui{margin-top:5px;font-size:11.5px;color:var(--muted)}
 .ops-list .ops-ui code{background:var(--paper-2);border:1px solid var(--line);border-radius:5px;padding:0 5px;font-size:11px}
 .ops-steps{margin:0;padding:0;list-style:none;counter-reset:ops;display:grid;gap:8px}
@@ -3153,7 +3154,7 @@ function renderOpsRules(){
     ["争议",`先看比分牌 → 双方自报 → 判不了由总裁判拍板；当场定完不再改，赛后申诉只做记录。`],
     ["记名",`以报名网名为准，签表上的名字就是最终名字。`]
   ];
-  ul.innerHTML=items.map(it=>`<li><b>${esc(it[0])}</b>${esc(it[1])}</li>`).join("");
+  ul.innerHTML=items.map(it=>`<li><b class="ops-label">${esc(it[0])}</b>${esc(it[1])}</li>`).join("");
   const sc=document.getElementById("opsScript");
   if(sc) sc.textContent=`各位，规则我念一遍：${s.points} 分一局，每球得分，${s.points-1} 平以后要净胜 ${s.winBy} 分，打到分出胜负为止，不设时间上限。场间休息 ${s.intervalMin} 分钟，混双开打前有 ${s.blockBreakMin} 分钟休息。混双碰上男双，混双 ${s.handicap}:0 先开始，男双让 ${s.handicap} 分；比分请填最终比分。有争议先报比分，别停下来吵，我来判断。`;
 }
