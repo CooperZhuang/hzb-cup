@@ -967,7 +967,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
-<script>window.__BUILD_ID__="d4ed5de34b48";</script>
+<script>window.__BUILD_ID__="7df3e283218c";</script>
 </head>
 <body>
 <div class="wrap">
@@ -2609,6 +2609,7 @@ function load(){
     if(s && s.drawn && s.brackets){
       Object.assign(state,normalize(s));
       applyRoster();
+      syncUsedSubLevels();
       return true;
     }
   }catch(e){}
@@ -3113,6 +3114,33 @@ function rosterRef(){
     women:WOMEN.map(p=>({name:p.name,lv:p.lv}))
   };
 }
+/* 候选上场后如果是旧版本「继承缺阵球员等级」留下的，按趣运动实际等级修正，
+   并从候补名单里移掉（已经在场上的人不能再当候补）。 */
+function syncUsedSubLevels(){
+  let changed=false;
+  for(const key of ["men","women"]){
+    for(const def of DEFAULT_SUB_LIST[key]||[]){
+      const inRoster=MEN.concat(WOMEN).find(p=>p.name===def.name);
+      if(!inRoster) continue;
+      if(Math.abs(Number(inRoster.lv)-Number(def.lv))>1e-9){ inRoster.lv=Number(def.lv); changed=true; }
+      if(state.subList&&Array.isArray(state.subList[key])){
+        const before=state.subList[key].length;
+        state.subList[key]=state.subList[key].filter(it=>it.name!==def.name);
+        if(state.subList[key].length!==before) changed=true;
+      }
+    }
+  }
+  if(!changed) return false;
+  for(const def of [...(DEFAULT_SUB_LIST.men||[]),...(DEFAULT_SUB_LIST.women||[])]){
+    const inRoster=MEN.concat(WOMEN).find(p=>p.name===def.name);
+    if(inRoster) setPlayerLv(def.name,inRoster.lv);
+  }
+  for(const kind of ["md","wd","xd"]){
+    for(const pr of state.pairs[kind]||[]) pr.sum=Number((pr.p1.lv+pr.p2.lv).toFixed(1));
+  }
+  rosterRef();
+  return true;
+}
 function applyRoster(){
   const r=state.roster;
   if(!r||!Array.isArray(r.men)||!Array.isArray(r.women)) return;
@@ -3568,6 +3596,7 @@ document.getElementById("importFile").addEventListener("change",async e=>{
     if(!obj.drawn||!obj.brackets) throw new Error("不是有效的签表文件");
     Object.assign(state,normalize(obj));
     applyRoster();
+    syncUsedSubLevels();
     if(obj.skin && SKINS.some(x=>x.id===obj.skin)) setSkin(obj.skin,true);
     if(state.drawn && !state.demo && !isLocked()) takeLock("import");
     save(); render();
@@ -4144,6 +4173,7 @@ window.__applyPublished=function(preload){
     if(!preload||!preload.brackets) return;
     Object.assign(state,normalize(cloneDeep(preload)));
     applyRoster();
+    syncUsedSubLevels();
     render();
   }catch(e){}
 };
