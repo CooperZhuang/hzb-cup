@@ -739,6 +739,87 @@ svg.intl-lines path{fill:none;stroke:var(--connector);stroke-width:1.6;stroke-li
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+/* ---------------- 赛务说明（管理端专用，观看端不显示） ---------------- */
+html[data-role="viewer"] #opsBtn,html[data-role="viewer"] #opsPanel{display:none!important}
+body.ops-open{overflow:hidden}
+.ops-panel{
+  position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(22,33,27,.50);
+}
+.ops-panel[hidden]{display:none}
+.ops-shell{
+  display:flex;flex-direction:column;width:min(1020px,96vw);max-height:92vh;
+  background:var(--surface);color:var(--ink);border-radius:var(--radius);
+  box-shadow:0 24px 70px rgba(22,33,27,.30);overflow:hidden;
+}
+.ops-head{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;padding:16px 18px 12px;background:var(--paper-2);border-bottom:1px solid var(--line);flex:0 0 auto}
+.ops-kicker{font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--green-2)}
+.ops-head h2{margin:4px 0 3px;font-size:19px;letter-spacing:-.01em}
+.ops-sub{margin:0;font-size:12px;color:var(--muted);line-height:1.55}
+.ops-head-r{display:flex;gap:8px;flex:0 0 auto}
+.ops-nav{display:flex;gap:6px;padding:9px 18px;border-bottom:1px solid var(--line);background:var(--surface);overflow-x:auto;flex:0 0 auto}
+.ops-nav button{flex:0 0 auto;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink-2);font:inherit;font-size:12px;cursor:pointer}
+.ops-nav button:hover{border-color:var(--green);color:var(--green)}
+.ops-body{overflow-y:auto;padding:0 18px 44px;flex:1 1 auto;min-height:0}
+.ops-sec{padding:22px 0;border-bottom:1px solid var(--line)}
+.ops-sec:last-child{border-bottom:0}
+.ops-h2{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin:0 0 4px;font-size:16px;letter-spacing:-.01em}
+.ops-h2 .ops-tag{font-size:10.5px;font-weight:700;color:var(--green-2);border:1px solid var(--line);border-radius:999px;padding:1px 8px;letter-spacing:.04em}
+.ops-desc{margin:0 0 14px;font-size:12px;color:var(--muted);line-height:1.65;max-width:82ch}
+.ops-now{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-bottom:14px}
+.ops-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 13px}
+.ops-card b{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted);margin-bottom:5px}
+.ops-card .v{font-size:14px;font-weight:700;line-height:1.5}
+.ops-card .s{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.55}
+.ops-card.hot{background:var(--lime);border-color:var(--lime-2)}
+.ops-card.hot .v{font-size:15px}
+.ops-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-sm)}
+table.ops-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:660px}
+.ops-table th{background:var(--paper-2);color:var(--muted);font-size:10.5px;font-weight:700;text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+.ops-table td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.55}
+.ops-table tr:last-child td{border-bottom:0}
+.ops-table tr.ops-now-row td{background:var(--lime)}
+.ops-table tr.ops-done td{color:var(--muted)}
+.ops-table tr.ops-break td{background:var(--paper-2);color:var(--muted);font-size:11.5px}
+.ops-table td.ops-t{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted);font-size:11.5px}
+.ops-table td.ops-m{font-weight:600}
+.ops-table .ops-sc{font-variant-numeric:tabular-nums;font-weight:800;color:var(--green-2)}
+.ops-chip{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.ops-chip.live{background:var(--lime);border-color:var(--lime-2);color:var(--on-lime)}
+.ops-chip.ok{background:var(--win-bg);border-color:var(--win-line);color:var(--green)}
+.ops-list{margin:0;padding:0;list-style:none;display:grid;gap:9px}
+.ops-list li{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;font-size:12.5px;line-height:1.65;color:var(--ink-2)}
+.ops-list li>b{color:var(--ink);display:block;margin-bottom:3px}
+.ops-list .ops-ui{margin-top:5px;font-size:11.5px;color:var(--muted)}
+.ops-list .ops-ui code{background:var(--paper-2);border:1px solid var(--line);border-radius:5px;padding:0 5px;font-size:11px}
+.ops-steps{margin:0;padding:0;list-style:none;counter-reset:ops;display:grid;gap:8px}
+.ops-steps li{counter-increment:ops;position:relative;padding:9px 12px 9px 38px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-sm);font-size:12.5px;line-height:1.65;color:var(--ink-2)}
+.ops-steps li::before{content:counter(ops);position:absolute;left:11px;top:10px;width:18px;height:18px;border-radius:50%;background:var(--green);color:var(--on-accent);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.ops-steps li b{color:var(--ink)}
+.ops-check-group{margin-bottom:16px}
+.ops-check-group h3{margin:0 0 7px;font-size:12.5px;letter-spacing:.02em;color:var(--green-2)}
+.ops-chk{display:flex;gap:9px;align-items:flex-start;padding:7px 10px;border-bottom:1px solid var(--line);font-size:12.5px;line-height:1.6;color:var(--ink-2);cursor:pointer}
+.ops-chk:last-child{border-bottom:0}
+.ops-chk input{margin:2px 0 0;flex:0 0 auto;width:16px;height:16px;accent-color:var(--green)}
+.ops-chk input:checked+span{color:var(--muted);text-decoration:line-through}
+.ops-script{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 13px;font-size:12.5px;line-height:1.85;color:var(--ink-2)}
+.ops-foot-note{font-size:11.5px;color:var(--muted);line-height:1.65;margin-top:12px}
+@media (max-width:560px){
+  .ops-panel{padding:0}
+  .ops-shell{width:100vw;max-height:100vh;height:100vh;border-radius:0}
+  .ops-head{flex-direction:column}
+  .ops-body{padding:0 13px 40px}
+}
+@media print{
+  body.ops-open{overflow:visible}
+  body.ops-open>*:not(#opsPanel){display:none!important}
+  body.ops-open #opsPanel{position:static;display:block;padding:0;background:#fff}
+  body.ops-open #opsPanel .ops-shell{width:100%;max-height:none;height:auto;box-shadow:none;border-radius:0;overflow:visible}
+  body.ops-open .ops-body{overflow:visible;padding-bottom:0}
+  body.ops-open .ops-nav,body.ops-open .ops-head-r{display:none}
+  .ops-list li,.ops-steps li,.ops-card,.ops-table tr{break-inside:avoid}
+}
 </style>
 <script>
 /* 皮肤：先读本地存的，刷新时不闪回默认色 */
@@ -824,6 +905,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
       </span>
       <span class="act-sep"></span>
       <span class="act-group">
+        <button class="btn btn-ghost" id="opsBtn">赛务说明</button>
         <button class="btn btn-ghost" id="reloadBtn">刷新</button>
         <button class="btn btn-ghost" id="roleBtn">管理端</button>
         <button class="btn btn-ghost" id="settingsBtn">设置</button>
@@ -1064,6 +1146,169 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
     </div>
   </form>
 </dialog>
+
+<!-- ============ 赛务说明（管理端） ============ -->
+<div id="opsPanel" class="ops-panel" hidden role="dialog" aria-modal="true" aria-label="赛务说明">
+  <div class="ops-shell">
+    <header class="ops-head">
+      <div class="ops-head-l">
+        <div class="ops-kicker">管理端 · 观看端看不到这一页</div>
+        <h2>赛务说明 · 流程 / 分工 / 预案</h2>
+        <p class="ops-sub" id="opsSub"></p>
+      </div>
+      <div class="ops-head-r">
+        <button type="button" class="btn btn-ghost" id="opsPrint">打印 / 存 PDF</button>
+        <button type="button" class="btn btn-ghost" id="opsClose">关闭</button>
+      </div>
+    </header>
+
+    <nav class="ops-nav">
+      <button type="button" data-target="opsNow">现在</button>
+      <button type="button" data-target="opsTimelineSec">时间线</button>
+      <button type="button" data-target="opsRolesSec">分工</button>
+      <button type="button" data-target="opsPreSec">赛前清单</button>
+      <button type="button" data-target="opsRunSec">现场流程</button>
+      <button type="button" data-target="opsRulesSec">规则口径</button>
+      <button type="button" data-target="opsPlanSec">预案</button>
+      <button type="button" data-target="opsCloseSec">收尾</button>
+    </nav>
+
+    <div class="ops-body">
+
+      <section class="ops-sec" id="opsNow">
+        <div class="ops-h2">现在 · 赛务状态<span class="ops-tag">每次打开自动重算</span></div>
+        <p class="ops-desc">这一栏按当前时间和页面里的比分算出来：签表什么状态、录了几场、现在该打哪场、还剩几场没录分。</p>
+        <div class="ops-now" id="opsNowCards"></div>
+      </section>
+
+      <section class="ops-sec" id="opsTimelineSec">
+        <div class="ops-h2">今日时间线<span class="ops-tag">自动生成</span></div>
+        <p class="ops-desc">时间是按「每场计划分钟 + 场间休息」推算的<em>预计</em>时间，不是硬上限；实际以两片场都打完为准，整体顺延，<b>不压缩休息</b>。</p>
+        <div class="ops-table-wrap">
+          <table class="ops-table">
+            <thead><tr><th style="width:78px">时段</th><th style="width:104px">预计时间</th><th>5 号场</th><th>6 号场</th><th style="width:74px">状态</th></tr></thead>
+            <tbody id="opsTimelineBody"></tbody>
+          </table>
+        </div>
+        <p class="ops-foot-note">抽签只决定「谁跟谁打、谁轮空」，不改变这张表的时间和顺序。比分栏空着 = 这场还没录结果；录完立刻在「对阵图」里填，表格会跟着变。</p>
+      </section>
+
+      <section class="ops-sec" id="opsRolesSec">
+        <div class="ops-h2">组织分工<span class="ops-tag">每行都要落到具体的人头上</span></div>
+        <p class="ops-desc">人少也要有明确的人。开场前把这张表念一遍，当场认领，避免互相等。</p>
+        <div class="ops-table-wrap">
+          <table class="ops-table">
+            <thead><tr><th style="width:132px">角色</th><th style="width:150px">谁</th><th>干什么</th><th style="width:96px">什么时候</th></tr></thead>
+            <tbody>
+              <tr><td><b>总裁判 / 终裁</b></td><td id="opsReferee">（在「设置 → 抽签 → 裁判/计分」里填）</td><td>叫号、判争议、确认比分、宣布名次和弃权</td><td>全程，唯一拍板的人</td></tr>
+              <tr><td><b>记分员（每片场 1 人）</b></td><td>该时段没比赛的人 / 候补</td><td>报分、记比分、双方点头后报总裁判</td><td>每场</td></tr>
+              <tr><td><b>场地 · 器材</b></td><td>最早到的 2 人</td><td>铺网、贴场号、收球、供水、擦汗</td><td>赛前 30 分钟</td></tr>
+              <tr><td><b>奖品 · 财务</b></td><td>指定 1 人</td><td>按名次表核对奖品、颁奖、垫付记账</td><td>赛前采购 / 赛后颁奖</td></tr>
+              <tr><td><b>通知 · 发布</b></td><td>组织者本人</td><td>群通知、赛果发布、现场播报</td><td>赛前一天 + 每阶段</td></tr>
+              <tr><td><b>决策人</b></td><td>组织者本人</td><td>赛制变更、弃权判定、重抽签</td><td>需要时</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="ops-foot-note">一条铁律：<b>任何改动先由决策人口头宣布，再动页面</b>；改完立刻在群里同步，避免场上出现两套口径。</p>
+      </section>
+
+      <section class="ops-sec" id="opsPreSec">
+        <div class="ops-h2">赛前清单<span class="ops-tag">点一下打勾</span><button type="button" class="btn btn-ghost" id="opsClearChk" style="margin-left:auto;font-size:11.5px;padding:4px 11px">清空勾选</button></div>
+        <p class="ops-desc">勾选状态只存在你这台设备的浏览器里，不进签表、不进导出、不会发布出去。比赛结束后点右上角「清空勾选」重置。</p>
+        <div class="ops-check-group">
+          <h3>赛前一天（T-24h）</h3>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-a1"><span>确认场地和时段：<b id="opsVenue"></b> 5 / 6 号场，当天可用（订场记录截图存好）</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-a2"><span>群发通知：日期、时间、场地号、集合点、带球拍和球鞋、带水，迟到怎么处理</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-a3"><span>核对到场名单：谁确认来、谁可能不来，候补（男 / 女）单独问一遍</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-a4"><span>按奖品表采购：3 个项目 × 5 档（冠军 / 亚军 / 第三 / 第四 / 其他），件数按人头点一遍</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-a5"><span>准备耗材：球（6–8 筒）、球网、场号牌、记分牌或手机计分表、纸巾、饮用水</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-a6"><span>把这页打印 / 存 PDF 到手机，另存一份签表 JSON 当备份</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-a7"><span>手机充满电、带充电宝；确认 GitHub Token 可用（发布赛果要用）</span></label>
+        </div>
+        <div class="ops-check-group">
+          <h3>赛前 3 小时 ~ 开赛前</h3>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-b1"><span>提前 30 分钟到场：铺网、贴场号、试拍、检查灯光 / 通风 / 地面</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-b2"><span>签到点名：确认到场人数；缺席的人当场决定是候补顶上还是从名单去掉</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-b3"><span>核对设置：开始时间、每场分钟、场间分钟、中场休息、让分、搭档方式、轮空方式</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-b4"><span>抽签（抽完自动上锁）→ 把签表举给全场看一圈再开始</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-b5"><span>奖品摆到显眼处；指定每片场记分员，说明「听到叫号才上场」</span></label>
+        </div>
+        <div class="ops-check-group">
+          <h3>开赛前 5 分钟</h3>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-c1"><span>宣读规则（下面「规则口径」里有口播稿，照着念）</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-c2"><span>强调三件事：比分填最终比分、混双遇男双的让分口径、轮空直接晋级</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="pre-c3"><span>手机调震动、打开计分页面、页面保持后台常驻（别锁屏丢比分）</span></label>
+        </div>
+      </section>
+
+      <section class="ops-sec" id="opsRunSec">
+        <div class="ops-h2">现场流程<span class="ops-tag">从签到到颁奖</span></div>
+        <ol class="ops-steps">
+          <li><b>签到点名</b>：对着名单点人，缺席的当场定性（候补顶上 / 去掉 / 弃权），把结论记下来。</li>
+          <li><b>抽签并公示</b>：点「抽签」，抽完自动上锁（防止现场误点重抽）。<b>把种子数字记下来</b>，出问题时能原样重抽回来。签表举手机给全场看一圈。</li>
+          <li><b>宣读规则</b>：照「规则口径」里的口播稿念一遍，只念一次，别零散解释。</li>
+          <li><b>开赛</b>：按时间线 T1 开始叫号，两片场同时开打。</li>
+          <li><b>每场循环</b>：叫号 → 打球 → 报分 → 记分员确认 → 总裁判录比分 → 再叫下一场。<b>录完分才放下一场</b>，否则队伍会散。</li>
+          <li><b>更新赛程</b>：在「对阵图」卡片里填比分，页面自动更新胜者和进度；时间线这页也会跟着刷新。</li>
+          <li><b>阶段发布</b>：每打完 2–3 个时段点一次「发布」，观看端约 1 分钟内自动刷新，不用挨个私聊。</li>
+          <li><b>中场休息</b>：男双 / 女双打完、混双开打前休息 <span id="opsBreakMins"></span> 分钟，混双换人、补水、擦汗都在这会儿。</li>
+          <li><b>收官</b>：3、4 名赛 → 决赛 → 冠军名单生成 → 颁奖。</li>
+          <li><b>收尾</b>：走下面的「收尾清单」，别漏归还场地这一条。</li>
+        </ol>
+        <p class="ops-foot-note">每场循环里最容易出错的是<b>比分录错</b>：填的是<b>最终比分</b>（让分之后的比分），改比分也是直接在卡片上改，改完下游会自动清空，把下游重录一遍即可。</p>
+      </section>
+
+      <section class="ops-sec" id="opsRulesSec">
+        <div class="ops-h2">规则口径<span class="ops-tag">全场统一版本</span></div>
+        <p class="ops-desc">下面这些数字跟「设置」里的一致（改了设置，这里跟着变）。有争议时以这一栏为准。</p>
+        <ul class="ops-list" id="opsRules"></ul>
+        <div class="ops-h2" style="margin-top:18px">开场口播稿<span class="ops-tag">照着念就行</span></div>
+        <div class="ops-script" id="opsScript"></div>
+        <p class="ops-foot-note">口播稿只念规则，不解释为什么让分、为什么轮空——有疑问的人比赛后再问，场上不讨论。</p>
+      </section>
+
+      <section class="ops-sec" id="opsPlanSec">
+        <div class="ops-h2">预案<span class="ops-tag">出问题照着做</span></div>
+        <p class="ops-desc">每条都写了三件事：<b>怎么办</b>（人怎么做）和<b>页面上的操作</b>（点哪里）。顺序就是处置顺序。</p>
+        <ul class="ops-list">
+          <li><b>场地被别人占了 / 只剩一片场</b>先找场馆换场或换时段；换不了就串行——先打完男双女双，再打混双，结束时间整体顺延，休息照旧不压缩。<span class="ops-ui">页面：设置 → 时间与让分 → 改「开始时间」，赛程时间自动重算；比赛顺序不变。</span></li>
+          <li><b>下雨 / 灯光不足 / 场地在室外</b>当天早上就定，别拖到开赛。改室内或整体顺延，然后群里统一通知一次，别口头各说各话。<span class="ops-ui">页面：设置 → 赛事 → 改「开始时间」。</span></li>
+          <li><b>有人临时缺席</b>先问一句「能不能来」；来不了就候补顶上，顶不上就把他从名单里去掉。人少不凑错，宁可少打一场。<span class="ops-ui">页面：设置 → 名单（删名字）→ 候补替换（选缺阵球员 + 上场候补），签表里的名字会直接更新；改完记得重新公示。</span></li>
+          <li><b>缺席太多，对数不够</b>某个项目凑不满就直接砍掉这个项目；落单的人并进别的队要当场宣布并记下来。改完名单必须重抽对阵。<span class="ops-ui">页面：设置 → 签表锁 → 解锁 → 点「抽签」重抽（会换掉全部对阵，重抽完必须重新公示给全场）。</span></li>
+          <li><b>有人迟到</b>还没开赛的项目可以等 10 分钟；已经叫号没到，判该场弃权（对方 <span id="opsForfeitScore"></span>），当场宣布。<span class="ops-ui">页面：不用动，直接在群里说明。</span></li>
+          <li><b>有人受伤</b>先停赛、照顾伤者，该场按弃权处理；需要整场作废重打再解锁重抽对阵（搭档不变）。<span class="ops-ui">页面：设置 → 签表锁 → 解锁 → 只重抽对阵（搭档不变）。</span></li>
+          <li><b>比分填错了</b>在「对阵图」对应卡片上改数字即可；改完下游场次会自动清空，把下游那几场重录一遍。<span class="ops-ui">页面：对阵图 → 那场的两个比分框 → 改完按回车。</span></li>
+          <li><b>想重抽签</b>重抽会让全场记住的签表作废，重抽完必须重新公示一次；同种子 + 同名单 = 同一个结果，所以先把原种子记下来。<span class="ops-ui">页面：设置 → 签表锁 → 解锁 → 「抽签」（全部重抽）或「只重抽对阵」（搭档不变）；种子填回原数字可原样重现。</span></li>
+          <li><b>误进演示模式</b>演示数据带水印，<b>绝对不要发布</b>。<span class="ops-ui">页面：顶部横幅「退出演示」/「一键复原锁定签表」。</span></li>
+          <li><b>发布失败 / 没网</b>看报错：409 是远端刚被改过，等 30 秒再点一次；Token 被拒就去 GitHub 重发一个 token；实在发不出去就用手机拍下对阵图照片 + 群里口头通知，别让全场干等。<span class="ops-ui">页面：工具栏「发布」；备用：本地 publish.sh。</span></li>
+          <li><b>手机没电 / 页面崩了</b>签表存在这台设备的浏览器里，换设备用导出的 JSON 恢复。<span class="ops-ui">页面：工具栏「导出」存 JSON → 新设备「导入」。</span></li>
+          <li><b>比分有争议</b>比分牌 → 双方自报 → 判不了由总裁判拍板，当场定完不再改；赛后申诉只做记录，不改结果。<span class="ops-ui">页面：不用动。</span></li>
+          <li><b>观众挡场 / 拍照 / 围观</b>两片场之间留出通道；只在两场之间的休息时间拍照；要比分就让记分员播报，不要围观解说。<span class="ops-ui">页面：不用动。</span></li>
+          <li><b>打不完 / 时间拖长</b>不压缩休息、不缩短局数；实在不够就砍掉 3、4 名赛（当场宣布，冠军不受影响）。<span class="ops-ui">页面：不用动；想改预计时间就改「每场计划分钟」。</span></li>
+          <li><b>奖品不够 / 发错</b>奖品按「3 个项目 × 5 档」核对，发之前念一遍名次和奖品；不够的用小挂件补。<span class="ops-ui">页面：不用动。</span></li>
+          <li><b>网名不一致 / 有人要求改名</b>以报名网名为准，签表上的名字就是最终名字；要改统一在赛后改，不要在场上临时改。<span class="ops-ui">页面：对阵图上的队名可以直接改，改完自动保存。</span></li>
+          <li><b>抽签后误点又重抽了</b>真实抽签后会自动上锁；万一重抽了，把原种子填回种子框再抽一次就是原来那版。<span class="ops-ui">页面：种子输入框 → 填回原数字 → 抽签。</span></li>
+        </ul>
+      </section>
+
+      <section class="ops-sec" id="opsCloseSec">
+        <div class="ops-h2">收尾清单<span class="ops-tag">点一下打勾</span></div>
+        <p class="ops-desc">散场前花五分钟走一遍，尤其是归还场地和奖品。</p>
+        <div class="ops-check-group">
+          <label class="ops-chk"><input type="checkbox" data-chk="end-1"><span>冠军名单已生成、已核对名次、已发布（工具栏「发布」）</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="end-2"><span>导出最终 JSON 存档（工具栏「导出」），另发一份给自己存着</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="end-3"><span>归还场地：球网、场号牌、球筒、指示牌、借来的东西</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="end-4"><span>场地清理：垃圾带走、地面擦干、关灯关空调</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="end-5"><span>奖品发完并当场点清，垫付的钱记下来</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="end-6"><span>群内致谢、发照片、公布下次开赛时间</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="end-7"><span>把这次的名单 / 签表 / 赛果存成模板，下次直接改</span></label>
+        </div>
+        <p class="ops-foot-note">这一页是管理端内部说明，不要投屏给全场；可以投屏的只有「时间线」和「规则口径」两段。</p>
+      </section>
+
+    </div>
+  </div>
+</div>
 
 <script>
 window.__startApp = function(){
@@ -2498,6 +2743,8 @@ function render(){
   const sb=document.getElementById("styleBtn"); if(sb) sb.textContent=state.settings.bracketStyle==="international"?"纵向签表":"国际签表";
   const el=document.getElementById("saveState");
   if(el) el.textContent=state.savedAt?("已保存 "+new Date(state.savedAt).toLocaleTimeString("zh-CN",{hour12:false})):"未保存";
+  const opsDlg=document.getElementById("opsPanel");
+  if(opsDlg&&!opsDlg.hidden) renderOps();
 }
 
 function readManualSections(raw){
@@ -2784,6 +3031,175 @@ document.getElementById("pairsSec").addEventListener("change",e=>{
     if(p){ p.name=inp.value.trim(); break; }
   }
   save(); render();
+});
+
+/* ---------------- 赛务说明（管理端专用页面） ----------------
+   这一页只对管理端开放：流程 / 分工 / 预案 + 按当前时间和比分自动算的赛务状态。
+   勾选状态存在单独的 localStorage 键里，不进签表、不进导出、不参与发布。 */
+const OPS_CHK_KEY="hzb-ops-chk-v1";
+const OPS_KIND={md:"男双",wd:"女双",xd:"混双"};
+function opsChkGet(){try{const o=JSON.parse(localStorage.getItem(OPS_CHK_KEY)||"{}");return(o&&typeof o==="object")?o:{};}catch(e){return{};}}
+function opsChkSet(o){try{localStorage.setItem(OPS_CHK_KEY,JSON.stringify(o));}catch(e){}}
+function opsTeamName(t){return t?`${esc(t.p1.name)} + ${esc(t.p2.name)}`:"待定";}
+function opsMatchInfo(ref){
+  if(!ref) return null;
+  const kind=ref[0], mid=ref[1];
+  const br=state.brackets[kind];
+  const m=br?br.matches[mid]:null;
+  const a=m?resolveRef(m.a,br):null;
+  const b=m?resolveRef(m.b,br):null;
+  const scored=!!(m&&Number.isInteger(m.sa)&&Number.isInteger(m.sb));
+  return {kind,mid,label:OPS_KIND[kind]||kind,m,a,b,scored,sa:m?m.sa:null,sb:m?m.sb:null,
+          hc:!!((a&&a.type==="mm")||(b&&b.type==="mm")),
+          text:m?`${opsTeamName(a)} vs ${opsTeamName(b)}`:"待抽签"};
+}
+function opsSlotRange(i){const p=slotTime(i).split("-");return[parseHM(p[0]),parseHM(p[1])];}
+function opsNowMin(){const d=new Date();return d.getHours()*60+d.getMinutes();}
+function opsEventDay(){
+  const m=String(state.settings.date||"").match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  return m?{y:+m[1],m:+m[2],d:+m[3]}:null;
+}
+function opsIsEventDay(){
+  const ev=opsEventDay(); if(!ev) return true;
+  const n=new Date();
+  return n.getFullYear()===ev.y&&(n.getMonth()+1)===ev.m&&n.getDate()===ev.d;
+}
+function opsTodayText(){const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`;}
+function opsCellHtml(mi){
+  if(!mi) return `<td class="ops-t">休息 / 热身</td>`;
+  const sc=mi.scored?` <span class="ops-sc">${mi.sa}:${mi.sb}</span>`:"";
+  const hc=mi.hc?` <span class="ops-chip">让 ${state.settings.handicap} 分</span>`:"";
+  return `<td class="ops-m">${mi.text}${sc}${hc}</td>`;
+}
+function opsMatchList(){
+  const list=[];
+  SCHEDULE.forEach((row,i)=>{
+    [row[2],row[3]].forEach((ref,ci)=>{
+      if(!ref) return;
+      list.push({mi:opsMatchInfo(ref),court:ci===0?"5 号场":"6 号场",slot:i+1,time:slotTime(i)});
+    });
+  });
+  return list;
+}
+function renderOpsStatic(){
+  const s=state.settings;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el) el.textContent=v;};
+  set("opsSub",`${s.eventTitle} · ${s.date} · ${s.start} 开始 · ${s.venue} 5 / 6 号场`);
+  set("opsVenue",s.venue);
+  set("opsReferee",s.referee||"（未指定，去「设置 → 抽签 → 裁判/计分」填）");
+  set("opsBreakMins",String(s.blockBreakMin));
+  set("opsForfeitScore",`${s.points}:0`);
+}
+function renderOpsNow(){
+  const el=document.getElementById("opsNowCards"); if(!el) return;
+  const s=state.settings;
+  const isDay=opsIsEventDay();
+  const now=isDay?opsNowMin():-1;
+  const list=opsMatchList(), total=list.length;
+  const scored=list.filter(x=>x.mi.scored).length, pending=total-scored;
+  let cur=-1;
+  SCHEDULE.forEach((row,i)=>{const rg=opsSlotRange(i);if(now>=rg[0]&&now<rg[1]) cur=i;});
+  const next=list.find(x=>!x.mi.scored);
+  const endMin=opsSlotRange(SCHEDULE.length-1)[1];
+  const nowTxt=`${String(new Date().getHours()).padStart(2,"0")}:${String(new Date().getMinutes()).padStart(2,"0")}`;
+  const lockTxt=state.demo?"演示模式（别发布）":(state.drawn?(isLocked()?`已锁定 · ${lockTimeText()}`:"未锁定"):"先签到点名，再抽签");
+  const curV=cur>=0?`T${cur+1} · ${slotTime(cur)}`:(now<0?"还没开始":(now<opsSlotRange(0)[0]?"还没开始":"已过计划时间"));
+  const curS=cur>=0?`现在 ${nowTxt}，这一时段正在进行`
+    :(now<0?`今天 ${opsTodayText()} 不是比赛日，赛程按 ${s.date} 算`
+    :(now<opsSlotRange(0)[0]?`${s.date} ${s.start} 开打，现在 ${nowTxt}`:`颁奖 / 收尾阶段，现在 ${nowTxt}`));
+  const cards=[
+    {t:"签表",v:state.drawn?`已抽签 · 种子 ${state.seed===null||state.seed===undefined?"—":state.seed}`:"还没抽签",s:lockTxt},
+    {t:"赛程进度",v:`${scored} / ${total} 场已录分`,s:pending?`还有 ${pending} 场没录分`:"全部录完，可以颁奖了"},
+    {t:"当前时段",v:curV,s:curS},
+    {t:"下一场",v:next?`T${next.slot} · ${next.court}`:"没有待打的场次了",s:next?`${next.mi.label}：${next.mi.text}`:"收尾、发奖",hot:true},
+    {t:"预计结束",v:fmtMin(endMin),s:`按每场 ${s.matchMin} 分钟 + 场间 ${s.intervalMin} 分钟推算，实际以打完为准`},
+    {t:"场地",v:`${s.venue} 5 / 6 号场`,s:`${s.date} · ${s.start} 开始 · 总裁判：${s.referee||"未指定"}`}
+  ];
+  el.innerHTML=cards.map(c=>`<div class="ops-card${c.hot?" hot":""}"><b>${esc(c.t)}</b><div class="v">${esc(c.v)}</div><div class="s">${esc(c.s)}</div></div>`).join("");
+}
+function renderOpsTimeline(){
+  const tb=document.getElementById("opsTimelineBody"); if(!tb) return;
+  const s=state.settings;
+  const now=opsIsEventDay()?opsNowMin():-1;
+  let html=`<tr class="ops-break"><td class="ops-t">赛前</td><td class="ops-t">${esc(s.start)} 前 60 分钟</td><td colspan="3">场地到位 → 签到点名 → 抽签并公示 → 宣读规则 → 奖品就位</td></tr>`;
+  SCHEDULE.forEach((row,i)=>{
+    const rg=opsSlotRange(i);
+    const a=opsMatchInfo(row[2]), b=opsMatchInfo(row[3]);
+    const live=now>=rg[0]&&now<rg[1];
+    const pending=[a,b].filter(m=>m&&!m.scored).length;
+    const allDone=pending===0;
+    const cls=live?"ops-now-row":(allDone&&now>=rg[1]?"ops-done":"");
+    const chip=live?`<span class="ops-chip live">进行中</span>`
+      :(allDone?`<span class="ops-chip ok">已完成</span>`
+      :(now>=rg[1]?`<span class="ops-chip">未录分</span>`:`<span class="ops-chip">待开始</span>`));
+    if(i===7) html+=`<tr class="ops-break"><td class="ops-t">中场</td><td class="ops-t">${esc(fmtMin(opsSlotRange(6)[1]))}–${esc(fmtMin(rg[0]))}</td><td colspan="3">男双 / 女双 打完 → 休息 ${s.blockBreakMin} 分钟（混双换人、补水、擦汗）</td></tr>`;
+    html+=`<tr class="${cls}"><td class="ops-t">T${i+1}</td><td class="ops-t">${esc(slotTime(i))}</td>${opsCellHtml(a)}${opsCellHtml(b)}<td>${chip}</td></tr>`;
+  });
+  html+=`<tr class="ops-break"><td class="ops-t">赛后</td><td class="ops-t">${esc(fmtMin(opsSlotRange(SCHEDULE.length-1)[1]))} 起</td><td colspan="3">颁奖 → 归还场地 → 走收尾清单 → 发布最终结果</td></tr>`;
+  tb.innerHTML=html;
+}
+function renderOpsRules(){
+  const ul=document.getElementById("opsRules"); if(!ul) return;
+  const s=state.settings;
+  const items=[
+    ["计分",`${s.points} 分一局，每球得分；${s.points-1} 平后净胜 ${s.winBy} 分${s.cap?`，${s.cap} 分封顶`:"，不封顶"}，打到赢。`],
+    ["时长",s.timeLimit>0?`每场 ${s.timeLimit} 分钟硬上限，到点领先者胜。`:`不设时间上限，计划每场 ${s.matchMin} 分钟，长局就打长局。`],
+    ["间隔",`场间休息约 ${s.intervalMin} 分钟；男双 / 女双与混双之间休息 ${s.blockBreakMin} 分钟。`],
+    ["让分",`混双遇到男双，混双 ${s.handicap}:0 开局，男双让 ${s.handicap} 分；比分填让分之后的最终比分。`],
+    ["轮空",`轮空直接晋级，不用上场、不记比分，对阵图里是虚线框。`],
+    ["3、4 名",`决赛前一轮的两个负者再打一场，胜者第三名；不影响决赛。`],
+    ["名次",`三个项目各算各的：冠军、亚军、第三名、第四名，其余发参与奖。`],
+    ["弃权 / 退赛",`判对方胜，比分记 ${s.points}:0，当场宣布并在群里说明。`],
+    ["争议",`先看比分牌 → 双方自报 → 判不了由总裁判拍板；当场定完不再改，赛后申诉只做记录。`],
+    ["记名",`以报名网名为准，签表上的名字就是最终名字。`]
+  ];
+  ul.innerHTML=items.map(it=>`<li><b>${esc(it[0])}</b>${esc(it[1])}</li>`).join("");
+  const sc=document.getElementById("opsScript");
+  if(sc) sc.textContent=`各位，规则我念一遍：${s.points} 分一局，每球得分，${s.points-1} 平以后要净胜 ${s.winBy} 分，打到分出胜负为止，不设时间上限。场间休息 ${s.intervalMin} 分钟，混双开打前有 ${s.blockBreakMin} 分钟休息。混双碰上男双，混双 ${s.handicap}:0 先开始，男双让 ${s.handicap} 分；比分请填最终比分。有争议先报比分，别停下来吵，我来判断。`;
+}
+function opsApplyChk(){
+  const st=opsChkGet();
+  document.querySelectorAll("#opsPanel input[data-chk]").forEach(inp=>{inp.checked=!!st[inp.dataset.chk];});
+}
+function renderOps(){
+  if(!document.getElementById("opsNowCards")) return;
+  renderOpsStatic();renderOpsNow();renderOpsTimeline();renderOpsRules();opsApplyChk();
+}
+function openOps(){
+  renderOps();
+  const p=document.getElementById("opsPanel");
+  if(!p) return;
+  p.hidden=false;
+  document.body.classList.add("ops-open");
+  document.addEventListener("keydown",opsEscKey);
+}
+function closeOps(){
+  const p=document.getElementById("opsPanel");
+  if(!p) return;
+  p.hidden=true;
+  document.body.classList.remove("ops-open");
+  document.removeEventListener("keydown",opsEscKey);
+}
+function opsEscKey(e){if(e.key==="Escape")closeOps();}
+document.getElementById("opsBtn").addEventListener("click",openOps);
+document.getElementById("opsClose").addEventListener("click",closeOps);
+document.getElementById("opsPrint").addEventListener("click",()=>window.print());
+document.getElementById("opsClearChk").addEventListener("click",()=>{
+  if(!confirm("清空所有勾选？")) return;
+  opsChkSet({});opsApplyChk();toast("勾选已清空");
+});
+document.getElementById("opsPanel").addEventListener("change",e=>{
+  const inp=e.target.closest&&e.target.closest("input[data-chk]");
+  if(!inp) return;
+  const st=opsChkGet();
+  if(inp.checked) st[inp.dataset.chk]=Date.now(); else delete st[inp.dataset.chk];
+  opsChkSet(st);
+});
+document.querySelectorAll(".ops-nav button").forEach(b=>{
+  b.addEventListener("click",()=>{
+    const el=document.getElementById(b.dataset.target);
+    if(el) el.scrollIntoView({block:"start",behavior:"smooth"});
+  });
 });
 
 let _rzT=null;
