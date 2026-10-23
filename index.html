@@ -969,7 +969,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
-<script>window.__BUILD_ID__="06f9b3105a7a";</script>
+<script>window.__BUILD_ID__="32df96456029";</script>
 </head>
 <body>
 <div class="wrap">
@@ -2714,7 +2714,7 @@ function intlMatch(kind,m,br,extra=""){
   const li=(LIVE&&LIVE.byKey[tKey(kind,m.id)])||null;
   const filled=Number.isInteger(m.sa)&&Number.isInteger(m.sb);
   const bad=filled&&m.sa!==m.sb&&!isFinalScore(m.sa,m.sb,state.settings);
-  const cls=(li?`${li.running||li.now?" is-now":""}${li.next?" is-next":""}`:"")+(bad?" badscore":"")+(isSkipped(kind,m.id)?" is-skip":"");
+  const cls=(li?`${li.running||li.now?" is-now":""}${(li.next||li.courtNext)?" is-next":""}`:"")+(bad?" badscore":"")+(isSkipped(kind,m.id)?" is-skip":"");
   const note=bad?`<div class="badscore-note" title="${escAttr(finalRuleHint(state.settings))}">按规则还没结束：${m.sa}:${m.sb}</div>`:"";
   return `<div class="intl-match ${extra}${cls}" data-kind="${kind}" data-mid="${m.id}"><div class="intl-meta"><span>${m.id.toUpperCase()}</span><span>${tag}</span></div>${intlTeamRow(kind,m,a,"a",br)}${intlTeamRow(kind,m,b,"b",br)}${note}${mtLine(kind,m)}</div>`;
 }
