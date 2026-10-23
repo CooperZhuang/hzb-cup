@@ -220,6 +220,8 @@ button{font:inherit;color:inherit}
   min-height:44px;
 }
 .btn:active{transform:translateY(1px) scale(.995)}
+.btn:disabled{opacity:.42;cursor:not-allowed;transform:none}
+.btn:disabled:hover{background:inherit;border-color:transparent;color:inherit}
 .btn-primary{background:var(--lime);color:var(--ink);border-color:rgba(18,32,25,.18)}
 .btn-primary:hover{background:var(--lime-2)}
 .btn-ghost{background:transparent;border-color:var(--line);color:var(--ink-2)}
@@ -520,6 +522,14 @@ body{
 .toast[hidden]{display:none}
 
 
+.sub-sep{border:0;border-top:1px dashed var(--line);margin:12px 0}
+.sub-pool{max-height:176px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px 10px;display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;background:var(--paper)}
+.sub-pool:empty{display:none}
+.sub-cand{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:3px 0;cursor:pointer;min-width:0}
+.sub-cand input{accent-color:var(--green);flex:none}
+.sub-cand span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub-cand em{font-style:normal;color:var(--muted);font-size:10.5px;font-weight:500;margin-left:auto;flex:none}
+#subDrawResult:not(:empty){color:var(--green-2);font-weight:700}
 .set-three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .set-btns{display:flex;gap:8px;flex-wrap:wrap}
 .set-three textarea{min-height:84px}
@@ -1180,12 +1190,28 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
         <div class="set-btns"><button type="button" class="btn btn-ghost" id="manualApply">导入搭档，随机对阵</button><button type="button" class="btn btn-ghost" id="redrawBracketBtn">只重抽对阵（搭档不变）</button></div>
       </fieldset>
 
-      <fieldset>
+      <fieldset style="grid-column:1/-1">
         <legend>候补替换</legend>
-        <div class="field"><label for="subOut">缺阵球员</label><select id="subOut"></select></div>
-        <div class="field"><label for="subIn">上场候补</label><select id="subIn"><option value="">先选缺阵球员</option></select></div>
-        <button type="button" class="btn btn-ghost" id="subApply">替换</button>
-        <p class="set-hint">替换后不重新抽签，签表里的名字和头像会直接更新。</p>
+        <div class="set-two">
+          <div class="field"><label for="subOut">缺阵球员</label><select id="subOut"></select></div>
+          <div class="field"><label for="subIn">指定候补（上场）</label><select id="subIn"><option value="">先选缺阵球员</option></select></div>
+        </div>
+        <div class="set-btns"><button type="button" class="btn btn-ghost" id="subApply">用指定候补替换</button></div>
+        <p class="set-hint">指定候补按名字替换该球员参加的所有项目；替换后不重新抽签，签表里的名字和头像会直接更新。</p>
+
+        <hr class="sub-sep">
+        <p class="set-hint"><b>或者：从「输掉的人」里抽</b> —— 只能抽签定，抽中即锁定；抽到的只顶选中的项目，不影响他/她自己的另一个项目。</p>
+        <div class="set-two">
+          <div class="field"><label for="subKind">替换项目</label><select id="subKind"></select></div>
+          <div class="field"><label>候选池（取消勾选已经提前走的人）</label><span class="set-btns"><button type="button" class="btn btn-ghost" id="subCheckAll">全选</button><button type="button" class="btn btn-ghost" id="subCheckNone">全不选</button></span></div>
+        </div>
+        <div class="sub-pool" id="subPool"></div>
+        <div class="set-btns" style="margin-top:8px">
+          <button type="button" class="btn btn-ghost" id="subDrawBtn">抽签</button>
+          <button type="button" class="btn btn-ghost" id="subRedrawBtn" hidden>重新抽签</button>
+          <button type="button" class="btn btn-primary" id="subDrawApply" disabled>用抽中的人替换</button>
+        </div>
+        <p class="set-hint" id="subDrawResult"></p>
       </fieldset>
 
       <fieldset style="grid-column:1/-1">
@@ -1330,7 +1356,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
         <ul class="ops-list">
           <li><b>场地被别人占了 / 只剩一片场</b>先找场馆换场或换时段；换不了就串行——先打完男双女双，再打混双，结束时间整体顺延，休息照旧不压缩。<span class="ops-ui">页面：设置 → 时间与让分 → 改「开始时间」，赛程时间自动重算；比赛顺序不变。</span></li>
           <li><b>下雨 / 灯光不足 / 场地在室外</b>当天早上就定，别拖到开赛。改室内或整体顺延，然后群里统一通知一次，别口头各说各话。<span class="ops-ui">页面：设置 → 赛事 → 改「开始时间」。</span></li>
-          <li><b>有人临时缺席</b>先问一句「能不能来」；来不了就候补顶上，顶不上就把他从名单里去掉。人少不凑错，宁可少打一场。<span class="ops-ui">页面：设置 → 名单（删名字）→ 候补替换（选缺阵球员 + 上场候补），签表里的名字会直接更新；改完记得重新公示。</span></li>
+          <li><b>有人临时缺席</b>先问一句「能不能来」；来不了就候补顶上，顶不上就把他从名单里去掉。人少不凑错，宁可少打一场。<span class="ops-ui">页面：设置 → 候补替换：优先用「指定候补」；指定候补用掉后，从「输掉的人」里抽（选项目 → 取消勾选已提前走的人 → 抽签 → 用抽中的人替换，只顶该项目）。改完记得重新公示。</span></li>
           <li><b>缺席太多，对数不够</b>某个项目凑不满就直接砍掉这个项目；落单的人并进别的队要当场宣布并记下来。改完名单必须重抽对阵。<span class="ops-ui">页面：设置 → 签表锁 → 解锁 → 点「抽签」重抽（会换掉全部对阵，重抽完必须重新公示给全场）。</span></li>
           <li><b>有人迟到</b>还没开赛的项目可以等 10 分钟；已经叫号没到，判该场弃权（对方 <span id="opsForfeitScore"></span>），当场宣布。<span class="ops-ui">页面：不用动，直接在群里说明。</span></li>
           <li><b>有人受伤</b>先停赛、照顾伤者，该场按弃权处理；需要整场作废重打再解锁重抽对阵（搭档不变）。<span class="ops-ui">页面：设置 → 签表锁 → 解锁 → 只重抽对阵（搭档不变）。</span></li>
@@ -2936,6 +2962,8 @@ function fillSubSelectors(){
     MEN.map(p=>`<option value="${escAttr(p.name)}">${esc(p.name)}（男）</option>`).join("")+
     WOMEN.map(p=>`<option value="${escAttr(p.name)}">${esc(p.name)}（女）</option>`).join("");
   inn.innerHTML=`<option value="">先选缺阵球员</option>`;
+  subDrawReset();
+  fillSubKindSelect();
 }
 function updateSubIn(){
   const out=document.getElementById("subOut"), inn=document.getElementById("subIn");
@@ -2991,6 +3019,183 @@ function renamePairRefs(oldName,subName){
     }
   }
   return slots;
+}
+/* ---------------- 候补抽签（按项目，从输掉的人里抽） ----------------
+   规则：候补只能抽签定，抽中即锁定；抽到的只顶选中的项目，
+   不影响他/她自己另一个项目。候选 = 同性别、该项目已输完且没有待打场次的人。 */
+const KIND_LABEL={md:"男双",wd:"女双",xd:"混双"};
+const SUB_DRAW={kind:"",candidates:[],picked:null,draws:0,locked:false};
+const SUB_LOG_KEY="hzb-subdraw-log-v1";
+function subDrawReset(){SUB_DRAW.kind="";SUB_DRAW.candidates=[];SUB_DRAW.picked=null;SUB_DRAW.draws=0;SUB_DRAW.locked=false;}
+function subLogPush(rec){
+  try{
+    const log=JSON.parse(localStorage.getItem(SUB_LOG_KEY)||"[]");
+    log.push(rec);
+    while(log.length>50) log.shift();
+    localStorage.setItem(SUB_LOG_KEY,JSON.stringify(log));
+  }catch(e){}
+}
+function pairPending(kind,pair){
+  const br=state.brackets[kind]; if(!br||!pair) return false;
+  for(const m of Object.values(br.matches)){
+    if(m.winner) continue;
+    const a=resolveRef(m.a,br), b=resolveRef(m.b,br);
+    if((a&&a.code===pair.code)||(b&&b.code===pair.code)) return true;
+  }
+  return false;
+}
+function pairLost(kind,pair){
+  const br=state.brackets[kind]; if(!br||!pair) return null;
+  for(const m of Object.values(br.matches)){
+    if(!m.winner) continue;
+    const a=resolveRef(m.a,br), b=resolveRef(m.b,br);
+    const hit=(a&&a.code===pair.code)||(b&&b.code===pair.code);
+    if(hit && m.winner.code!==pair.code) return m;
+  }
+  return null;
+}
+function playerAlive(kind,name){
+  const br=state.brackets[kind]; if(!br) return false;
+  for(const pair of state.pairs[kind]||[]){
+    if((pair.p1&&pair.p1.name===name)||(pair.p2&&pair.p2.name===name)){
+      if(pairPending(kind,pair)) return true;
+    }
+  }
+  return false;
+}
+function aliveKinds(name){return ["md","wd","xd"].filter(k=>state.drawn&&playerAlive(k,name));}
+function subCandidates(kind,absentName){
+  if(!state.brackets[kind]) return [];
+  const wantMan=MEN.some(p=>p.name===absentName);
+  const out=[], seen=new Set();
+  for(const pair of state.pairs[kind]||[]){
+    if(pairPending(kind,pair)) continue;       // 还在打：不算输完
+    if(!pairLost(kind,pair)) continue;         // 没输过（冠军/还没打）：不算输掉的人
+    for(const p of [pair.p1,pair.p2]){
+      if(!p||!p.name||p.name===absentName||seen.has(p.name)) continue;
+      if(MEN.some(x=>x.name===p.name)!==wantMan) continue;   // 同性
+      if(playerAlive(kind,p.name)) continue;                 // 同项目里还有别的对在打（历史替补）
+      seen.add(p.name);
+      out.push({name:p.name,lv:p.lv});
+    }
+  }
+  return out;
+}
+function pickUniform(n){
+  if(n<=1) return 0;
+  try{
+    const limit=Math.floor(0x100000000/n)*n;
+    const buf=new Uint32Array(1);
+    let v;
+    do{ crypto.getRandomValues(buf); v=buf[0]; }while(v>=limit);
+    return v%n;
+  }catch(e){ return Math.floor(Math.random()*n); }
+}
+function fillSubKindSelect(){
+  const out=document.getElementById("subOut"), sel=document.getElementById("subKind");
+  if(!out||!sel) return;
+  const name=out.value;
+  const kinds=name?aliveKinds(name):[];
+  sel.innerHTML=kinds.length
+    ? kinds.map(k=>`<option value="${k}">${KIND_LABEL[k]}</option>`).join("")
+    : `<option value="">${name?(state.drawn?"该球员已经没有待打场次":"还没抽签"):"先选缺阵球员"}</option>`;
+  subDrawReset();
+  fillSubPool();
+}
+function fillSubPool(){
+  const box=document.getElementById("subPool"); if(!box) return;
+  const absent=document.getElementById("subOut").value;
+  const kind=document.getElementById("subKind").value;
+  SUB_DRAW.candidates=(absent&&kind)?subCandidates(kind,absent):[];
+  SUB_DRAW.kind=kind||"";
+  if(!SUB_DRAW.candidates.length){
+    box.innerHTML=kind?`<p class="set-hint" style="margin:0">${KIND_LABEL[kind]}里现在没有「已输完、还在场」的同性别选手；先用指定候补，或等前面场次打完。</p>`:"";
+  }else{
+    box.innerHTML=SUB_DRAW.candidates.map(c=>
+      `<label class="sub-cand"><input type="checkbox" value="${escAttr(c.name)}"${SUB_DRAW.locked?" disabled":" checked"}><span>${esc(c.name)}</span><em>已淘汰</em></label>`
+    ).join("");
+  }
+  updateSubDrawUI();
+}
+function checkedSubPool(){
+  return [...document.querySelectorAll("#subPool input[type=checkbox]")].filter(x=>x.checked).map(x=>x.value);
+}
+function updateSubDrawUI(){
+  const locked=SUB_DRAW.locked;
+  document.querySelectorAll("#subPool input[type=checkbox]").forEach(x=>{x.disabled=locked;});
+  const draw=document.getElementById("subDrawBtn"), redraw=document.getElementById("subRedrawBtn"),
+        apply=document.getElementById("subDrawApply"), res=document.getElementById("subDrawResult"),
+        all=document.getElementById("subCheckAll"), none=document.getElementById("subCheckNone");
+  if(draw) draw.disabled=locked||!SUB_DRAW.candidates.length;
+  if(redraw) redraw.hidden=!locked;
+  if(apply) apply.disabled=!locked;
+  if(all) all.disabled=locked;
+  if(none) none.disabled=locked;
+  if(res){
+    res.textContent=locked
+      ? `抽中：${SUB_DRAW.picked}（${KIND_LABEL[SUB_DRAW.kind]||""} · 第 ${SUB_DRAW.draws} 次抽签 · 已锁定）`
+      : (SUB_DRAW.candidates.length?`候选 ${SUB_DRAW.candidates.length} 人：取消勾选已经提前走的人，然后点「抽签」`:"");
+  }
+}
+function drawSubOnce(){
+  if(SUB_DRAW.locked) return;
+  const absent=document.getElementById("subOut").value;
+  const kind=document.getElementById("subKind").value;
+  if(!absent||!kind){ alert("先选缺阵球员和替换项目"); return; }
+  const pool=checkedSubPool();
+  if(!pool.length){ alert("候选池是空的：至少勾选一个人"); return; }
+  SUB_DRAW.kind=kind;
+  SUB_DRAW.picked=pool[pickUniform(pool.length)];
+  SUB_DRAW.draws++;
+  SUB_DRAW.locked=true;
+  subLogPush({at:new Date().toISOString(),action:"draw",absent,kind,pool,picked:SUB_DRAW.picked,draws:SUB_DRAW.draws});
+  updateSubDrawUI();
+}
+function redrawSub(){
+  if(!SUB_DRAW.locked) return;
+  if(!confirm(`已经抽中「${SUB_DRAW.picked}」。重抽会重新洗一遍候选池，确认重抽？`)) return;
+  SUB_DRAW.locked=false;
+  drawSubOnce();
+}
+/* 只在一个项目里按名字改名：pairs / 种子 / 各场 winner / lock 都同步；
+   用新对象替换 p1/p2，避免同会话抽签时把名单对象也改了 */
+function renameInKind(kind,oldName,newName){
+  let slots=0;
+  const seen=new Set();
+  const walk=(pr)=>{
+    if(!pr||typeof pr!=="object"||seen.has(pr)) return;
+    seen.add(pr);
+    if(pr.p1&&pr.p1.name===oldName){ pr.p1={name:newName,lv:pr.p1.lv}; slots++; }
+    if(pr.p2&&pr.p2.name===oldName){ pr.p2={name:newName,lv:pr.p2.lv}; slots++; }
+    if(pr.winner) walk(pr.winner);
+  };
+  for(const pr of state.pairs[kind]||[]) walk(pr);
+  const br=state.brackets[kind];
+  if(br){ for(const pr of br.seeds||[]) walk(pr); for(const m of Object.values(br.matches||{})) walk(m.winner); }
+  if(state.lock){
+    for(const pr of (state.lock.pairs&&state.lock.pairs[kind])||[]) walk(pr);
+    const lk=state.lock.brackets&&state.lock.brackets[kind];
+    if(lk){ for(const pr of lk.seeds||[]) walk(pr); for(const m of Object.values(lk.matches||{})) walk(m.winner); }
+  }
+  for(const pr of state.pairs[kind]||[]){
+    if((pr.p1&&pr.p1.name===newName)||(pr.p2&&pr.p2.name===newName)) pr.sum=Number((pr.p1.lv+pr.p2.lv).toFixed(1));
+  }
+  if(kind==="xd"){
+    state.byes=(state.byes||[]).map(n=>n===oldName?newName:n);
+    if(state.lock&&Array.isArray(state.lock.byes)) state.lock.byes=state.lock.byes.map(n=>n===oldName?newName:n);
+  }
+  return slots;
+}
+function applyDrawnSub(){
+  if(!SUB_DRAW.locked||!SUB_DRAW.picked){ alert("先抽签再替换"); return; }
+  const absent=document.getElementById("subOut").value;
+  const kind=SUB_DRAW.kind, sub=SUB_DRAW.picked, label=KIND_LABEL[kind]||"";
+  if(!absent||!kind){ alert("先选缺阵球员和替换项目"); return; }
+  if(!confirm(`确认用「${sub}」替换 ${label} 里的「${absent}」？只改${label}，不影响其他项目。`)) return;
+  const slots=renameInKind(kind,absent,sub);
+  subLogPush({at:new Date().toISOString(),action:"apply",absent,kind,picked:sub,draws:SUB_DRAW.draws});
+  save(); render(); fillSettings();
+  alert(slots?`已替换：${label} ${absent} → ${sub}（签表 ${slots} 处，只改了${label}）`:`${label} 里没找到「${absent}」`);
 }
 function applySub(){
   const out=document.getElementById("subOut"), inn=document.getElementById("subIn");
@@ -3106,6 +3311,13 @@ document.getElementById("unlockBtn").addEventListener("click",unlockDraw);
 document.getElementById("restoreBtn").addEventListener("click",()=>{ restoreLocked(); closeSettings(); });
 document.getElementById("settingsBtn").addEventListener("click",openSettings);
 document.getElementById("subOut").addEventListener("change",updateSubIn);
+document.getElementById("subOut").addEventListener("change",fillSubKindSelect);
+document.getElementById("subKind").addEventListener("change",fillSubPool);
+document.getElementById("subDrawBtn").addEventListener("click",drawSubOnce);
+document.getElementById("subRedrawBtn").addEventListener("click",redrawSub);
+document.getElementById("subDrawApply").addEventListener("click",applyDrawnSub);
+document.getElementById("subCheckAll").addEventListener("click",()=>{document.querySelectorAll("#subPool input[type=checkbox]").forEach(x=>{if(!x.disabled) x.checked=true;});updateSubDrawUI();});
+document.getElementById("subCheckNone").addEventListener("click",()=>{document.querySelectorAll("#subPool input[type=checkbox]").forEach(x=>{if(!x.disabled) x.checked=false;});updateSubDrawUI();});
 document.getElementById("subApply").addEventListener("click",applySub);
 document.getElementById("manualApply").addEventListener("click",applyManualDraw);
 document.getElementById("redrawBracketBtn").addEventListener("click",redrawBracket);
