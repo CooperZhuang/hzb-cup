@@ -1415,7 +1415,7 @@ function takeLock(reason){
   };
 }
 function refreshLockSnapshot(){
-  if(isLocked()) takeLock(state.lock.reason);
+  if(isLocked() && !state.demo) takeLock(state.lock.reason);
 }
 function lockTimeText(){
   if(!isLocked()) return "";
@@ -2411,6 +2411,7 @@ function load(){
     const s=JSON.parse(raw);
     if(s && s.drawn && s.brackets){
       Object.assign(state,normalize(s));
+      applyRoster();
       return true;
     }
   }catch(e){}
@@ -2937,33 +2938,83 @@ function updateSubIn(){
   const sub=isMan?state.settings.subMen:state.settings.subWomen;
   inn.innerHTML=sub?`<option value="${escAttr(sub)}">${esc(sub)}</option>`:`<option value="">没有可用候补</option>`;
 }
+/* 名单快照：把当前 MEN/WOMEN 写进 state，随签表一起保存/导出/发布，
+   刷新页面或本地重建后名单不会再退回内置默认值 */
+function rosterRef(){
+  state.roster={
+    men:MEN.map(p=>({name:p.name,lv:p.lv})),
+    women:WOMEN.map(p=>({name:p.name,lv:p.lv}))
+  };
+}
+function applyRoster(){
+  const r=state.roster;
+  if(!r||!Array.isArray(r.men)||!Array.isArray(r.women)) return;
+  const men=r.men.filter(p=>p&&p.name).map(p=>({name:String(p.name),lv:Number(p.lv)}));
+  const women=r.women.filter(p=>p&&p.name).map(p=>({name:String(p.name),lv:Number(p.lv)}));
+  if(men.length!==12||women.length!==10) return;
+  if(men.some(p=>!Number.isFinite(p.lv))||women.some(p=>!Number.isFinite(p.lv))) return;
+  MEN.length=0; MEN.push(...men);
+  WOMEN.length=0; WOMEN.push(...women);
+}
+/* 按名字把改名同步到所有签表副本：载入存档/发布包后 state.pairs、brackets.seeds、
+   各场 winner、lock 都是 JSON 深拷贝，只改名单对象不会生效（历史 bug：提示已替换，签表没变） */
+function renamePairRefs(oldName,subName){
+  let slots=0;
+  const seen=new Set();
+  const walk=(pr)=>{
+    if(!pr||typeof pr!=="object"||seen.has(pr)) return;
+    seen.add(pr);
+    if(pr.p1&&pr.p1.name===oldName){ pr.p1.name=subName; slots++; }
+    if(pr.p2&&pr.p2.name===oldName){ pr.p2.name=subName; slots++; }
+    if(pr.winner) walk(pr.winner);
+  };
+  for(const kind of ["md","wd","xd"]){
+    for(const pr of state.pairs[kind]||[]) walk(pr);
+    const br=state.brackets[kind];
+    if(br){
+      for(const pr of br.seeds||[]) walk(pr);
+      for(const m of Object.values(br.matches||{})) walk(m.winner);
+    }
+    if(state.lock&&Array.isArray(state.lock.pairs&&state.lock.pairs[kind])) for(const pr of state.lock.pairs[kind]) walk(pr);
+    const lk=state.lock&&state.lock.brackets&&state.lock.brackets[kind];
+    if(lk){
+      for(const pr of lk.seeds||[]) walk(pr);
+      for(const m of Object.values(lk.matches||{})) walk(m.winner);
+    }
+  }
+  return slots;
+}
 function applySub(){
   const out=document.getElementById("subOut"), inn=document.getElementById("subIn");
   const oldName=out.value, subName=inn.value;
   if(!oldName||!subName){ alert("请选择缺阵球员和候补"); return; }
+  if(state.demo){ alert("演示模式里不能替换：先点横幅上的「一键复原」回到真实签表"); return; }
   const isMan=MEN.some(p=>p.name===oldName);
   const pool=isMan?MEN:WOMEN;
   const p=pool.find(x=>x.name===oldName);
   if(!p){ alert("找不到缺阵球员"); return; }
   if(MEN.concat(WOMEN).some(x=>x.name===subName)){ alert("这个候补已经在场上了"); return; }
   const oldLv=p.lv;
+  const slots=renamePairRefs(oldName,subName);
   p.name=subName;
   p.lv=oldLv;
   for(const kind of ["md","wd","xd"]){
     for(const pr of state.pairs[kind]||[]){
-      if(pr.p1===p||pr.p2===p) pr.sum=Number((pr.p1.lv+pr.p2.lv).toFixed(1));
+      if((pr.p1&&pr.p1.name===subName)||(pr.p2&&pr.p2.name===subName)) pr.sum=Number((pr.p1.lv+pr.p2.lv).toFixed(1));
     }
   }
   state.byes=(state.byes||[]).map(n=>n===oldName?subName:n);
+  if(state.lock&&Array.isArray(state.lock.byes)) state.lock.byes=state.lock.byes.map(n=>n===oldName?subName:n);
   for(const key of ["forcedMd","forcedWd","forcedXd"]){
     const raw=state.settings[key]||"";
     if(raw) state.settings[key]=raw.replace(new RegExp(oldName.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"g"),subName);
   }
   if(isMan && state.settings.subMen===subName) state.settings.subMen="";
   if(!isMan && state.settings.subWomen===subName) state.settings.subWomen="";
-  refreshLockSnapshot();
+  rosterRef();
   save(); render(); fillSettings();
-  alert(`已替换：${oldName} → ${subName}`);
+  if(state.drawn && !slots){ alert(`签表里没有找到「${oldName}」：只更新了名单，请确认是否已经替换过`); return; }
+  alert(`已替换：${oldName} → ${subName}${state.drawn?`（签表 ${slots} 处）`:""}`);
 }
 function fillSettings(){
   const s=state.settings, $=id=>document.getElementById(id);
@@ -3031,6 +3082,7 @@ function saveSettings(){ if(!window.__isAdmin()){toast("仅管理员可操作");
   }
   MEN.length=0; MEN.push(...men); WOMEN.length=0; WOMEN.push(...women);
   state.settings=next;
+  rosterRef();
   closeSettings();
   if(drawChanged && state.drawn) reset(); else { save(); render(); }
 }
@@ -3095,6 +3147,7 @@ document.getElementById("importFile").addEventListener("change",async e=>{
     const obj=JSON.parse(await f.text());
     if(!obj.drawn||!obj.brackets) throw new Error("不是有效的签表文件");
     Object.assign(state,normalize(obj));
+    applyRoster();
     if(obj.skin && SKINS.some(x=>x.id===obj.skin)) setSkin(obj.skin,true);
     if(state.drawn && !state.demo && !isLocked()) takeLock("import");
     save(); render();
