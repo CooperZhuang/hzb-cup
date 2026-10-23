@@ -385,9 +385,10 @@ legend{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--green-2);
 .field input,.field select,.field textarea{border:1px solid var(--line);border-radius:var(--radius-sm);padding:7px 8px;font:inherit;font-size:12px;background:var(--paper);color:var(--ink);min-width:0}
 .field textarea{min-height:118px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.5;resize:vertical}
 .set-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.set-three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 .set-actions{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--line)}
 .set-preview{font-size:11px;color:var(--green-2);margin:3px 0 0;font-weight:600}
-@media (max-width:760px){.set-grid{grid-template-columns:1fr}.set-two{grid-template-columns:1fr}}
+@media (max-width:760px){.set-grid{grid-template-columns:1fr}.set-two{grid-template-columns:1fr}.set-three{grid-template-columns:1fr}}
 
 
 /* readability pass: players first, team names secondary */
@@ -909,6 +910,7 @@ body.checkin-open{overflow:hidden}
 .checkin-row:last-child{border-bottom:0}
 .checkin-row input{accent-color:var(--green);flex:none}
 .checkin-row .avatar{flex:none;margin-right:1px}
+.sub-tag{display:inline-block;margin-left:3px;padding:0 4px;border-radius:4px;background:var(--paper-2);border:1px solid var(--line);color:var(--muted);font-size:.72em;font-weight:700;line-height:1.5;vertical-align:1px}
 .checkin-row .ci-name{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .checkin-row .ci-lv{color:var(--muted);font-size:11px;flex:none}
 .checkin-row .ci-sign{flex:1;border-bottom:1px solid var(--line);height:16px;margin-left:6px}
@@ -967,7 +969,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
-<script>window.__BUILD_ID__="9d867d7fd07d";</script>
+<script>window.__BUILD_ID__="06f9b3105a7a";</script>
 </head>
 <body>
 <div class="wrap">
@@ -1235,7 +1237,12 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 
       <fieldset style="grid-column:1/-1">
         <legend>候补替换</legend>
-        <div class="set-two">
+        <div class="set-three">
+          <div class="field"><label for="subReason">离场原因</label><select id="subReason">
+            <option value="absent">缺席（没来）</option>
+            <option value="injured">受伤</option>
+            <option value="leave">其他原因早退</option>
+          </select></div>
           <div class="field"><label for="subOut">缺阵球员</label><select id="subOut"></select></div>
           <div class="field"><label for="subIn">指定候补（上场）</label><select id="subIn"><option value="">先选缺阵球员</option></select></div>
         </div>
@@ -1478,6 +1485,12 @@ const SUBS = __PD().subs;
 /* 候补等级取自趣运动报名/会员数据（2026-10-24 从 act 1284758 刷新）。
    等级可以在「设置 → 名单 → 补充候补名单」里直接改，每行：名字,等级。 */
 const DEFAULT_SUB_LIST = {men:[{name:SUBS.men,lv:2.0}],women:[{name:SUBS.women,lv:1.5}]};
+const SUB_REASON={absent:"缺席",injured:"受伤",leave:"其他原因早退"};
+function subReason(){
+  const el=document.getElementById("subReason");
+  const code=(el&&el.value)||"absent";
+  return {code:code,text:SUB_REASON[code]||"未注明"};
+}
 function readSubList(id){
   const raw=document.getElementById(id);
   if(!raw) return [];
@@ -1516,6 +1529,7 @@ const state = {
   courts:{"5":null,"6":null},
   subList:{men:DEFAULT_SUB_LIST.men.map(x=>({...x})),women:DEFAULT_SUB_LIST.women.map(x=>({...x}))},
   subRecords:[],
+  substitutes:[],
   checkin:{},
   skipped:{}
 };
@@ -1854,7 +1868,7 @@ function clearDownstream(kind,mid){
   if(!br) return;
   for(const m of Object.values(br.matches)){
     if(dependsOn(m.a,mid)||dependsOn(m.b,mid)){
-      m.winner=null; m.sa=null; m.sb=null;
+      m.winner=null; m.sa=null; m.sb=null; delete m.histA; delete m.histB;
       clearDownstream(kind,m.id);
     }
   }
@@ -1900,6 +1914,24 @@ function recomputeWinner(m,br){
   if(!a||!b){ m.winner=null; return; }
   m.winner=isFinalScore(m.sa,m.sb,state.settings)?(m.sa>m.sb?a:b):null;
 }
+function snapPair(p){
+  if(!p) return null;
+  return {code:p.code,name:p.name,sum:p.sum,p1:{...p.p1},p2:{...p.p2}};
+}
+function subInfoFor(name,kind){
+  const list=state.substitutes||[];
+  for(let i=list.length-1;i>=0;i--){
+    const e=list[i];
+    if(e&&e.sub===name&&(e.scope==="all"||e.scope===kind)) return e;
+  }
+  return null;
+}
+function subTag(name,kind){
+  const e=subInfoFor(name,kind);
+  if(!e) return "";
+  const reason=e.reasonText||SUB_REASON[e.reason]||"";
+  return `<span class="sub-tag" title="替补：${escAttr(e.absent)}${reason?`（${escAttr(reason)}）`:""}">替补</span>`;
+}
 function setScore(kind,mid,side,raw){
   if(state.skipped&&state.skipped[tKey(kind,mid)]) delete state.skipped[tKey(kind,mid)];
   const br=state.brackets[kind], m=br.matches[mid];
@@ -1913,6 +1945,12 @@ function setScore(kind,mid,side,raw){
   if(before!==after) clearDownstream(kind,mid);
   // 比分刚填满 = 这场刚打完：已经点过「开始」的话，把结束时间记成现在
   const nowDone=isFinalScore(m.sa,m.sb,state.settings);
+  if(nowDone){
+    if(!m.histA||!m.histB){
+      m.histA=snapPair(resolveRef(m.a,br));
+      m.histB=snapPair(resolveRef(m.b,br));
+    }
+  } else { delete m.histA; delete m.histB; }
   if(!wasDone&&nowDone){
     const t=tGet(kind,mid);
     if(t&&t.s!=null&&t.e==null){t.e=Date.now();if(!state.timing)state.timing={};state.timing[tKey(kind,mid)]=t;}
@@ -2532,7 +2570,7 @@ function resetScores(){
   for(const kind of ["md","wd","xd"]){
     const br=state.brackets[kind];
     if(!br||!br.matches) continue;
-    for(const m of Object.values(br.matches)){ m.sa=null; m.sb=null; m.winner=null; }
+    for(const m of Object.values(br.matches)){ m.sa=null; m.sb=null; m.winner=null; delete m.histA; delete m.histB; }
   }
   state.timing={};
   state.courts={"5":null,"6":null};
@@ -2587,6 +2625,10 @@ function normalize(s){
     }).filter(x=>x&&x.name);
   }
   if(!Array.isArray(s.subRecords)) s.subRecords=[];
+  if(!Array.isArray(s.substitutes)) s.substitutes=[];
+  if(!s.substitutes.length && s.subRecords.length){
+    s.substitutes=s.subRecords.map(r=>({absent:r.absent,sub:r.sub,scope:r.scope||"all",mode:r.mode||"direct",reason:r.reason||"",reasonText:r.reasonText||"",at:r.at}));
+  }
   if(!s.checkin||typeof s.checkin!=="object") s.checkin={};
   if(!s.skipped||typeof s.skipped!=="object") s.skipped={};
   if(s.pairs){for(const kind of ["md","wd","xd"]){ (s.pairs[kind]||[]).forEach(p=>{ if(p.name===undefined) p.name=""; }); }}
@@ -2657,13 +2699,15 @@ function intlTeamRow(kind,m,t,side,br){
   const ready=!!t;
   const win=m.winner&&t&&m.winner.code===t.code;
   const score=side==="a"?m.sa:m.sb;
-  const name=t?`${esc(t.p1.name)} + ${esc(t.p2.name)}`:"待定";
+  const nm=x=>`${esc(x.name)}${subTag(x.name,kind)}`;
+  const name=t?`${nm(t.p1)} + ${nm(t.p2)}`:"待定";
   const val=Number.isInteger(score)?score:"";
   const player=t?`<span class="intl-player">${avatarStack(t.p1,t.p2)}<span class="intl-name" title="${t.name?escAttr(t.name):""}">${name}</span></span>`:`<span class="intl-name">待定</span>`;
   return `<div class="intl-team ${win?"win":m.winner?"loss":""}">${player}<input class="score intl-score" type="number" min="0" max="99" inputmode="numeric" data-kind="${kind}" data-mid="${m.id}" data-side="${side}" value="${val}" ${ready?"":"disabled"} aria-label="比分"></div>`;
 }
 function intlMatch(kind,m,br,extra=""){
-  const a=resolveRef(m.a,br),b=resolveRef(m.b,br);
+  const a=(m.histA&&m.histB)?m.histA:resolveRef(m.a,br);
+  const b=(m.histA&&m.histB)?m.histB:resolveRef(m.b,br);
   const finalId=kind==="xd"?"m10":kind==="wd"?"m4":"m5";
   const thirdId=kind==="xd"?"m11":kind==="wd"?"m5":"m6";
   const tag=m.id===finalId?"决赛":m.id===thirdId?"3、4名":"";
@@ -2787,6 +2831,7 @@ function championData(kind){
   if(!f||!f.winner) return null;
   const a=resolveRef(f.a,br), b=resolveRef(f.b,br);
   if(!a||!b) return null;
+  const hA=f.histA, hB=f.histB;
   const winner=f.winner, loser=winner.code===a.code?b:a;
   const tm=br.matches[thirdId];
   const finalScore=Number.isInteger(f.sa)&&Number.isInteger(f.sb)?(winner.code===a.code?`${f.sa}:${f.sb}`:`${f.sb}:${f.sa}`):"";
@@ -2795,7 +2840,14 @@ function championData(kind){
     const ta=resolveRef(tm.a,br), tb=resolveRef(tm.b,br);
     thirdScore=tm.winner.code===ta.code?`${tm.sa}:${tm.sb}`:`${tm.sb}:${tm.sa}`;
   }
-  return {winner,loser,third:tm&&tm.winner?tm.winner:null,finalScore,thirdScore};
+  const dispWinner=hA&&hB?(winner.code===a.code?hA:hB):winner;
+  const dispLoser=hA&&hB?(winner.code===a.code?hB:hA):loser;
+  let dispThird=tm&&tm.winner?tm.winner:null;
+  if(tm&&tm.winner&&tm.histA&&tm.histB){
+    const ta=resolveRef(tm.a,br), tb=resolveRef(tm.b,br);
+    dispThird=tm.winner.code===ta.code?tm.histA:tm.histB;
+  }
+  return {winner:dispWinner,loser:dispLoser,third:dispThird,finalScore,thirdScore};
 }
 function renderChampions(){
   const sec=document.getElementById("championsSec"), grid=document.getElementById("champGrid");
@@ -2803,10 +2855,10 @@ function renderChampions(){
   if(!state.drawn){sec.hidden=true;grid.innerHTML="";return;}
   const data={md:championData("md"),wd:championData("wd"),xd:championData("xd")};
   if(!data.md||!data.wd||!data.xd){sec.hidden=true;grid.innerHTML="";return;}
-  const who=t=>t?`<b>${avatarStack(t.p1,t.p2)}<span class="players-text">${esc(t.p1.name)} + ${esc(t.p2.name)}</span></b>${t.name?`<small>${esc(t.name)}</small>`:""}`:"<b>待定</b>";
-  const line=(label,t,score,first)=>`<div class="champ-line${first?" first":""}"><span class="place">${label}</span><span class="who">${who(t)}</span><span class="champ-score">${score||""}</span></div>`;
-  const card=(label,d)=>`<div class="champ-card"><div class="champ-kind">${label}</div>${line("冠军",d.winner,d.finalScore,true)}${line("亚军",d.loser,"")}${line("季军",d.third,d.thirdScore)}</div>`;
-  grid.innerHTML=card("男双",data.md)+card("女双",data.wd)+card("混双",data.xd);
+  const who=(t,kind)=>t?`<b>${avatarStack(t.p1,t.p2)}<span class="players-text">${esc(t.p1.name)}${subTag(t.p1.name,kind)} + ${esc(t.p2.name)}${subTag(t.p2.name,kind)}</span></b>${t.name?`<small>${esc(t.name)}</small>`:""}`:"<b>待定</b>";
+  const line=(label,t,score,first,kind)=>`<div class="champ-line${first?" first":""}"><span class="place">${label}</span><span class="who">${who(t,kind)}</span><span class="champ-score">${score||""}</span></div>`;
+  const card=(label,d,kind)=>`<div class="champ-card"><div class="champ-kind">${label}</div>${line("冠军",d.winner,d.finalScore,true,kind)}${line("亚军",d.loser,"",false,kind)}${line("季军",d.third,d.thirdScore,false,kind)}</div>`;
+  grid.innerHTML=card("男双",data.md,"md")+card("女双",data.wd,"wd")+card("混双",data.xd,"xd");
   sec.hidden=false;
 }
 function fillRandomScores(){
@@ -2915,7 +2967,8 @@ function renderSubHistory(){
   const parts=recs.slice(0,8).map(r=>{
     const when=(()=>{try{const d=new Date(r.at);return `${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;}catch(e){return "";}})();
     const how=r.mode==="draw"?`抽签·${KIND_LABEL[r.scope]||""}`:"直接换";
-    return `${esc(r.absent)} → ${esc(r.sub)}（${how}${when?` · ${when}`:""}）`;
+    const reason=r.reasonText||SUB_REASON[r.reason]||"原因未记录";
+    return `${esc(r.absent)}（${esc(reason)}）→ ${esc(r.sub)}（${how}${when?` · ${when}`:""}）`;
   });
   el.innerHTML=`已用 ${recs.length} 次：${parts.join("；")}${recs.length>8?" …":""}`;
 }
@@ -2955,7 +3008,12 @@ function applySettings(){
     const subs=[];
     for(const it of (state.subList&&state.subList.men)||[]) subs.push(`${avatarImg(it.name,"avatar avatar-sm")} ${esc(it.name)}（男${it.lv!=null?` · ${Number(it.lv).toFixed(1)}`:""}）`);
     for(const it of (state.subList&&state.subList.women)||[]) subs.push(`${avatarImg(it.name,"avatar avatar-sm")} ${esc(it.name)}（女${it.lv!=null?` · ${Number(it.lv).toFixed(1)}`:""}）`);
-    $("rosterNote").innerHTML=subs.length?`候补：${subs.join("、")}`:`候补：已用完`;
+    const recs=(state.subRecords||[]).slice(-3).map(r=>{
+      const reason=r.reasonText||SUB_REASON[r.reason]||"原因未记录";
+      return `${esc(r.absent)}（${esc(reason)}）→ ${esc(r.sub)}`;
+    });
+    const subTxt=subs.length?`候补：${subs.join("、")}`:`候补：已用完`;
+    $("rosterNote").innerHTML=recs.length?`${subTxt} · 轮换：${recs.join("；")}`:subTxt;
   }
 }
 function renderDemoState(){
@@ -2997,6 +3055,8 @@ function render(){
   if(el) el.textContent=state.savedAt?("已保存 "+new Date(state.savedAt).toLocaleTimeString("zh-CN",{hour12:false})):"未保存";
   const opsDlg=document.getElementById("opsPanel");
   if(opsDlg&&!opsDlg.hidden) renderOps();
+  const ckDlg=document.getElementById("checkinPanel");
+  if(ckDlg&&!ckDlg.hidden) renderCheckin();
 }
 
 function readManualSections(raw){
@@ -3382,15 +3442,19 @@ function applyDrawnSub(){
   const absent=document.getElementById("subOut").value;
   const kind=SUB_DRAW.kind, sub=SUB_DRAW.picked, label=KIND_LABEL[kind]||"";
   if(!absent||!kind){ alert("先选缺阵球员和替换项目"); return; }
+  const reason=subReason();
   if(!confirm(`确认用「${sub}」替换 ${label} 里的「${absent}」？只改${label}，不影响其他项目。`)) return;
   const cand=MEN.concat(WOMEN).find(p=>p.name===sub);
   const newLv=cand&&Number.isFinite(Number(cand.lv))?Number(cand.lv):null;
   const slots=renameInKind(kind,absent,sub,newLv);
   subLogPush({at:new Date().toISOString(),action:"apply",absent,kind,picked:sub,draws:SUB_DRAW.draws});
   if(!Array.isArray(state.subRecords)) state.subRecords=[];
-  state.subRecords.push({at:new Date().toISOString(),mode:"draw",absent:absent,sub:sub,scope:kind,draws:SUB_DRAW.draws,lv:newLv});
+  const at=new Date().toISOString();
+  state.subRecords.push({at:at,mode:"draw",absent:absent,sub:sub,scope:kind,draws:SUB_DRAW.draws,lv:newLv,reason:reason.code,reasonText:reason.text});
+  if(!Array.isArray(state.substitutes)) state.substitutes=[];
+  state.substitutes.push({absent:absent,sub:sub,scope:kind,mode:"draw",reason:reason.code,reasonText:reason.text,at:at});
   save(); render(); fillSettings();
-  alert(slots?`已替换：${label} ${absent} → ${sub}${newLv!=null?`（等级 ${newLv.toFixed(1)}）`:""}（签表 ${slots} 处，只改了${label}）`:`${label} 里没找到「${absent}」`);
+  alert(slots?`已替换：${label} ${absent}（${reason.text}）→ ${sub}${newLv!=null?`（等级 ${newLv.toFixed(1)}）`:""}（签表 ${slots} 处，只改了${label}）`:`${label} 里没找到「${absent}」`);
 }
 function applySub(){
   const out=document.getElementById("subOut"), inn=document.getElementById("subIn");
@@ -3409,6 +3473,7 @@ function applySub(){
   const sub=availableSubs(isMan).find(it=>it.name===subName);
   if(!sub){ alert("这个候补不在候补名单里（可能已经用过了）"); return; }
   const oldLv=p.lv;
+  const reason=subReason();
   const newLv=Number.isFinite(Number(sub.lv))?Number(sub.lv):oldLv;
   const slots=renamePairRefs(oldName,subName);
   p.name=subName;
@@ -3428,11 +3493,14 @@ function applySub(){
   const subKey=isMan?"men":"women";
   state.subList[subKey]=(state.subList[subKey]||[]).filter(it=>it.name!==subName);
   if(!Array.isArray(state.subRecords)) state.subRecords=[];
-  state.subRecords.push({at:new Date().toISOString(),mode:"direct",absent:oldName,sub:subName,scope:"all",lv:newLv});
+  const at=new Date().toISOString();
+  state.subRecords.push({at:at,mode:"direct",absent:oldName,sub:subName,scope:"all",lv:newLv,reason:reason.code,reasonText:reason.text});
+  if(!Array.isArray(state.substitutes)) state.substitutes=[];
+  state.substitutes.push({absent:oldName,sub:subName,scope:"all",mode:"direct",reason:reason.code,reasonText:reason.text,at:at});
   rosterRef();
   save(); render(); fillSettings();
   if(state.drawn && !slots){ alert(`签表里没有找到「${oldName}」：只更新了名单，请确认是否已经替换过`); return; }
-  alert(`已替换：${oldName} → ${subName}（等级 ${newLv.toFixed(1)}）${state.drawn?`（签表 ${slots} 处）`:""}`);
+  alert(`已替换：${oldName}（${reason.text}）→ ${subName}（等级 ${newLv.toFixed(1)}）${state.drawn?`（签表 ${slots} 处）`:""}`);
 }
 function fillSettings(){
   const s=state.settings, $=id=>document.getElementById(id);
