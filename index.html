@@ -742,6 +742,7 @@ svg.intl-lines path{fill:none;stroke:var(--connector);stroke-width:1.6;stroke-li
 
 /* ---------------- 计时 / 当前场次高亮 ---------------- */
 html[data-role="viewer"] .mt-btn{display:none!important}
+html[data-role="viewer"] #courtBoard{display:none!important}
 .match.is-next,.intl-match.is-next{border-color:var(--green-2);box-shadow:0 0 0 1px var(--green-2)}
 .match.is-now,.intl-match.is-now{border-color:var(--green);animation:mtPulse 2.4s ease-in-out infinite}
 @keyframes mtPulse{
@@ -765,9 +766,33 @@ html[data-role="viewer"] .mt-btn{display:none!important}
 }
 .mt-btn:hover{border-color:var(--green);color:var(--green);background:var(--surface)}
 .mt-btn-x{padding:3px 7px;color:var(--muted)}
+.mt-btn-go{background:var(--green);border-color:var(--green);color:var(--on-accent)}
+.mt-btn-go:hover{background:var(--green-2);border-color:var(--green-2);color:var(--on-accent)}
+.mt-court{padding:3px 8px;font-weight:800}
+.mt-court.on{background:var(--lime);border-color:var(--lime-2);color:var(--on-lime)}
+.mt-badge.court{background:var(--green);border:1px solid var(--green);color:var(--on-accent)}
+.mt-time.adj{color:var(--green-2);font-weight:700}
+.mt-time.early{color:var(--green);font-weight:700}
 .schedule tr.slot-now td{background:var(--lime)}
 .schedule .mt-cell{display:block;margin-top:3px;font-size:10.5px;color:var(--muted)}
 .schedule .mt-cell .mt-badge{display:inline-block;margin-right:4px}
+.schedule .time.adj{color:var(--green-2);font-weight:700}
+.schedule .time.early{color:var(--green);font-weight:700}
+/* 场地板：两片场现在分别在打哪一场 */
+.ops-board{border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--paper);padding:10px 12px;margin-bottom:12px}
+.board-head{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin-bottom:8px}
+.board-head b{font-size:12.5px;color:var(--green-2)}
+.board-head span{font-size:11px;color:var(--muted)}
+.board-row{display:grid;grid-template-columns:52px 1fr auto;gap:6px 10px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.board-row:first-of-type{border-top:0}
+.board-row>b{font-size:12px;font-weight:800;white-space:nowrap}
+.board-row.busy>b{color:var(--green)}
+.board-mid{font-size:12.5px;font-weight:600;line-height:1.5}
+.board-mid .idle{color:var(--muted);font-weight:500;font-style:italic}
+.board-act{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.board-act .mt-elapsed{font-size:11px}
+.board-next{grid-column:2/-1;font-size:11px;color:var(--muted)}
+.ops-hint{font-size:11px;color:var(--muted)}
 
 /* ---------------- 赛务说明（管理端专用，观看端不显示） ---------------- */
 html[data-role="viewer"] #opsBtn,html[data-role="viewer"] #opsPanel{display:none!important}
@@ -991,6 +1016,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 
   <section id="scheduleSec">
     <div class="sec-head"><h2>赛程</h2><p id="schedMeta">预计 13 分钟一局 · 上不封顶</p></div>
+    <div id="courtBoard"></div>
     <table class="schedule">
       <thead><tr><th style="width:110px">时段</th><th>5 号场</th><th>6 号场</th></tr></thead>
       <tbody id="scheduleBody"></tbody>
@@ -1278,8 +1304,8 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
           <li><b>抽签并公示</b>：点「抽签」，抽完自动上锁（防止现场误点重抽）。<b>把种子数字记下来</b>，出问题时能原样重抽回来。签表举手机给全场看一圈。</li>
           <li><b>宣读规则</b>：照「规则口径」里的口播稿念一遍，只念一次，别零散解释。</li>
           <li><b>开赛</b>：按时间线 T1 开始叫号，两片场同时开打。</li>
-          <li><b>每场循环</b>：叫号 → 在对阵图那张卡片上点「<b>开始</b>」（记下开打时间，卡片会亮绿框并显示已打时长）→ 打球 → 报分 → 记分员确认 → 总裁判录比分（<b>录满比分时结束时间自动记成这一刻</b>）→ 再叫下一场。<b>录完分才放下一场</b>，否则队伍会散。</li>
-          <li><b>落后了不用改计划时间</b>：每场结束时间一记，后面的时段自动往后顺延（赛程表上会显示「顺延 → 新时间」），只延不提前；想强制改开始时间，去设置里改「开始时间」。</li>
+          <li><b>每场循环</b>：叫号 → 在对阵图那张卡片上点「<b>上场</b>」（排到空着的 5 / 6 号场，同时记下开打时间，卡片亮绿框并显示已打时长；两片场各点一次，就是两场同时打）→ 打球 → 报分 → 记分员确认 → 总裁判录比分（<b>录满比分时结束时间自动记成这一刻</b>）→ 再叫下一场。<b>录完分才放下一场</b>，否则队伍会散。</li>
+          <li><b>提前或落后都不用改计划时间</b>：每场实际开始/结束时间一记，后面的时段自动跟着走 —— 超时显示「顺延 → 新时间」，打得快显示「提前 → 新时间」，两个方向都会跟着走；想强制改开始时间，去设置里改「开始时间」。</li>
           <li><b>更新赛程</b>：在「对阵图」卡片里填比分，页面自动更新胜者和进度；时间线这页也会跟着刷新。</li>
           <li><b>阶段发布</b>：每打完 2–3 个时段点一次「发布」，观看端约 1 分钟内自动刷新，不用挨个私聊。</li>
           <li><b>中场休息</b>：男双 / 女双打完、混双开打前休息 <span id="opsBreakMins"></span> 分钟，混双换人、补水、擦汗都在这会儿。</li>
@@ -1367,7 +1393,8 @@ const state = {
   brackets:{md:null,wd:null,xd:null},
   locked:false,
   lock:null,
-  timing:{}
+  timing:{},
+  courts:{"5":null,"6":null}
 };
 
 /* ---------------- 签表安全锁 ---------------- */
@@ -2344,7 +2371,7 @@ function doDraw(forceSeed,opts={}){ if(!window.__isAdmin()) return false;
 function reset(){
   state.seed=null;state.drawn=false;state.demo=false;state.manualPairs=false;state.byes=[];
   state.pairs={md:[],wd:[],xd:[]};state.brackets={md:null,wd:null,xd:null};
-  state.locked=false;state.lock=null;state.timing={};
+  state.locked=false;state.lock=null;state.timing={};state.courts={"5":null,"6":null};
   save(); render();
 }
 function save(){
@@ -2360,6 +2387,9 @@ function normalize(s){
   if(s.locked===undefined) s.locked=false;
   if(!s.lock || !s.lock.pairs || !s.lock.brackets){ s.locked=false; s.lock=null; }
   if(!s.timing || typeof s.timing!=="object") s.timing={};
+  if(!s.courts || typeof s.courts!=="object") s.courts={"5":null,"6":null};
+  if(!s.courts["5"]) s.courts["5"]=null;
+  if(!s.courts["6"]) s.courts["6"]=null;
   if(!hadStyleVersion){s.settings.bracketStyle="international";s.settings.bracketStyleVersion=1;}
   if(!s.settings.handicapVersion || s.settings.handicapVersion<2){ s.settings.handicap=6; s.settings.handicapVersion=2; }
   if(s.pairs){for(const kind of ["md","wd","xd"]){ (s.pairs[kind]||[]).forEach(p=>{ if(p.name===undefined) p.name=""; }); }}
@@ -2719,10 +2749,12 @@ function slotTime(i){
 }
 function renderSchedule(){
   const plan=(LIVE&&LIVE.plan)||slotPlan();
+  const board=document.getElementById("courtBoard");
+  if(board) board.innerHTML=courtBoardHtml();
   document.getElementById("scheduleBody").innerHTML=SCHEDULE.map(([r,t,a,b],idx)=>{
     const p=plan[idx];
     const time=`<span class="time">${fmtMin(p.st)}–${fmtMin(p.ed)}</span>`
-      +(p.delay?`<span class="time adj">顺延 → ${fmtMin(p.adjSt)}–${fmtMin(p.adjEd)}</span>`:"");
+      +(p.delay?`<span class="time ${p.delay>0?"adj":"early"}">${p.delay>0?"顺延":"提前"} → ${fmtMin(p.adjSt)}–${fmtMin(p.adjEd)}</span>`:"");
     const now=(LIVE&&LIVE.curSlot===idx)?" slot-now":"";
     return `<tr class="${now.trim()}"><td class="round">T${r}${time}</td>${scheduleCell(a)}${scheduleCell(b)}</tr>`;
   }).join("");
@@ -3082,7 +3114,24 @@ document.getElementById("brackets").addEventListener("click",e=>{
   const btn=e.target.closest&&e.target.closest(".mt-btn");
   if(!btn) return;
   e.preventDefault();
-  setTiming(btn.dataset.kind,btn.dataset.mid,btn.dataset.tact);
+  const act=btn.dataset.tact;
+  if(act==="court5"){ assignCourt(btn.dataset.kind,btn.dataset.mid,"5"); return; }
+  if(act==="court6"){ assignCourt(btn.dataset.kind,btn.dataset.mid,"6"); return; }
+  setTiming(btn.dataset.kind,btn.dataset.mid,act);
+});
+document.getElementById("scheduleSec").addEventListener("click",e=>{
+  const btn=e.target.closest&&e.target.closest("[data-act]");
+  if(!btn) return;
+  e.preventDefault();
+  const act=btn.dataset.act;
+  if(act==="off"){
+    if(window.__isAdmin&&!window.__isAdmin()) return;
+    const key=tKey(btn.dataset.kind,btn.dataset.mid);
+    if(courtOf(key)==="5") courtAssign("5",null);
+    if(courtOf(key)==="6") courtAssign("6",null);
+    save();render();return;
+  }
+  if(act==="end") setTiming(btn.dataset.kind,btn.dataset.mid,"end");
 });
 document.getElementById("brackets").addEventListener("keydown",e=>{
   if(e.key==="Enter"&&e.target.classList.contains("score")) e.target.blur();
@@ -3099,7 +3148,8 @@ document.getElementById("pairsSec").addEventListener("change",e=>{
 });
 
 /* ---------------- 计时 / 当前场次高亮 ----------------
-   记录每场的实际开始/结束时间，后续时段按超时自动顺延；对阵图里高亮"正在打/该打了/下一场"。 */
+   记录每场的实际开始/结束时间，后续时段按实际偏差自动顺延或提前；
+   对阵图里高亮"正在打/该打了/下一场"，并且可以手动指定哪一场在几号场地。 */
 function tKey(kind,mid){return kind+":"+mid;}
 function tGet(kind,mid){const t=state.timing&&state.timing[tKey(kind,mid)];return t||null;}
 function tClock(ts){const d=new Date(ts);return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;}
@@ -3110,30 +3160,47 @@ function tElapsedText(fromTs,toTs){
   const mm=String(m).padStart(2,"0"),ss=String(sec).padStart(2,"0");
   return h?`${h}:${mm}:${ss}`:`${mm}:${ss}`;
 }
-/* 每个时段：计划时间 + 按实际超时顺延后的时间 */
+/* ---------------- 场地占用（5 号场 / 6 号场，两片场可以同时打两场） ---------------- */
+function courtGet(c){return (state.courts&&state.courts[c])||null;}
+function courtOf(key){
+  if(!key) return null;
+  if(courtGet("5")===key) return "5";
+  if(courtGet("6")===key) return "6";
+  return null;
+}
+function courtFree(){
+  if(!courtGet("5")) return "5";
+  if(!courtGet("6")) return "6";
+  return null;
+}
+function courtAssign(c,key){ if(!state.courts) state.courts={"5":null,"6":null}; state.courts[c]=key||null; }
+function courtClearAll(){ state.courts={"5":null,"6":null}; }
+/* 每个时段：计划时间 + 按实际偏差（顺延或提前）调整后的时间 */
 function slotPlan(){
   const s=state.settings;
   const out=[];
-  let delay=0;
+  let carry=0;
+  const dayStart=parseHM(s.start);
   SCHEDULE.forEach((row,i)=>{
     const step=s.matchMin+s.intervalMin;
     const brk=i>=7?s.blockBreakMin:0;
-    const st=parseHM(s.start)+i*step+brk, ed=st+s.matchMin;
-    let actualEnd=null;
+    const st=dayStart+i*step+brk, ed=st+s.matchMin;
+    let aStart=null,aEnd=null;
     [row[2],row[3]].forEach(ref=>{
       if(!ref) return;
       const t=tGet(ref[0],ref[1]);
-      if(t&&t.e!=null) actualEnd=(actualEnd==null)?t.e:Math.max(actualEnd,t.e);
+      if(!t) return;
+      if(t.s!=null){const m=tMinOfDay(t.s);aStart=(aStart==null)?m:Math.min(aStart,m);}
+      if(t.e!=null){const m=tMinOfDay(t.e);aEnd=(aEnd==null)?m:Math.max(aEnd,m);}
     });
-    out.push({i,st,ed,adjSt:st+delay,adjEd:ed+delay,delay,actualEnd});
-    if(actualEnd!=null){
-      const over=tMinOfDay(actualEnd)-ed;
-      if(over>delay) delay=over;      // 只顺延，不提前
-    }
+    const adjSt=(aStart!=null)?aStart:(st+carry);
+    const adjEd=(aEnd!=null)?aEnd:(adjSt+s.matchMin);
+    out.push({i,st,ed,adjSt:adjSt,adjEd:adjEd,delay:adjSt-st,actualStart:aStart,actualEnd:aEnd});
+    carry=adjEd-ed;      // 提前就是负数，后面跟着一起提前
   });
   return out;
 }
-/* 赛程里的每一场：位置、对手是否确定、有没有比分、计时记录 */
+/* 赛程里的每一场：位置、对手是否确定、有没有比分、计时记录、占着哪片场 */
 function matchTable(){
   const list=[];
   SCHEDULE.forEach((row,i)=>{
@@ -3144,12 +3211,15 @@ function matchTable(){
       const m=br?br.matches[mid]:null;
       const a=m?resolveRef(m.a,br):null, b=m?resolveRef(m.b,br):null;
       const t=tGet(kind,mid);
+      const key=tKey(kind,mid);
       list.push({
-        key:tKey(kind,mid),kind,mid,slot:i,court:ci===0?"5 号场":"6 号场",
-        a,b,ready:!!(a&&b),
+        key:key,kind:kind,mid:mid,slot:i,court:ci===0?"5 号场":"6 号场",
+        a:a,b:b,ready:!!(a&&b),
         scored:!!(m&&Number.isInteger(m.sa)&&Number.isInteger(m.sb)),
         t:t||null,
-        played:!!(t&&(t.s!=null||t.e!=null)),      // 开打过（不管比分录没录）
+        court:courtOf(key),
+        assigned:!!courtOf(key),
+        played:!!(t&&(t.s!=null||t.e!=null)),
         running:!!(t&&t.s!=null&&t.e==null),
         ended:!!(t&&t.e!=null)
       });
@@ -3168,6 +3238,8 @@ function liveInfo(){
   list.forEach(x=>{byKey[x.key]=Object.assign({},x,{plan:plan[x.slot],now:false,next:false});});
   const nowKeys=new Set();
   list.forEach(x=>{if(x.running){byKey[x.key].running=true;nowKeys.add(x.key);}});
+  // 手动指定了场地的，就是"现在在打"
+  list.forEach(x=>{if(x.assigned){byKey[x.key].now=true;nowKeys.add(x.key);}});
   if(curSlot>=0) list.forEach(x=>{
     if(x.slot===curSlot&&x.ready&&!x.scored){byKey[x.key].now=true;nowKeys.add(x.key);}
   });
@@ -3182,14 +3254,7 @@ function liveInfo(){
       byKey[x.key].courtNext=true;
     }
   });
-  return {curSlot,plan,list,byKey,nextKey:next?next.key:null,nowKeys};
-}
-/* 计时按钮什么时候出现：比赛当天，或者已经记过时间（事后补记/纠错） */
-function mtActive(){
-  if(opsIsEventDay()) return true;
-  const t=state.timing||{};
-  for(const k in t){const v=t[k];if(v&&(v.s!=null||v.e!=null)) return true;}
-  return false;
+  return {curSlot:curSlot,plan:plan,list:list,byKey:byKey,nextKey:next?next.key:null,nowKeys:nowKeys,courtNext:courtNext};
 }
 function setTiming(kind,mid,act){
   if(window.__isAdmin&&!window.__isAdmin()) return;
@@ -3197,23 +3262,79 @@ function setTiming(kind,mid,act){
   const key=tKey(kind,mid);
   const t=state.timing[key]||{};
   const now=Date.now();
-  if(act==="start"){t.s=now;t.e=null;}
+  if(act==="start"){
+    // 有空场地就顺手排上去（两片场可以同时排两场）
+    if(!courtOf(key)){
+      const free=courtFree();
+      if(free) courtAssign(free,key);
+    }
+    t.s=now;t.e=null;
+  }
   else if(act==="end"){t.e=now;}
-  else if(act==="clear"){delete state.timing[key];save();render();return;}
+  else if(act==="clear"){
+    delete state.timing[key];
+    if(courtOf(key)==="5") courtAssign("5",null);
+    if(courtOf(key)==="6") courtAssign("6",null);
+    save();render();return;
+  }
   state.timing[key]=t;
   save();render();
 }
+/* 把某场排到指定场地（手动指定"当前在打哪一场"） */
+function assignCourt(kind,mid,court){
+  if(window.__isAdmin&&!window.__isAdmin()) return;
+  const key=tKey(kind,mid);
+  const cur=courtOf(key);
+  if(cur&&cur===court){ courtAssign(court,null); save(); render(); return; }  // 再点一次＝撤下
+  const other=court==="5"?"6":"5";
+  if(courtGet(other)===key) courtAssign(other,null);
+  courtAssign(court,key);
+  if(!state.timing) state.timing={};
+  const t=state.timing[key]||{};
+  if(t.s==null){ t.s=Date.now(); state.timing[key]=t; }
+  save(); render();
+}
+/* 计时/上场按钮什么时候出现：比赛当天、已经记过时间、或已经排了场地 */
+function mtActive(){
+  if(opsIsEventDay()) return true;
+  const t=state.timing||{};
+  for(const k in t){const v=t[k];if(v&&(v.s!=null||v.e!=null)) return true;}
+  if(courtGet("5")||courtGet("6")) return true;
+  return false;
+}
+/* 场地板：两片场现在各自在打哪一场 */
+function courtBoardHtml(){
+  if(!mtActive()) return "";
+  const rows=["5","6"].map(c=>{
+    const key=courtGet(c);
+    const li=key&&LIVE?LIVE.byKey[key]:null;
+    const t=key?tGet(...key.split(":")):null;
+    const txt=li?`${li.label?li.label:({md:"男双",wd:"女双",xd:"混双"})[li.kind]} ${li.mid.toUpperCase()} · ${li.a?`${esc(li.a.p1.name)} + ${esc(li.a.p2.name)}`:""} vs ${li.b?`${esc(li.b.p1.name)} + ${esc(li.b.p2.name)}`:""}`:"";
+    const st=li?(li.running?`<span class="mt-badge now">进行中</span>`:(li.ended?`<span class="mt-badge wait">待录分</span>`:"")):"";
+    const el=(t&&t.s!=null&&t.e==null)?`<span class="mt-elapsed">已打 ${tElapsedText(t.s)}</span>`:"";
+    const acts=key?`<button type="button" class="mt-btn" data-act="end" data-kind="${li.kind}" data-mid="${li.mid}">结束</button><button type="button" class="mt-btn mt-btn-x" data-act="off" data-kind="${li.kind}" data-mid="${li.mid}" title="从这块场地撤下">撤下</button>`:`<span class="ops-hint">点对阵图卡片上的「上场」排进来</span>`;
+    const nxt=LIVE&&LIVE.courtNext?LIVE.courtNext[c+" 号场"]:null;
+    return `<div class="board-row${key?" busy":""}"><b>${c} 号场</b><div class="board-mid">${key?txt:`<span class="idle">空闲</span>`}</div><div class="board-act">${st}${el}${acts}</div>${key&&nxt?`<div class="board-next">接着打：${({md:"男双",wd:"女双",xd:"混双"})[nxt.kind]} ${nxt.mid.toUpperCase()}</div>`:""}</div>`;
+  }).join("");
+  return `<div class="ops-board"><div class="board-head"><b>现在 · 两片场分别在打哪一场</b><span>手动指定：点对阵图卡片上的「上场」或「5 / 6」把它排到场地；两片场可以同时排两场</span></div>${rows}</div>`;
+}
 /* 对阵图卡片下面的计时条：只给"有关"的场次显示，其余不占地方 */
 function mtLine(kind,m){
-  const li=(LIVE&&LIVE.byKey[tKey(kind,m.id)])||null;
+  const key=tKey(kind,m.id);
+  const li=(LIVE&&LIVE.byKey[key])||null;
   if(!li) return "";
   const t=li.t;
+  const court=li.court;
+  const free=courtFree();
   const badge=li.running?`<span class="mt-badge now">进行中</span>`
     :(li.played&&!li.scored)?`<span class="mt-badge wait">待录分</span>`
     :(mtActive()&&(li.now||li.courtNext))?`<span class="mt-badge now">该打了</span>`
     :(mtActive()&&li.next)?`<span class="mt-badge next">下一场</span>`:"";
-  if(!badge&&!t) return "";
+  const courtChip=court?`<span class="mt-badge court">${court} 号场</span>`:"";
+  const showControls=!!(t||court||li.running);
+  if(!badge&&!t&&!court&&!(mtActive()&&li.ready&&!li.played&&!li.scored)) return "";
   const plan=li.plan?`计划 ${fmtMin(li.plan.st)}–${fmtMin(li.plan.ed)}`:"";
+  const adj=(li.plan&&li.plan.delay)?`${li.plan.delay>0?"顺延":"提前"} ${fmtMin(li.plan.adjSt)}–${fmtMin(li.plan.adjEd)}`:"";
   let act="";
   if(t){
     if(t.s!=null&&t.e!=null) act=`实际 ${tClock(t.s)}–${tClock(t.e)}`;
@@ -3222,11 +3343,13 @@ function mtLine(kind,m){
   }
   const elapsed=(t&&t.s!=null&&t.e==null)
     ?`<span class="mt-elapsed" data-kind="${kind}" data-mid="${m.id}">已打 ${tElapsedText(t.s)}</span>`:"";
-  const btn=t&&t.s!=null
-    ?`<button type="button" class="mt-btn" data-tact="end" data-kind="${kind}" data-mid="${m.id}">${t.e!=null?"重记结束":"结束"}</button>`
-    :`<button type="button" class="mt-btn" data-tact="start" data-kind="${kind}" data-mid="${m.id}">开始</button>`;
-  const clr=t?`<button type="button" class="mt-btn mt-btn-x" data-tact="clear" data-kind="${kind}" data-mid="${m.id}" title="清除计时">×</button>`:"";
-  return `<div class="mt-line">${badge}<span class="mt-time">${plan}</span>${act?`<span class="mt-time act">${act}</span>`:""}${elapsed}${btn}${clr}</div>`;
+  let main;
+  if(t&&t.s!=null&&t.e==null) main=`<button type="button" class="mt-btn" data-tact="end" data-kind="${kind}" data-mid="${m.id}">结束</button>`;
+  else if(t&&t.e!=null) main=`<button type="button" class="mt-btn" data-tact="end" data-kind="${kind}" data-mid="${m.id}">重记结束</button>`;
+  else main=`<button type="button" class="mt-btn mt-btn-go" data-tact="start" data-kind="${kind}" data-mid="${m.id}">${(free&&!court)?"上场":"开始"}</button>`;
+  const courtBtns=showControls?`<button type="button" class="mt-btn mt-court${court==="5"?" on":""}" data-tact="court5" data-kind="${kind}" data-mid="${m.id}" title="排到 5 号场">5</button><button type="button" class="mt-btn mt-court${court==="6"?" on":""}" data-tact="court6" data-kind="${kind}" data-mid="${m.id}" title="排到 6 号场">6</button>`:"";
+  const clr=(t||court)?`<button type="button" class="mt-btn mt-btn-x" data-tact="clear" data-kind="${kind}" data-mid="${m.id}" title="清除计时和场地">×</button>`:"";
+  return `<div class="mt-line">${courtChip}${badge}<span class="mt-time">${plan}</span>${adj?`<span class="mt-time adj">${adj}</span>`:""}${act?`<span class="mt-time act">${act}</span>`:""}${elapsed}${main}${courtBtns}${clr}</div>`;
 }
 function mtStatusChip(kind,mid){
   const li=(LIVE&&LIVE.byKey[tKey(kind,mid)])||null;
@@ -3341,11 +3464,18 @@ function renderOpsNow(){
   const runV=running.length?running.map(x=>`${x.court} ${({md:"男双",wd:"女双",xd:"混双"})[x.kind]} ${x.mid.toUpperCase()}`).join(" / "):(next?`T${next.slot+1} · ${next.court}`:"没有待打的场次了");
   const runS=running.length?running.map(x=>`${({md:"男双",wd:"女双",xd:"混双"})[x.kind]}：${x.a?`${esc(x.a.p1.name)} + ${esc(x.a.p2.name)}`:""} vs ${x.b?`${esc(x.b.p1.name)} + ${esc(x.b.p2.name)}`:""}（已打 ${tElapsedText(x.t.s)}）`).join("　")
     :(next?`${({md:"男双",wd:"女双",xd:"混双"})[next.kind]}：${next.a?`${esc(next.a.p1.name)} + ${esc(next.a.p2.name)}`:""} vs ${next.b?`${esc(next.b.p1.name)} + ${esc(next.b.p2.name)}`:""}`:"收尾、发奖");
+  const courtTxt=["5","6"].map(c=>{
+    const key=courtGet(c);
+    if(!key) return `${c} 号场空闲`;
+    const li=LIVE&&LIVE.byKey[key];
+    return `${c} 号场：${li?`${({md:"男双",wd:"女双",xd:"混双"})[li.kind]} ${li.mid.toUpperCase()}`:""}`;
+  }).join("　｜　");
   const cards=[
     {t:"签表",v:state.drawn?`已抽签 · 种子 ${state.seed===null||state.seed===undefined?"—":state.seed}`:"还没抽签",s:lockTxt},
     {t:"赛程进度",v:`${scored} / ${total} 场已录分`,s:pending?`还有 ${pending} 场没录分`:"全部录完，可以颁奖了"},
     {t:"当前时段",v:curV,s:curS},
     {t:"正在打 / 下一场",v:runV,s:runS,hot:true},
+    {t:"两片场",v:courtTxt,s:"手动指定：点对阵图卡片上的「上场」或「5 / 6」排场；两片场可以同时打两场"},
     {t:"预计结束",v:fmtMin(endMin),s:`按每场 ${s.matchMin} 分钟 + 场间 ${s.intervalMin} 分钟推算，实际以打完为准`},
     {t:"场地",v:`${s.venue} 5 / 6 号场`,s:`${s.date} · ${s.start} 开始 · 总裁判：${s.referee||"未指定"}`}
   ];
