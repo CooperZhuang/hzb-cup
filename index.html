@@ -562,13 +562,23 @@ body{
 #prizesSec{max-width:1240px}
 .prize-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
 .prize-table{width:100%;min-width:760px;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.prize-table col.c-project,.prize-table col.c-place{width:90px}
 .prize-table th{background:var(--paper-2);color:var(--muted);font-size:10.5px;font-weight:700;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
 .prize-table td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 .prize-table tr:last-child td{border-bottom:0}
 .prize-table .project{font-weight:800;color:var(--green-2);white-space:nowrap;border-right:1px solid var(--line)}
 .prize-table .place{font-weight:700;white-space:nowrap;color:var(--ink-2)}
 .prize-table td[colspan]{color:var(--ink-2)}
-@media (max-width:560px){.prize-table{font-size:12px}.prize-table th,.prize-table td{padding:7px 8px}}
+@media (max-width:560px){
+  .prize-wrap{overflow-x:visible;border-radius:var(--radius-sm)}
+  .prize-table{min-width:0;width:100%;table-layout:auto;font-size:12px}
+  .prize-table col{width:auto!important}
+  .prize-table th,.prize-table td{padding:7px 7px;font-size:12px;line-height:1.45}
+  .prize-table th{font-size:12px;white-space:normal;letter-spacing:0}
+  .prize-table .project{white-space:normal;font-size:12px;width:52px;padding:7px 4px}
+  .prize-table .place{white-space:normal;font-size:12px;width:48px;padding:7px 4px}
+  .prize-table td:not(.project):not(.place){word-break:break-word}
+}
 
 
 .poster-overlay{position:fixed;inset:0;z-index:140;background:rgba(12,30,23,.72);display:flex;align-items:center;justify-content:center;padding:18px}
@@ -898,6 +908,7 @@ body.checkin-open{overflow:hidden}
 .checkin-row{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:5px 0;border-bottom:1px dashed var(--line)}
 .checkin-row:last-child{border-bottom:0}
 .checkin-row input{accent-color:var(--green);flex:none}
+.checkin-row .avatar{flex:none}
 .checkin-row .ci-name{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .checkin-row .ci-lv{color:var(--muted);font-size:11px;flex:none}
 .checkin-row .ci-sign{flex:1;border-bottom:1px solid var(--line);height:16px;margin-left:6px}
@@ -956,7 +967,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
-<script>window.__BUILD_ID__="3167663e4347";</script>
+<script>window.__BUILD_ID__="d4ed5de34b48";</script>
 </head>
 <body>
 <div class="wrap">
@@ -973,7 +984,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
       <div class="stat"><b>22</b><span>参赛人数</span></div>
       <div class="stat"><b>3</b><span>项目</span></div>
       <div class="stat"><b>22</b><span>总场次</span></div>
-      <div class="stat"><b id="statEnd">12:08</b><span>预计结束</span></div>
+      <div class="stat"><b id="statEnd">12:08</b><span title="按每场实际开始/结束时间自动顺延或提前">预计结束（随顺延）</span></div>
     </div>
   </header>
 
@@ -1058,7 +1069,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
       <thead><tr><th style="width:110px">时段</th><th>5 号场</th><th>6 号场</th></tr></thead>
       <tbody id="scheduleBody"></tbody>
     </table>
-    <p class="note">时间为预计，按现场实际情况调整；赛程按 5/6 号场固定，抽签只决定搭档与对阵位置，不改变比赛时间。</p>
+    <p class="note">时间为预计：每场点过「开始/结束」后，后面的时段按实际时间自动顺延或提前，右上角「预计结束」跟着变。赛程按 5/6 号场固定，抽签只决定搭档与对阵位置，不改变顺序。</p>
   </section>
 
 
@@ -1066,8 +1077,8 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
     <div class="sec-head"><h2>奖项与奖品</h2><p>混双：奖品 1 给男生，奖品 2 给女生；男双/女双：两名队员各一份</p></div>
     <div class="prize-wrap">
       <table class="prize-table">
-        <colgroup><col style="width:90px"><col style="width:90px"><col><col></colgroup>
-        <thead><tr><th style="width:90px">项目</th><th style="width:90px">名次</th><th>奖品 1</th><th>奖品 2</th></tr></thead>
+        <colgroup><col class="c-project"><col class="c-place"><col><col></colgroup>
+        <thead><tr><th>项目</th><th>名次</th><th>奖品 1</th><th>奖品 2</th></tr></thead>
         <tbody>
           <tr><td class="project" rowspan="5">混双</td><td class="place">冠军</td><td>更大更强球桶（待采）</td><td>露八颗洗牙器</td></tr>
           <tr><td class="place">亚军</td><td>强劲护你腕 1</td><td>强劲护你腕 2</td></tr>
@@ -1254,10 +1265,10 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
           <div class="field"><label for="setWomen">正式名单 · 女生</label><textarea id="setWomen" spellcheck="false"></textarea></div>
         </div>
         <div class="set-two" style="margin-top:10px">
-          <div class="field"><label for="setSubMenList">补充候补名单 · 男生（每行一个名字）</label><textarea id="setSubMenList" spellcheck="false" style="min-height:70px"></textarea></div>
-          <div class="field"><label for="setSubWomenList">补充候补名单 · 女生（每行一个名字）</label><textarea id="setSubWomenList" spellcheck="false" style="min-height:70px"></textarea></div>
+          <div class="field"><label for="setSubMenList">补充候补名单 · 男生（每行：名字,等级）</label><textarea id="setSubMenList" spellcheck="false" style="min-height:70px"></textarea></div>
+          <div class="field"><label for="setSubWomenList">补充候补名单 · 女生（每行：名字,等级）</label><textarea id="setSubWomenList" spellcheck="false" style="min-height:70px"></textarea></div>
         </div>
-        <p class="set-hint">候补名单是预留的替补：① 指定候补直接从里面拿，用完就少一个；换人时继承缺阵球员的等级（搭档总分不变）。</p>
+        <p class="set-hint">候补名单是预留的替补：① 指定候补直接从里面拿，用完就少一个；<b>换人按候补本人的等级重算</b>（等级取自趣运动，可在这里改，搭档总分可能变化）。</p>
       </fieldset>
     </div>
     <div class="set-actions">
@@ -1464,15 +1475,20 @@ window.__startApp = function(){
 const MEN = __PD().men;
 const WOMEN = __PD().women;
 const SUBS = __PD().subs;
-const DEFAULT_SUB_LIST = {men:[SUBS.men],women:[SUBS.women]};
+/* 候补等级取自趣运动报名/会员数据（2026-10-24 从 act 1284758 刷新）。
+   等级可以在「设置 → 名单 → 补充候补名单」里直接改，每行：名字,等级。 */
+const DEFAULT_SUB_LIST = {men:[{name:SUBS.men,lv:2.0}],women:[{name:SUBS.women,lv:1.5}]};
 function readSubList(id){
   const raw=document.getElementById(id);
   if(!raw) return [];
   const out=[],seen=new Set();
   for(const line of String(raw.value||"").split(/\n+/)){
-    const name=line.trim().replace(/[,，].*$/,"").trim();
+    const t=line.trim(); if(!t) continue;
+    const parts=t.replace(/，/g,",").split(",");
+    const name=(parts[0]||"").trim();
+    const lv=Number(parts[1]);
     if(!name||seen.has(name)) continue;
-    seen.add(name); out.push(name);
+    seen.add(name); out.push({name,lv:Number.isFinite(lv)?lv:null});
   }
   return out;
 }
@@ -1498,7 +1514,7 @@ const state = {
   lock:null,
   timing:{},
   courts:{"5":null,"6":null},
-  subList:{men:DEFAULT_SUB_LIST.men.slice(),women:DEFAULT_SUB_LIST.women.slice()},
+  subList:{men:DEFAULT_SUB_LIST.men.map(x=>({...x})),women:DEFAULT_SUB_LIST.women.map(x=>({...x}))},
   subRecords:[],
   checkin:{},
   skipped:{}
@@ -2555,6 +2571,21 @@ function normalize(s){
     if(lm) s.subList.men.push(lm);
     if(lw) s.subList.women.push(lw);
   }
+  // 旧存档里候补可能只有名字：补成 {name,lv}，缺等级时用默认值兜底
+  for(const key of ["men","women"]){
+    s.subList[key]=(s.subList[key]||[]).map(it=>{
+      if(typeof it==="string"){
+        const def=DEFAULT_SUB_LIST[key].find(d=>d.name===it);
+        return {name:it,lv:def?def.lv:null};
+      }
+      if(it&&typeof it==="object"){
+        let lv=Number(it.lv);
+        if(!Number.isFinite(lv)){ const def=DEFAULT_SUB_LIST[key].find(d=>d.name===String(it.name||"")); lv=def?def.lv:null; }
+        return {name:String(it.name||""),lv:Number.isFinite(lv)?lv:null};
+      }
+      return null;
+    }).filter(x=>x&&x.name);
+  }
   if(!Array.isArray(s.subRecords)) s.subRecords=[];
   if(!s.checkin||typeof s.checkin!=="object") s.checkin={};
   if(!s.skipped||typeof s.skipped!=="object") s.skipped={};
@@ -2914,11 +2945,15 @@ function applySettings(){
   if($("qaHandicap")) $("qaHandicap").textContent=s.handicap;
   if($("qaHandicapScore")) $("qaHandicapScore").textContent=`${s.handicap}:0`;
   if($("schedMeta")) $("schedMeta").textContent=`预计 ${s.matchMin} 分钟一局 · 不设时间上限`;
-  if($("statEnd")) $("statEnd").textContent=slotTime(12).split("-")[1];
+  if($("statEnd")){
+    const plan=slotPlan();
+    const last=plan[plan.length-1];
+    $("statEnd").textContent=last?fmtMin(last.adjEd):slotTime(12).split("-")[1];
+  }
   if($("rosterNote")){
     const subs=[];
-    for(const n of (state.subList&&state.subList.men)||[]) subs.push(`${avatarImg(n,"avatar avatar-sm")} ${esc(n)}（男）`);
-    for(const n of (state.subList&&state.subList.women)||[]) subs.push(`${avatarImg(n,"avatar avatar-sm")} ${esc(n)}（女）`);
+    for(const it of (state.subList&&state.subList.men)||[]) subs.push(`${avatarImg(it.name,"avatar avatar-sm")} ${esc(it.name)}（男${it.lv!=null?` · ${Number(it.lv).toFixed(1)}`:""}）`);
+    for(const it of (state.subList&&state.subList.women)||[]) subs.push(`${avatarImg(it.name,"avatar avatar-sm")} ${esc(it.name)}（女${it.lv!=null?` · ${Number(it.lv).toFixed(1)}`:""}）`);
     $("rosterNote").innerHTML=subs.length?`候补：${subs.join("、")}`:`候补：已用完`;
   }
 }
@@ -3057,7 +3092,7 @@ function fillSubSelectors(){
 }
 function availableSubs(isMan){
   const list=(state.subList&&state.subList[isMan?"men":"women"])||[];
-  return list.filter(n=>n && !MEN.concat(WOMEN).some(p=>p.name===n));
+  return list.filter(it=>it&&it.name && !MEN.concat(WOMEN).some(p=>p.name===it.name));
 }
 function updateSubIn(){
   const out=document.getElementById("subOut"), inn=document.getElementById("subIn");
@@ -3067,7 +3102,7 @@ function updateSubIn(){
   const isMan=MEN.some(p=>p.name===name);
   const subs=availableSubs(isMan);
   inn.innerHTML=subs.length
-    ? subs.map(n=>`<option value="${escAttr(n)}">${esc(n)}</option>`).join("")
+    ? subs.map(it=>`<option value="${escAttr(it.name)}">${esc(it.name)}${it.lv!=null?` · ${it.lv.toFixed(1)}`:""}</option>`).join("")
     : `<option value="">没有可用候补</option>`;
 }
 /* 名单快照：把当前 MEN/WOMEN 写进 state，随签表一起保存/导出/发布，
@@ -3266,14 +3301,35 @@ function redrawSub(){
 }
 /* 只在一个项目里按名字改名：pairs / 种子 / 各场 winner / lock 都同步；
    用新对象替换 p1/p2，避免同会话抽签时把名单对象也改了 */
-function renameInKind(kind,oldName,newName){
+function setPlayerLv(name,lv){
+  if(!Number.isFinite(Number(lv))) return;
+  const val=Number(lv), seen=new Set();
+  const walk=(pr)=>{
+    if(!pr||typeof pr!=="object"||seen.has(pr)) return;
+    seen.add(pr);
+    if(pr.p1&&pr.p1.name===name) pr.p1.lv=val;
+    if(pr.p2&&pr.p2.name===name) pr.p2.lv=val;
+    if(pr.winner) walk(pr.winner);
+  };
+  for(const kind of ["md","wd","xd"]){
+    for(const pr of state.pairs[kind]||[]) walk(pr);
+    const br=state.brackets[kind];
+    if(br){ for(const pr of br.seeds||[]) walk(pr); for(const m of Object.values(br.matches||{})) walk(m.winner); }
+    if(state.lock){
+      for(const pr of (state.lock.pairs&&state.lock.pairs[kind])||[]) walk(pr);
+      const lk=state.lock.brackets&&state.lock.brackets[kind];
+      if(lk){ for(const pr of lk.seeds||[]) walk(pr); for(const m of Object.values(lk.matches||{})) walk(m.winner); }
+    }
+  }
+}
+function renameInKind(kind,oldName,newName,newLv){
   let slots=0;
   const seen=new Set();
   const walk=(pr)=>{
     if(!pr||typeof pr!=="object"||seen.has(pr)) return;
     seen.add(pr);
-    if(pr.p1&&pr.p1.name===oldName){ pr.p1={name:newName,lv:pr.p1.lv}; slots++; }
-    if(pr.p2&&pr.p2.name===oldName){ pr.p2={name:newName,lv:pr.p2.lv}; slots++; }
+    if(pr.p1&&pr.p1.name===oldName){ pr.p1={name:newName,lv:(newLv!=null?newLv:pr.p1.lv)}; slots++; }
+    if(pr.p2&&pr.p2.name===oldName){ pr.p2={name:newName,lv:(newLv!=null?newLv:pr.p2.lv)}; slots++; }
     if(pr.winner) walk(pr.winner);
   };
   for(const pr of state.pairs[kind]||[]) walk(pr);
@@ -3299,12 +3355,14 @@ function applyDrawnSub(){
   const kind=SUB_DRAW.kind, sub=SUB_DRAW.picked, label=KIND_LABEL[kind]||"";
   if(!absent||!kind){ alert("先选缺阵球员和替换项目"); return; }
   if(!confirm(`确认用「${sub}」替换 ${label} 里的「${absent}」？只改${label}，不影响其他项目。`)) return;
-  const slots=renameInKind(kind,absent,sub);
+  const cand=MEN.concat(WOMEN).find(p=>p.name===sub);
+  const newLv=cand&&Number.isFinite(Number(cand.lv))?Number(cand.lv):null;
+  const slots=renameInKind(kind,absent,sub,newLv);
   subLogPush({at:new Date().toISOString(),action:"apply",absent,kind,picked:sub,draws:SUB_DRAW.draws});
   if(!Array.isArray(state.subRecords)) state.subRecords=[];
-  state.subRecords.push({at:new Date().toISOString(),mode:"draw",absent:absent,sub:sub,scope:kind,draws:SUB_DRAW.draws});
+  state.subRecords.push({at:new Date().toISOString(),mode:"draw",absent:absent,sub:sub,scope:kind,draws:SUB_DRAW.draws,lv:newLv});
   save(); render(); fillSettings();
-  alert(slots?`已替换：${label} ${absent} → ${sub}（签表 ${slots} 处，只改了${label}）`:`${label} 里没找到「${absent}」`);
+  alert(slots?`已替换：${label} ${absent} → ${sub}${newLv!=null?`（等级 ${newLv.toFixed(1)}）`:""}（签表 ${slots} 处，只改了${label}）`:`${label} 里没找到「${absent}」`);
 }
 function applySub(){
   const out=document.getElementById("subOut"), inn=document.getElementById("subIn");
@@ -3320,11 +3378,14 @@ function applySub(){
   const p=pool.find(x=>x.name===oldName);
   if(!p){ alert("找不到缺阵球员"); return; }
   if(MEN.concat(WOMEN).some(x=>x.name===subName)){ alert("这个候补已经在场上了"); return; }
-  if(!availableSubs(isMan).includes(subName)){ alert("这个候补不在候补名单里（可能已经用过了）"); return; }
+  const sub=availableSubs(isMan).find(it=>it.name===subName);
+  if(!sub){ alert("这个候补不在候补名单里（可能已经用过了）"); return; }
   const oldLv=p.lv;
+  const newLv=Number.isFinite(Number(sub.lv))?Number(sub.lv):oldLv;
   const slots=renamePairRefs(oldName,subName);
   p.name=subName;
-  p.lv=oldLv;
+  p.lv=newLv;
+  setPlayerLv(subName,newLv);
   for(const kind of ["md","wd","xd"]){
     for(const pr of state.pairs[kind]||[]){
       if((pr.p1&&pr.p1.name===subName)||(pr.p2&&pr.p2.name===subName)) pr.sum=Number((pr.p1.lv+pr.p2.lv).toFixed(1));
@@ -3337,13 +3398,13 @@ function applySub(){
     if(raw) state.settings[key]=raw.replace(new RegExp(oldName.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"g"),subName);
   }
   const subKey=isMan?"men":"women";
-  state.subList[subKey]=(state.subList[subKey]||[]).filter(n=>n!==subName);
+  state.subList[subKey]=(state.subList[subKey]||[]).filter(it=>it.name!==subName);
   if(!Array.isArray(state.subRecords)) state.subRecords=[];
-  state.subRecords.push({at:new Date().toISOString(),mode:"direct",absent:oldName,sub:subName,scope:"all"});
+  state.subRecords.push({at:new Date().toISOString(),mode:"direct",absent:oldName,sub:subName,scope:"all",lv:newLv});
   rosterRef();
   save(); render(); fillSettings();
   if(state.drawn && !slots){ alert(`签表里没有找到「${oldName}」：只更新了名单，请确认是否已经替换过`); return; }
-  alert(`已替换：${oldName} → ${subName}${state.drawn?`（签表 ${slots} 处）`:""}`);
+  alert(`已替换：${oldName} → ${subName}（等级 ${newLv.toFixed(1)}）${state.drawn?`（签表 ${slots} 处）`:""}`);
 }
 function fillSettings(){
   const s=state.settings, $=id=>document.getElementById(id);
@@ -3362,8 +3423,9 @@ function fillSettings(){
   if($("setForcedWd")) $("setForcedWd").value=s.forcedWd||"";
   if($("setForcedXd")) $("setForcedXd").value=s.forcedXd||"";
   $("setReferee").value=s.referee;
-  if($("setSubMenList")) $("setSubMenList").value=((state.subList&&state.subList.men)||[]).join("\n");
-  if($("setSubWomenList")) $("setSubWomenList").value=((state.subList&&state.subList.women)||[]).join("\n");
+  const fmtSubs=(arr)=>(arr||[]).map(it=>`${it.name}${it.lv!=null?","+Number(it.lv).toFixed(1):""}`).join("\n");
+  if($("setSubMenList")) $("setSubMenList").value=fmtSubs(state.subList&&state.subList.men);
+  if($("setSubWomenList")) $("setSubWomenList").value=fmtSubs(state.subList&&state.subList.women);
   renderSubHistory();
   if($("setPreview")) $("setPreview").textContent=`混双 ${s.handicap}:0 开局，男双让 ${s.handicap} 分`;
   $("setMen").value=MEN.map(p=>`${p.name},${p.lv.toFixed(1)}`).join("\n");
@@ -3422,7 +3484,10 @@ function saveSettings(){ if(!window.__isAdmin()){toast("仅管理员可操作");
   }
   MEN.length=0; MEN.push(...men); WOMEN.length=0; WOMEN.push(...women);
   state.settings=next;
-  state.subList={men:readSubList("setSubMenList"),women:readSubList("setSubWomenList")};
+  const subMenList=readSubList("setSubMenList"), subWomenList=readSubList("setSubWomenList");
+  const missingSub=[...subMenList,...subWomenList].find(it=>it.lv==null);
+  if(missingSub){ alert(`候补名单要写等级：${missingSub.name} 缺等级（每行：名字,等级）`); return; }
+  state.subList={men:subMenList,women:subWomenList};
   rosterRef();
   closeSettings();
   if(drawChanged && state.drawn) reset(); else { save(); render(); }
@@ -3459,8 +3524,9 @@ document.getElementById("setDefault").addEventListener("click",()=>{
   if($("setForcedWd")) $("setForcedWd").value=s.forcedWd||"";
   if($("setForcedXd")) $("setForcedXd").value=s.forcedXd||"";
   $("setReferee").value=s.referee;
-  if($("setSubMenList")) $("setSubMenList").value=DEFAULT_SUB_LIST.men.join("\n");
-  if($("setSubWomenList")) $("setSubWomenList").value=DEFAULT_SUB_LIST.women.join("\n");
+  const fmt=(arr)=>arr.map(it=>`${it.name},${Number(it.lv).toFixed(1)}`).join("\n");
+  if($("setSubMenList")) $("setSubMenList").value=fmt(DEFAULT_SUB_LIST.men);
+  if($("setSubWomenList")) $("setSubWomenList").value=fmt(DEFAULT_SUB_LIST.women);
   if($("setPreview")) $("setPreview").textContent=`混双 ${s.handicap}:0 开局，男双让 ${s.handicap} 分`;
   $("setMen").value=DEFAULT_MEN.map(p=>`${p.name},${p.lv.toFixed(1)}`).join("\n");
   $("setWomen").value=DEFAULT_WOMEN.map(p=>`${p.name},${p.lv.toFixed(1)}`).join("\n");
@@ -3881,7 +3947,8 @@ function renderOpsNow(){
   const cur=(LIVE&&LIVE.curSlot>=0)?LIVE.curSlot:-1;
   const running=list.filter(x=>x.running);
   const next=(LIVE&&LIVE.nextKey)?LIVE.byKey[LIVE.nextKey]:null;
-  const endMin=opsSlotRange(SCHEDULE.length-1)[1];
+  const planNow=(LIVE&&LIVE.plan)||slotPlan();
+  const endMin=planNow.length?planNow[planNow.length-1].adjEd:opsSlotRange(SCHEDULE.length-1)[1];
   const nowTxt=`${String(new Date().getHours()).padStart(2,"0")}:${String(new Date().getMinutes()).padStart(2,"0")}`;
   const lockTxt=state.demo?"演示模式（别发布）":(state.drawn?(isLocked()?`已锁定 · ${lockTimeText()}`:"未锁定"):"先签到点名，再抽签");
   const curV=cur>=0?`T${cur+1} · ${fmtMin(LIVE.plan[cur].adjSt)}–${fmtMin(LIVE.plan[cur].adjEd)}`:(now<0?"还没开始":(now<opsSlotRange(0)[0]?"还没开始":"已过计划时间"));
@@ -3903,7 +3970,7 @@ function renderOpsNow(){
     {t:"当前时段",v:curV,s:curS},
     {t:"正在打 / 下一场",v:runV,s:runS,hot:true},
     {t:"两片场",v:courtTxt,s:"手动指定：点对阵图卡片上的「上场」或「5 / 6」排场；两片场可以同时打两场"},
-    {t:"预计结束",v:fmtMin(endMin),s:`按每场 ${s.matchMin} 分钟 + 场间 ${s.intervalMin} 分钟推算，实际以打完为准`},
+    {t:"预计结束",v:fmtMin(endMin),s:`按每场 ${s.matchMin} 分钟 + 场间 ${s.intervalMin} 分钟推算；实际开始/结束后自动顺延或提前，这里跟着变`},
     {t:"场地",v:`${s.venue} 5 / 6 号场`,s:`${s.date} · ${s.start} 开始 · 总裁判：${s.referee||"未指定"}`}
   ];
   el.innerHTML=cards.map(c=>`<div class="ops-card${c.hot?" hot":""}"><b>${esc(c.t)}</b><div class="v">${esc(c.v)}</div><div class="s">${esc(c.s)}</div></div>`).join("");
@@ -3982,8 +4049,8 @@ function fmtCheckinTime(iso){
 }
 function checkinEntries(){
   const subs=[];
-  for(const n of (state.subList&&state.subList.men)||[]) subs.push({name:n,lv:null,male:true,sub:true});
-  for(const n of (state.subList&&state.subList.women)||[]) subs.push({name:n,lv:null,male:false,sub:true});
+  for(const it of (state.subList&&state.subList.men)||[]) subs.push({name:it.name,lv:it.lv,male:true,sub:true});
+  for(const it of (state.subList&&state.subList.women)||[]) subs.push({name:it.name,lv:it.lv,male:false,sub:true});
   return {men:MEN.map(p=>({name:p.name,lv:p.lv,male:true,sub:false})),women:WOMEN.map(p=>({name:p.name,lv:p.lv,male:false,sub:false})),subs};
 }
 function renderCheckin(){
@@ -4001,7 +4068,7 @@ function renderCheckin(){
   const block=(title,people)=>{
     const rows=people.map(p=>{
       const at=map[p.name];
-      return `<label class="checkin-row${at?" done":""}"><input type="checkbox" data-checkin="${escAttr(p.name)}"${at?" checked":""}><span class="ci-name">${esc(p.name)}</span><span class="ci-lv">${p.lv!=null?p.lv.toFixed(1):""}</span><span class="ci-sign"></span>${at?`<span class="ci-time">${fmtCheckinTime(at)}</span>`:""}</label>`;
+      return `<label class="checkin-row${at?" done":""}">${avatarImg(p.name,"avatar avatar-sm")}<input type="checkbox" data-checkin="${escAttr(p.name)}"${at?" checked":""}><span class="ci-name">${esc(p.name)}</span><span class="ci-lv">${p.lv!=null?p.lv.toFixed(1):""}</span><span class="ci-sign"></span>${at?`<span class="ci-time">${fmtCheckinTime(at)}</span>`:""}</label>`;
     }).join("");
     return `<div class="checkin-block"><h3>${esc(title)}</h3>${rows||'<p class="set-hint">（空）</p>'}</div>`;
   };
