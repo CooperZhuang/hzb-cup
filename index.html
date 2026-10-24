@@ -970,7 +970,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
-<script>window.__BUILD_ID__="4622f065b0fd";</script>
+<script>window.__BUILD_ID__="a755cd98abd0";</script>
 </head>
 <body>
 <div class="wrap">
@@ -1955,6 +1955,7 @@ function setScore(kind,mid,side,raw){
   if(!wasDone&&nowDone){
     const t=tGet(kind,mid);
     if(t&&t.s!=null&&t.e==null){t.e=Date.now();if(!state.timing)state.timing={};state.timing[tKey(kind,mid)]=t;}
+    releaseCourtFor(tKey(kind,mid));   // 打完这场，场地腾出来（否则赛后一直显示这场在打 / 该打了）
   }
   save(); render();
 }
@@ -2746,6 +2747,7 @@ function normalize(s){
       if(m.winner===undefined) m.winner=null;
     }
   }
+  pruneDoneCourts(s);
   return s;
 }
 function load(){
@@ -2754,9 +2756,12 @@ function load(){
     if(!raw) return false;
     const s=JSON.parse(raw);
     if(s && s.drawn && s.brackets){
+      const courtsBefore=JSON.stringify(s.courts||null);
       Object.assign(state,normalize(s));
       applyRoster();
       syncUsedSubLevels();
+      // 旧数据里"场地占着已打完的场次"被 normalize 清掉了：落盘一次，管理端下次自动同步就带走
+      if(courtsBefore!==JSON.stringify(state.courts||null)) save();
       return true;
     }
   }catch(e){}
@@ -3838,7 +3843,7 @@ function toggleSkip(kind,mid){
   if(!state.skipped||typeof state.skipped!=="object") state.skipped={};
   const key=tKey(kind,mid);
   if(state.skipped[key]) delete state.skipped[key];
-  else state.skipped[key]=new Date().toISOString();
+  else { state.skipped[key]=new Date().toISOString(); releaseCourtFor(key); }
   save(); render();
   toast(state.skipped[key]?"已标记：这场先跳过（赛务状态会自动跳到下一场）":"已取消跳过");
 }
@@ -3859,13 +3864,48 @@ function courtOf(key){
   if(courtGet("6")===key) return "6";
   return null;
 }
+/* 这块场地上"还在打"的那一场：打完（终局比分 / 已记结束）的场次不算，避免旧数据一直占场 */
+function courtActiveKey(c){
+  const key=courtGet(c);
+  if(!key) return null;
+  const parts=String(key).split(":");
+  const br=state.brackets&&state.brackets[parts[0]];
+  const m=br&&br.matches?br.matches[parts[1]]:null;
+  const t=tGet(parts[0],parts[1]);
+  const done=!m||isFinalScore(m.sa,m.sb,state.settings)||!!(t&&t.e!=null)||isSkipped(parts[0],parts[1]);
+  return done?null:key;
+}
 function courtFree(){
-  if(!courtGet("5")) return "5";
-  if(!courtGet("6")) return "6";
+  if(!courtActiveKey("5")) return "5";
+  if(!courtActiveKey("6")) return "6";
   return null;
 }
 function courtAssign(c,key){ if(!state.courts) state.courts={"5":null,"6":null}; state.courts[c]=key||null; }
 function courtClearAll(){ state.courts={"5":null,"6":null}; }
+/* 一场打完就腾空场地：旧版本只在手动点「撤下」时清，录完终局比分/记完结束场地一直占着 */
+function releaseCourtFor(key){
+  if(!key||!state.courts) return false;
+  let hit=false;
+  for(const c of ["5","6"]){
+    if(state.courts[c]===key){ state.courts[c]=null; hit=true; }
+  }
+  return hit;
+}
+/* 载入存档 / 收到已发布数据时自愈：场地指向"已经打完的场次"的旧数据直接清掉 */
+function pruneDoneCourts(s){
+  if(!s||!s.courts) return false;
+  let hit=false;
+  for(const c of ["5","6"]){
+    const key=s.courts[c];
+    if(!key) continue;
+    const parts=String(key).split(":");
+    const br=s.brackets&&s.brackets[parts[0]];
+    const m=br&&br.matches?br.matches[parts[1]]:null;
+    const t=(s.timing&&s.timing[key])||null;
+    if(!m||(m&&isFinalScore(m.sa,m.sb,s.settings||DEFAULT_SETTINGS))||(t&&t.e!=null)){ s.courts[c]=null; hit=true; }
+  }
+  return hit;
+}
 /* 每个时段：计划时间 + 按实际偏差（顺延或提前）调整后的时间 */
 function slotPlan(){
   const s=state.settings;
@@ -3903,18 +3943,25 @@ function matchTable(){
       const a=m?resolveRef(m.a,br):null, b=m?resolveRef(m.b,br):null;
       const t=tGet(kind,mid);
       const key=tKey(kind,mid);
+      const scored=!!(m&&isFinalScore(m.sa,m.sb,state.settings));
+      const ended=!!(t&&t.e!=null);
+      const skipped=isSkipped(kind,mid);
+      const court=courtOf(key);
       list.push({
-        key:key,kind:kind,mid:mid,slot:i,court:ci===0?"5 号场":"6 号场",
+        key:key,kind:kind,mid:mid,slot:i,courtPlan:ci===0?"5 号场":"6 号场",
         a:a,b:b,ready:!!(a&&b),
-        scored:!!(m&&isFinalScore(m.sa,m.sb,state.settings)),
+        scored:scored,
+        done:scored||ended,          // 这场已经打完（终局比分或已记结束时间）
         t:t||null,
-        courtPlan:ci===0?"5 号场":"6 号场",
-        court:courtOf(key),
-        assigned:!!courtOf(key),
+        court:court,
+        // "占着场地"必须是这场还在打：没录终局比分、没记结束、没标跳过。
+        // 旧版本打完不收场地（state.courts 一直指向最后一两场），这里必须拦住，
+        // 否则比赛都结束了，对阵图/赛务状态还一直显示「该打了」。
+        assigned:!!court&&!scored&&!ended&&!skipped,
         played:!!(t&&(t.s!=null||t.e!=null)),
         running:!!(t&&t.s!=null&&t.e==null),
-        ended:!!(t&&t.e!=null),
-        skipped:isSkipped(kind,mid)
+        ended:ended,
+        skipped:skipped
       });
     });
   });
@@ -3965,7 +4012,7 @@ function setTiming(kind,mid,act){
     }
     t.s=now;t.e=null;
   }
-  else if(act==="end"){t.e=now;}
+  else if(act==="end"){t.e=now;releaseCourtFor(key);}
   else if(act==="clear"){
     delete state.timing[key];
     if(courtOf(key)==="5") courtAssign("5",null);
@@ -3980,6 +4027,8 @@ function assignCourt(kind,mid,court){
   if(window.__isAdmin&&!window.__isAdmin()) return;
   const key=tKey(kind,mid);
   if(state.skipped) delete state.skipped[key];
+  const br=state.brackets[kind], mm=br&&br.matches?br.matches[mid]:null;
+  if(mm&&isFinalScore(mm.sa,mm.sb,state.settings)) return;   // 这场已经录了终局比分，别再占场地
   const cur=courtOf(key);
   if(cur&&cur===court){ courtAssign(court,null); save(); render(); return; }  // 再点一次＝撤下
   const other=court==="5"?"6":"5";
@@ -3995,14 +4044,15 @@ function mtActive(){
   if(opsIsEventDay()) return true;
   const t=state.timing||{};
   for(const k in t){const v=t[k];if(v&&(v.s!=null||v.e!=null)) return true;}
-  if(courtGet("5")||courtGet("6")) return true;
+  if(courtActiveKey("5")||courtActiveKey("6")) return true;
   return false;
 }
 /* 场地板：两片场现在各自在打哪一场 */
 function courtBoardHtml(){
   if(!mtActive()) return "";
   const rows=["5","6"].map(c=>{
-    const key=courtGet(c);
+    // 只认"还在打"的场次：已打完的旧场地数据按空闲显示（normalize 也会清掉）
+    const key=courtActiveKey(c);
     const li=key&&LIVE?LIVE.byKey[key]:null;
     const t=key?tGet(...key.split(":")):null;
     const txt=li?`${li.label?li.label:({md:"男双",wd:"女双",xd:"混双"})[li.kind]} ${li.mid.toUpperCase()} · ${li.a?`${esc(li.a.p1.name)} + ${esc(li.a.p2.name)}`:""} vs ${li.b?`${esc(li.b.p1.name)} + ${esc(li.b.p2.name)}`:""}`:"";
@@ -4020,7 +4070,7 @@ function mtLine(kind,m){
   const li=(LIVE&&LIVE.byKey[key])||null;
   if(!li) return "";
   const t=li.t;
-  const court=li.court;
+  const court=li.assigned?li.court:null;   // 已打完的场次不再显示场地徽标
   const free=courtFree();
   const badge=li.running?`<span class="mt-badge now">进行中</span>`
     :li.skipped?`<span class="mt-badge wait">先跳过</span>`
@@ -4028,7 +4078,7 @@ function mtLine(kind,m){
     :(mtActive()&&(li.now||li.courtNext))?`<span class="mt-badge now">该打了</span>`
     :(mtActive()&&li.next)?`<span class="mt-badge next">下一场</span>`:"";
   const courtChip=court?`<span class="mt-badge court">${court} 号场</span>`:"";
-  const showControls=!!(t||court||li.running);
+  const showControls=!li.done&&!!(t||court||li.running);   // 打完的场次不再给「排到 5/6 号场」按钮
   const showSkip=li.skipped||(!li.scored&&!li.played&&li.ready);
   if(!badge&&!t&&!court&&!li.skipped&&!(mtActive()&&li.ready&&!li.played&&!li.scored)) return "";
   const plan=li.plan?`计划 ${fmtMin(li.plan.st)}–${fmtMin(li.plan.ed)}`:"";
@@ -4170,7 +4220,8 @@ function renderOpsNow(){
     :(nexts.length?nexts.map(x=>`${x.courtPlan}：${({md:"男双",wd:"女双",xd:"混双"})[x.kind]} ${x.a?`${esc(x.a.p1.name)} + ${esc(x.a.p2.name)}`:""} vs ${x.b?`${esc(x.b.p1.name)} + ${esc(x.b.p2.name)}`:""}`).join("　")
       :"收尾、发奖");
   const courtTxt=["5","6"].map(c=>{
-    const key=courtGet(c);
+    // 打完的场次不再算占用场地（旧数据没有清场，这里兜底）
+    const key=courtActiveKey(c);
     if(!key) return `${c} 号场空闲`;
     const li=LIVE&&LIVE.byKey[key];
     return `${c} 号场：${li?`${({md:"男双",wd:"女双",xd:"混双"})[li.kind]} ${li.mid.toUpperCase()}`:""}`;
