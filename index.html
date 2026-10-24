@@ -201,7 +201,6 @@ button{font:inherit;color:inherit}
 }
 .event-meta{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:700;margin:0 0 12px}
 .event-meta b{color:var(--green-2)}
-.lede{max-width:46ch;color:var(--ink-2);font-size:15px;margin:0}
 .hero-side{display:grid;grid-template-columns:repeat(2,minmax(118px,1fr));gap:10px;min-width:0}
 .stat{
   display:grid;gap:2px;background:var(--surface);border:1px solid var(--line);
@@ -256,6 +255,17 @@ section{padding-top:34px}
 .chip .lv{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums}
 .mm{display:inline-block;font-size:9px;font-weight:800;color:var(--on-lime);background:var(--lime);border-radius:3px;padding:0 4px;margin-left:3px;vertical-align:1px}
 .note{font-size:12px;color:var(--muted);margin-top:10px}
+/* 赛后查看版：操作栏与说明收起，只留结果（让版式自己说话） */
+html[data-role="viewer"] .drawbar{justify-content:flex-end;background:transparent;border:0;box-shadow:none;padding:0;margin:2px 0 0;gap:0}
+html[data-role="viewer"] .drawbar .draw-state,
+html[data-role="viewer"] .drawbar #drawBtn,
+html[data-role="viewer"] .drawbar .seedbox > :not(.act-group),
+html[data-role="viewer"] .drawbar .act-group > :not(#roleBtn){display:none}
+html[data-role="viewer"] .drawbar .seedbox{margin-left:0;gap:0}
+html[data-role="viewer"] #roleBtn{min-height:0;padding:4px 8px;border-color:transparent;background:none;color:var(--muted);font-size:11px;font-weight:600}
+html[data-role="viewer"] #awardPosterBtn,
+html[data-role="viewer"] .mt-line,
+html[data-role="viewer"] #courtBoard{display:none}
 .pairs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
 .paircol{border-top:2px solid var(--green);padding-top:10px}
 .paircol h3{margin:0 0 10px;font-size:14px;display:flex;justify-content:space-between;align-items:baseline}
@@ -407,7 +417,6 @@ body{
 .event-title .huahua{background:none;padding:0;font-size:clamp(72px,10vw,118px);letter-spacing:-.055em;color:var(--green)}
 .event-title .event-sub{font-size:clamp(20px,2.4vw,30px);letter-spacing:.04em;color:var(--ink);border-bottom:3px solid var(--green-2);padding-bottom:10px}
 .event-meta{font-size:12.5px;letter-spacing:0;color:var(--ink-2);font-weight:600}
-.lede{font-size:14.5px;color:var(--ink-2);max-width:60ch}
 .sec-head{border-bottom:1px solid var(--line);padding-bottom:9px}
 .sec-head h2{font-size:24px;letter-spacing:-.02em}
 .sec-head p{font-size:11.5px}
@@ -970,7 +979,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
-<script>window.__BUILD_ID__="a755cd98abd0";</script>
+<script>window.__BUILD_ID__="90a6237ecc09";</script>
 </head>
 <body>
 <div class="wrap">
@@ -980,14 +989,13 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
       <div class="hero-copy">
         <h1 class="event-title"><span class="huahua">赛事</span><span class="event-sub">看板</span></h1>
         <p class="event-meta" id="heroMeta"></p>
-        <p class="lede" id="lede"></p>
       </div>
     </div>
     <div class="hero-side">
       <div class="stat"><b>22</b><span>参赛人数</span></div>
       <div class="stat"><b>3</b><span>项目</span></div>
       <div class="stat"><b>22</b><span>总场次</span></div>
-      <div class="stat"><b id="statEnd">12:08</b><span title="按每场实际开始/结束时间自动顺延或提前">预计结束（随顺延）</span></div>
+      <div class="stat"><b id="statEnd">12:08</b><span>预计结束</span></div>
     </div>
   </header>
 
@@ -1034,7 +1042,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
     <div class="champ-grid" id="champGrid"></div>
   </section>
 
-  <section id="rosterSec">
+  <section id="rosterSec" hidden>
     <div class="sec-head"><h2>名单</h2></div>
     <div class="roster">
       <div class="teamlist">
@@ -1049,7 +1057,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
     <p class="note" id="rosterNote"></p>
   </section>
 
-  <section id="pairsSec">
+  <section id="pairsSec" hidden>
     <div class="sec-head"><h2>抽签结果</h2><p id="pairsMeta">等待抽签</p></div>
     <div class="pairs">
       <div class="paircol"><h3>男双 <span>6 对</span></h3><div id="mdPairs"></div></div>
@@ -1061,23 +1069,22 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
   </section>
 
   <section id="bracketSec">
-    <div class="sec-head"><h2>对阵图</h2><p id="bracketMeta">轮次下的小字＝进入该轮的对数 · 场次 · 轮空；虚线框＝轮空</p></div>
+    <div class="sec-head"><h2>对阵图</h2></div>
     <div class="bracket-wrap" id="brackets"></div>
   </section>
 
   <section id="scheduleSec">
-    <div class="sec-head"><h2>赛程</h2><p id="schedMeta">预计 13 分钟一局 · 不设时间上限</p></div>
+    <div class="sec-head"><h2>赛程</h2></div>
     <div id="courtBoard"></div>
     <table class="schedule">
       <thead><tr><th style="width:110px">时段</th><th>5 号场</th><th>6 号场</th></tr></thead>
       <tbody id="scheduleBody"></tbody>
     </table>
-    <p class="note">时间为预计：每场点过「开始/结束」后，后面的时段按实际时间自动顺延或提前，右上角「预计结束」跟着变。赛程按 5/6 号场固定，抽签只决定搭档与对阵位置，不改变顺序。</p>
   </section>
 
 
   <section id="prizesSec">
-    <div class="sec-head"><h2>奖项与奖品</h2><p>混双：奖品 1 给男生，奖品 2 给女生；男双/女双：两名队员各一份</p></div>
+    <div class="sec-head"><h2>奖项与奖品</h2></div>
     <div class="prize-wrap">
       <table class="prize-table">
         <colgroup><col class="c-project"><col class="c-place"><col><col></colgroup>
@@ -1661,14 +1668,6 @@ function roundByeCount(kind,r){
   const enter=roundEnterCount(kind,r);
   const pairs=roundMatchCount(kind,r)*2;
   return Math.max(0,enter-pairs);
-}
-function roundSubLabel(kind,r){
-  const T=totalRounds(kind);
-  const parts=[`${roundEnterCount(kind,r)} 对`,`${roundMatchCount(kind,r)} 场`];
-  const byes=roundByeCount(kind,r);
-  if(byes) parts.push(`${byes} 轮空`);
-  if(r===T) parts.push("含 3、4 名");
-  return parts.join(" · ");
 }
 function round1SlotItems(kind){
   const br=state.brackets[kind];
@@ -2818,15 +2817,14 @@ function intlTeamRow(kind,m,t,side,br){
 function intlMatch(kind,m,br,extra=""){
   const a=(m.histA&&m.histB)?m.histA:resolveRef(m.a,br);
   const b=(m.histA&&m.histB)?m.histB:resolveRef(m.b,br);
-  const finalId=kind==="xd"?"m10":kind==="wd"?"m4":"m5";
   const thirdId=kind==="xd"?"m11":kind==="wd"?"m5":"m6";
-  const tag=m.id===finalId?"决赛":m.id===thirdId?"3、4名":"";
+  const tag=m.id===thirdId?"3、4 名":"";
   const li=(LIVE&&LIVE.byKey[tKey(kind,m.id)])||null;
   const filled=Number.isInteger(m.sa)&&Number.isInteger(m.sb);
   const bad=filled&&m.sa!==m.sb&&!isFinalScore(m.sa,m.sb,state.settings);
   const cls=(li?`${li.running||li.now?" is-now":""}${(li.next||li.courtNext)?" is-next":""}`:"")+(bad?" badscore":"")+(isSkipped(kind,m.id)?" is-skip":"");
   const note=bad?`<div class="badscore-note" title="${escAttr(finalRuleHint(state.settings))}">按规则还没结束：${m.sa}:${m.sb}</div>`:"";
-  return `<div class="intl-match ${extra}${cls}" data-kind="${kind}" data-mid="${m.id}"><div class="intl-meta"><span>${m.id.toUpperCase()}</span><span>${tag}</span></div>${intlTeamRow(kind,m,a,"a",br)}${intlTeamRow(kind,m,b,"b",br)}${note}${mtLine(kind,m)}</div>`;
+  return `<div class="intl-match ${extra}${cls}" data-kind="${kind}" data-mid="${m.id}">${tag?`<div class="intl-meta"><span>${tag}</span></div>`:""}${intlTeamRow(kind,m,a,"a",br)}${intlTeamRow(kind,m,b,"b",br)}${note}${mtLine(kind,m)}</div>`;
 }
 function intlBye(t,seed){
   if(!t) return "";
@@ -2850,11 +2848,11 @@ function intlBracket(kind,title){
       cards=ms.map(m=>intlMatch(kind,m,br)).join("");
     }
     if(r===rounds[0]) cards+=intlMatch(kind,third,br,"intl-third");
-    cols.push(`<div class="intl-col"><div class="intl-col-label"><b>${roundLabel(kind,r)}</b><i>${roundSubLabel(kind,r)}</i></div><div class="intl-col-body">${cards}</div></div>`);
+    cols.push(`<div class="intl-col"><div class="intl-col-label"><b>${roundLabel(kind,r)}</b></div><div class="intl-col-body">${cards}</div></div>`);
   }
   const fw=final&&final.winner;
   const chScore=fw&&Number.isInteger(final.sa)?(final.winner.code===resolveRef(final.a,br).code?`${final.sa}:${final.sb}`:`${final.sb}:${final.sa}`):"";
-  cols.push(`<div class="intl-col champ"><div class="intl-col-label"><b>冠军</b><i>1 对</i></div><div class="intl-col-body"><div class="intl-champ" data-champ="1"><b>${fw?`<span class="intl-player">${avatarStack(fw.p1,fw.p2)}<span class="intl-name">${esc(fw.p1.name)} + ${esc(fw.p2.name)}</span></span>`:"待定"}</b>${chScore?`<b style="font-size:11px;color:var(--green-2)">${chScore}</b>`:""}</div></div></div>`);
+  cols.push(`<div class="intl-col champ"><div class="intl-col-label"><b>冠军</b></div><div class="intl-col-body"><div class="intl-champ" data-champ="1"><b>${fw?`<span class="intl-player">${avatarStack(fw.p1,fw.p2)}<span class="intl-name">${esc(fw.p1.name)} + ${esc(fw.p2.name)}</span></span>`:"待定"}</b>${chScore?`<b style="font-size:11px;color:var(--green-2)">${chScore}</b>`:""}</div></div></div>`);
   return `<div class="intl-section" data-kind="${kind}"><h3>${title}</h3><div class="intl-wrap"><div class="intl-bracket">${cols.join("")}</div></div></div>`;
 }
 
@@ -2924,10 +2922,7 @@ function renderBrackets(){
     box.innerHTML=`<div class="note">抽签后，三个项目的对阵图会出现在这里。</div>`;
     return;
   }
-  const title=(kind,label)=>{
-    const byes=roundByeCount(kind,1);
-    return `${label} · ${state.brackets[kind].seeds.length} 对 · 共 ${totalRounds(kind)} 轮`+(byes?` · 第 1 轮 ${byes} 对轮空`:"");
-  };
+  const title=(kind,label)=>label;
   box.innerHTML=intlBracket("md",title("md","男双"))+intlBracket("wd",title("wd","女双"))+intlBracket("xd",title("xd","混双"));
   scheduleConnectors();
 }
@@ -3023,23 +3018,20 @@ function scheduleCell(ref){
   const name=t=>t?`${esc(t.p1.name)} + ${esc(t.p2.name)}${t.name?` <span class="team-tag">${esc(t.name)}</span>`:""}`:"待定";
   const stage=(k,id)=>{
     if(id===finalMatchId(k)) return "决赛";
-    if(id===thirdMatchId(k)) return "3、4名";
-    const r=m.round;
-    if(r===1) return `第1轮 · ${roundMatchCount(k,1)} 场 + ${roundByeCount(k,1)} 轮空`;
-    return `${roundLabel(k,r)} · ${roundEnterCount(k,r)} 对`;
+    if(id===thirdMatchId(k)) return "3、4 名";
+    return roundLabel(k,m.round);
   };
   const tag=stage(kind,mid);
   const hc=(a&&a.type==="mm")||(b&&b.type==="mm")?` · 让${state.settings.handicap}分`:"";
   const sc=Number.isInteger(m.sa)&&Number.isInteger(m.sb)?` <i class="sc">${m.sa}:${m.sb}</i>`:"";
-  const chip=mtStatusChip(kind,mid);
   const t=tGet(kind,mid);
   let act="";
   if(t){
-    if(t.s!=null&&t.e!=null) act=`实际 ${tClock(t.s)}–${tClock(t.e)}`;
-    else if(t.s!=null) act=`开始 ${tClock(t.s)}`;
-    else if(t.e!=null) act=`结束 ${tClock(t.e)}`;
+    if(t.s!=null&&t.e!=null) act=`${tClock(t.s)}–${tClock(t.e)}`;
+    else if(t.s!=null) act=`${tClock(t.s)} 开始`;
+    else if(t.e!=null) act=`${tClock(t.e)} 结束`;
   }
-  return `<td class="cell"><b>${name(a)} vs ${name(b)}${sc}</b><span>${({md:"男双",wd:"女双",xd:"混双"})[kind]} · ${tag}${hc}</span>${chip?`<span class="mt-cell">${chip}</span>`:""}${act?`<span class="mt-cell act">${esc(act)}</span>`:""}</td>`;
+  return `<td class="cell"><b>${name(a)} vs ${name(b)}${sc}</b><span>${({md:"男双",wd:"女双",xd:"混双"})[kind]} · ${tag}${hc}</span>${act?`<span class="mt-cell act">${esc(act)}</span>`:""}</td>`;
 }
 function parseHM(str){const [h,m]=String(str).split(":").map(Number);return (Number(h)||0)*60+(Number(m)||0);}
 function fmtMin(v){v=((v%1440)+1440)%1440;return `${String(Math.floor(v/60)).padStart(2,"0")}:${String(v%60).padStart(2,"0")}`;}
@@ -3056,8 +3048,7 @@ function renderSchedule(){
   if(board) board.innerHTML=courtBoardHtml();
   document.getElementById("scheduleBody").innerHTML=SCHEDULE.map(([r,t,a,b],idx)=>{
     const p=plan[idx];
-    const time=`<span class="time">${fmtMin(p.st)}–${fmtMin(p.ed)}</span>`
-      +(p.delay?`<span class="time ${p.delay>0?"adj":"early"}">${p.delay>0?"顺延":"提前"} → ${fmtMin(p.adjSt)}–${fmtMin(p.adjEd)}</span>`:"");
+    const time=`<span class="time">${fmtMin(p.st)}–${fmtMin(p.ed)}</span>`;
     const now=(LIVE&&LIVE.curSlot===idx)?" slot-now":"";
     return `<tr class="${now.trim()}"><td class="round">T${r}${time}</td>${scheduleCell(a)}${scheduleCell(b)}</tr>`;
   }).join("");
@@ -3102,7 +3093,6 @@ function applySettings(){
   if($("heroMeta")) $("heroMeta").textContent=`${s.date} · ${s.start} 开始 · ${s.venue} 5/6 号场`;
   if($("topVenue")) $("topVenue").textContent=`${s.venue} · 5/6 号场`;
   document.title=`${s.eventTitle} · 抽签与对阵`;
-  if($("lede")) $("lede").textContent="男双 6 对 · 女双 5 对 · 混双 11 对（10 混双 + 1 男双）";
   if($("rulePoints")) $("rulePoints").textContent=pointsRuleText(s);
   if($("faqWinSummary")) $("faqWinSummary").textContent=faqSummaryText(s);
   if($("faqWinScore")) $("faqWinScore").textContent=faqWinScoreText(s);
@@ -3112,7 +3102,6 @@ function applySettings(){
   if($("ruleHandicap")) $("ruleHandicap").textContent=`混双里的男双遇到混双，混双 ${s.handicap}:0 开局；男双让 ${s.handicap} 分。`;
   if($("qaHandicap")) $("qaHandicap").textContent=s.handicap;
   if($("qaHandicapScore")) $("qaHandicapScore").textContent=`${s.handicap}:0`;
-  if($("schedMeta")) $("schedMeta").textContent=`预计 ${s.matchMin} 分钟一局 · 不设时间上限`;
   if($("statEnd")){
     const plan=slotPlan();
     const last=plan[plan.length-1];
