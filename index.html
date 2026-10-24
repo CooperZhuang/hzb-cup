@@ -239,6 +239,7 @@ button{font:inherit;color:inherit}
 }
 section{padding-top:34px}
 .sec-head{display:grid;gap:3px;align-items:start;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:18px}
+.sec-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .sec-head h2{margin:0;font-size:clamp(20px,2.4vw,28px);letter-spacing:-.03em}
 .sec-head p{margin:0;color:var(--muted);font-size:12px;max-width:74ch}
 .roster{display:grid;grid-template-columns:1fr 1fr;gap:26px}
@@ -969,7 +970,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
-<script>window.__BUILD_ID__="32df96456029";</script>
+<script>window.__BUILD_ID__="3e8cf2ce8b6a";</script>
 </head>
 <body>
 <div class="wrap">
@@ -1029,7 +1030,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
   </div>
 
   <section id="championsSec" hidden>
-    <div class="sec-head"><h2 id="champTitle">冠军名单</h2></div>
+    <div class="sec-head"><div class="sec-title-row"><h2 id="champTitle">获奖名单</h2><button type="button" class="btn btn-ghost" id="awardPosterBtn">生成竖屏图</button></div></div>
     <div class="champ-grid" id="champGrid"></div>
   </section>
 
@@ -1391,7 +1392,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
           <li><b>更新赛程</b>：在「对阵图」卡片里填终局比分，页面自动更新胜者和进度；没打完或多打的比分会标红、不判胜，改到终局才生效。时间线这页也会跟着刷新。</li>
           <li><b>阶段发布</b>：每打完 2–3 个时段点一次「发布」，观看端约 1 分钟内自动刷新，不用挨个私聊。</li>
           <li><b>中场休息</b>：男双 / 女双打完、混双开打前休息 <span id="opsBreakMins"></span> 分钟，混双换人、补水、擦汗都在这会儿。</li>
-          <li><b>收官</b>：3、4 名赛 → 决赛 → 冠军名单生成 → 颁奖。</li>
+          <li><b>收官</b>：3、4 名赛 → 决赛 → 获奖名单生成 → 颁奖。</li>
           <li><b>收尾</b>：走下面的「收尾清单」，别漏归还场地这一条。</li>
         </ol>
         <p class="ops-foot-note">每场循环里最容易出错的是<b>比分录错</b>：填的是<b>最终比分</b>（让分之后的比分）；没打完或多打的比分（25:24、27:25）会标红、不判胜。改比分直接在卡片上改，改完下游会自动清空，把下游重录一遍即可。</p>
@@ -1434,7 +1435,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
         <div class="ops-h2">收尾清单<span class="ops-tag">点一下打勾</span></div>
         <p class="ops-desc">散场前花五分钟走一遍，尤其是归还场地和奖品。</p>
         <div class="ops-check-group">
-          <label class="ops-chk"><input type="checkbox" data-chk="end-1"><span>冠军名单已生成、已核对名次、已发布（工具栏「发布」）</span></label>
+          <label class="ops-chk"><input type="checkbox" data-chk="end-1"><span>获奖名单已生成、已核对名次、已发布（工具栏「发布」）</span></label>
           <label class="ops-chk"><input type="checkbox" data-chk="end-2"><span>导出最终 JSON 存档（工具栏「导出」），另发一份给自己存着</span></label>
           <label class="ops-chk"><input type="checkbox" data-chk="end-3"><span>归还场地：球网、场号牌、球筒、指示牌、借来的东西</span></label>
           <label class="ops-chk"><input type="checkbox" data-chk="end-4"><span>场地清理：垃圾带走、地面擦干、关灯关空调</span></label>
@@ -2512,6 +2513,110 @@ async function buildPosterBlob(){
   return new Promise(res=>canvas.toBlob(res,"image/png"));
 }
 let posterUrl=null;
+/* ---------- 获奖名单 · 竖屏图 ---------- */
+const AW={W:1080,H:1920,PAD:64,HEAD:300,BLOCK:460,GAP:30,FOOT:70};
+function awRound(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  if(ctx.roundRect){ctx.roundRect(x,y,w,h,r);}
+  else{
+    ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+  }
+}
+function awAvatar(ctx,img,name,x,y,size){
+  ctx.save();ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);ctx.clip();
+  if(img) ctx.drawImage(img,x,y,size,size);
+  else{ctx.fillStyle=PC.paper2;ctx.fillRect(x,y,size,size);}
+  ctx.restore();
+  ctx.beginPath();ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);
+  ctx.strokeStyle=PC.line;ctx.lineWidth=1.5;ctx.stroke();
+}
+function awTeam(ctx,images,t,x,y,maxW){
+  ctx.textBaseline="middle";ctx.textAlign="left";
+  if(!t){ctx.fillStyle=PC.muted;ctx.font=`bold 28px ${POSTER_FONT}`;ctx.fillText("待定",x,y);return;}
+  let cx=x;
+  const size=38;
+  for(const p of [t.p1,t.p2]){
+    const name=pFit(ctx,p.name,Math.max(60,x+maxW-cx-size-60));
+    awAvatar(ctx,images[p.name],p.name,cx,y-size/2,size);
+    ctx.fillStyle=PC.ink;ctx.font=`bold 27px ${POSTER_FONT}`;
+    ctx.fillText(name,cx+size+8,y-7);
+    cx+=size+8+ctx.measureText(name).width+20;
+  }
+  if(t.name){ctx.fillStyle=PC.muted;ctx.font=`15px ${POSTER_FONT}`;ctx.fillText(pFit(ctx,t.name,maxW),x,y+23);}
+}
+async function buildAwardsPosterBlob(){
+  if(!state.drawn) throw new Error("还没有抽签");
+  const images=await loadPosterImages();
+  const kinds=[["md","男双"],["wd","女双"],["xd","混双"]];
+  const canvas=document.createElement("canvas");canvas.width=AW.W;canvas.height=AW.H;
+  const ctx=canvas.getContext("2d");
+  ctx.fillStyle=PC.paper;ctx.fillRect(0,0,AW.W,AW.H);
+  // 头部
+  const logo=images.__logo;
+  if(logo) ctx.drawImage(logo,AW.PAD,46,104,104);
+  ctx.textBaseline="middle";ctx.textAlign="left";
+  ctx.fillStyle=PC.green;ctx.font=`bold 52px ${POSTER_FONT}`;ctx.fillText(__cupTitle(),AW.PAD+128,82);
+  ctx.fillStyle=PC.ink2;ctx.font=`28px ${POSTER_FONT}`;ctx.fillText("羽毛球赛 · 获奖名单",AW.PAD+130,130);
+  ctx.fillStyle=PC.muted;ctx.font=`20px ${POSTER_FONT}`;ctx.fillText(`${state.settings.date} · ${state.settings.venue} 5/6 号场`,AW.PAD+130,168);
+  ctx.textAlign="right";ctx.fillStyle=PC.green2;ctx.font=`bold 20px ${POSTER_FONT}`;ctx.fillText("竖版 · 长按保存",AW.W-AW.PAD,70);
+  ctx.fillStyle=PC.muted;ctx.font=`17px ${POSTER_FONT}`;ctx.fillText("冠军 / 亚军 / 季军 / 第四名",AW.W-AW.PAD,102);ctx.textAlign="left";
+  ctx.strokeStyle=PC.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(AW.PAD,250);ctx.lineTo(AW.W-AW.PAD,250);ctx.stroke();
+
+  let top=AW.HEAD;
+  for(const [kind,label] of kinds){
+    const data=championData(kind);
+    awRound(ctx,AW.PAD,top,AW.W-AW.PAD*2,AW.BLOCK,18);
+    ctx.fillStyle=PC.surface;ctx.fill();ctx.strokeStyle=PC.line;ctx.lineWidth=1;ctx.stroke();
+    ctx.textBaseline="middle";ctx.textAlign="left";
+    ctx.fillStyle=PC.green2;ctx.font=`bold 28px ${POSTER_FONT}`;
+    const count=(state.brackets[kind]&&state.brackets[kind].seeds||[]).length;
+    ctx.fillText(`${label} · ${count} 对`,AW.PAD+26,top+38);
+    ctx.textAlign="right";ctx.fillStyle=PC.muted;ctx.font=`16px ${POSTER_FONT}`;
+    ctx.fillText("冠军 / 亚军 / 季军 / 第四名",AW.W-AW.PAD-26,top+38);ctx.textAlign="left";
+    const rows=[
+      ["冠军",data?data.winner:null,data?data.finalScore:"",true],
+      ["亚军",data?data.loser:null,"",false],
+      ["季军",data?data.third:null,data?data.thirdScore:"",false],
+      ["第四名",data?data.fourth:null,"",false]
+    ];
+    rows.forEach(([place,t,score,hot],j)=>{
+      const cy=top+100+j*88;
+      if(j>0){ctx.strokeStyle=PC.line;ctx.beginPath();ctx.moveTo(AW.PAD+26,cy-44);ctx.lineTo(AW.W-AW.PAD-26,cy-44);ctx.stroke();}
+      awRound(ctx,AW.PAD+26,cy-17,86,34,8);
+      ctx.fillStyle=hot?PC.winBg:PC.paper2;ctx.fill();
+      ctx.fillStyle=hot?PC.green2:PC.ink2;ctx.font=`bold 16px ${POSTER_FONT}`;ctx.textAlign="center";
+      ctx.fillText(place,AW.PAD+26+43,cy);ctx.textAlign="left";
+      awTeam(ctx,images,t,AW.PAD+132,cy,AW.W-AW.PAD*2-132-96);
+      if(score){ctx.fillStyle=PC.green2;ctx.font=`bold 20px ${POSTER_FONT}`;ctx.textAlign="right";ctx.fillText(score,AW.W-AW.PAD-26,cy);ctx.textAlign="left";}
+    });
+    top+=AW.BLOCK+AW.GAP;
+  }
+  // 页脚
+  ctx.strokeStyle=PC.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(AW.PAD,1850);ctx.lineTo(AW.W-AW.PAD,1850);ctx.stroke();
+  ctx.fillStyle=PC.muted;ctx.font=`19px ${POSTER_FONT}`;ctx.textAlign="center";
+  ctx.fillText(`${__cupTitle()} · ${state.settings.date} · ${state.settings.venue} · 5/6 号场`,AW.W/2,1882);ctx.textAlign="left";
+  return new Promise(res=>canvas.toBlob(res,"image/png"));
+}
+async function generateAwardsPoster(){
+  const btn=document.getElementById("awardPosterBtn");
+  if(!state.drawn){alert("先抽签再生成获奖名单");return;}
+  if(btn){btn.disabled=true;btn.textContent="生成中…";}
+  try{
+    const blob=await buildAwardsPosterBlob();
+    if(!blob) throw new Error("图片生成失败");
+    if(posterUrl) URL.revokeObjectURL(posterUrl);
+    posterUrl=URL.createObjectURL(blob);
+    document.getElementById("posterImg").src=posterUrl;
+    const skinName=skinInfo(skinId()).name;
+    const t=document.getElementById("posterTitle"); if(t) t.textContent=`获奖名单 · 竖屏 · ${skinName}`;
+    const a=document.getElementById("posterDownload");
+    const cup=(state.settings.eventTitle||"").replace(/羽球赛$/,"")||"赛事";
+    a.href=posterUrl;a.download=`${cup}-获奖名单-竖屏-${skinName}-${state.seed}.png`;
+    document.getElementById("posterOverlay").hidden=false;
+  }catch(e){alert("生成失败："+e.message);}
+  finally{if(btn){btn.disabled=false;btn.textContent="生成竖屏图";}}
+}
 async function generatePoster(){
   const btn=document.getElementById("posterBtn");
   if(!state.drawn){alert("先抽签再生成对阵图");return;}
@@ -2835,19 +2940,23 @@ function championData(kind){
   const winner=f.winner, loser=winner.code===a.code?b:a;
   const tm=br.matches[thirdId];
   const finalScore=Number.isInteger(f.sa)&&Number.isInteger(f.sb)?(winner.code===a.code?`${f.sa}:${f.sb}`:`${f.sb}:${f.sa}`):"";
-  let thirdScore="";
-  if(tm&&tm.winner&&Number.isInteger(tm.sa)&&Number.isInteger(tm.sb)){
+  let thirdScore="", dispThird=null, dispFourth=null;
+  if(tm&&tm.winner){
     const ta=resolveRef(tm.a,br), tb=resolveRef(tm.b,br);
-    thirdScore=tm.winner.code===ta.code?`${tm.sa}:${tm.sb}`:`${tm.sb}:${tm.sa}`;
+    if(ta&&tb){
+      const thirdPair=tm.winner, fourthPair=thirdPair.code===ta.code?tb:ta;
+      if(tm.histA&&tm.histB){
+        dispThird=thirdPair.code===ta.code?tm.histA:tm.histB;
+        dispFourth=thirdPair.code===ta.code?tm.histB:tm.histA;
+      } else { dispThird=thirdPair; dispFourth=fourthPair; }
+      if(Number.isInteger(tm.sa)&&Number.isInteger(tm.sb)){
+        thirdScore=thirdPair.code===ta.code?`${tm.sa}:${tm.sb}`:`${tm.sb}:${tm.sa}`;
+      }
+    }
   }
   const dispWinner=hA&&hB?(winner.code===a.code?hA:hB):winner;
   const dispLoser=hA&&hB?(winner.code===a.code?hB:hA):loser;
-  let dispThird=tm&&tm.winner?tm.winner:null;
-  if(tm&&tm.winner&&tm.histA&&tm.histB){
-    const ta=resolveRef(tm.a,br), tb=resolveRef(tm.b,br);
-    dispThird=tm.winner.code===ta.code?tm.histA:tm.histB;
-  }
-  return {winner:dispWinner,loser:dispLoser,third:dispThird,finalScore,thirdScore};
+  return {winner:dispWinner,loser:dispLoser,third:dispThird,fourth:dispFourth,finalScore,thirdScore};
 }
 function renderChampions(){
   const sec=document.getElementById("championsSec"), grid=document.getElementById("champGrid");
@@ -2857,7 +2966,7 @@ function renderChampions(){
   if(!data.md||!data.wd||!data.xd){sec.hidden=true;grid.innerHTML="";return;}
   const who=(t,kind)=>t?`<b>${avatarStack(t.p1,t.p2)}<span class="players-text">${esc(t.p1.name)}${subTag(t.p1.name,kind)} + ${esc(t.p2.name)}${subTag(t.p2.name,kind)}</span></b>${t.name?`<small>${esc(t.name)}</small>`:""}`:"<b>待定</b>";
   const line=(label,t,score,first,kind)=>`<div class="champ-line${first?" first":""}"><span class="place">${label}</span><span class="who">${who(t,kind)}</span><span class="champ-score">${score||""}</span></div>`;
-  const card=(label,d,kind)=>`<div class="champ-card"><div class="champ-kind">${label}</div>${line("冠军",d.winner,d.finalScore,true,kind)}${line("亚军",d.loser,"",false,kind)}${line("季军",d.third,d.thirdScore,false,kind)}</div>`;
+  const card=(label,d,kind)=>`<div class="champ-card"><div class="champ-kind">${label}</div>${line("冠军",d.winner,d.finalScore,true,kind)}${line("亚军",d.loser,"",false,kind)}${line("季军",d.third,d.thirdScore,false,kind)}${line("第四名",d.fourth,"",false,kind)}</div>`;
   grid.innerHTML=card("男双",data.md,"md")+card("女双",data.wd,"wd")+card("混双",data.xd,"xd");
   sec.hidden=false;
 }
@@ -3024,7 +3133,7 @@ function renderDemoState(){
   if(bn) bn.hidden=!on;
   document.body.classList.toggle("demo-mode",on);
   const ct=document.getElementById("champTitle");
-  if(ct) ct.innerHTML="冠军名单"+(on?' <span class="demo-tag">演示</span>':"");
+  if(ct) ct.innerHTML="获奖名单"+(on?' <span class="demo-tag">演示</span>':"");
   const dt=document.getElementById("demoText");
   if(dt) dt.textContent=isLocked()
     ?"演示模式：随机抽签 + 随机比分，不是真实比赛结果。真实签表已锁定存好，点右边一键复原。"
@@ -3590,6 +3699,7 @@ function saveSettings(){ if(!window.__isAdmin()){toast("仅管理员可操作");
 }
 document.getElementById("demoBtn").addEventListener("click",runDemo);
 document.getElementById("posterBtn").addEventListener("click",generatePoster);
+document.getElementById("awardPosterBtn").addEventListener("click",generateAwardsPoster);
 function closePoster(){document.getElementById("posterOverlay").hidden=true;}
 document.getElementById("posterClose").addEventListener("click",closePoster);
 document.getElementById("posterClose2").addEventListener("click",closePoster);
