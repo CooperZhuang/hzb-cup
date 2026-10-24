@@ -970,7 +970,7 @@ html[data-role="viewer"] #publishBtn{display:none!important}
 html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
 </style>
 <meta name="robots" content="noindex,nofollow">
-<script>window.__BUILD_ID__="39cafc686505";</script>
+<script>window.__BUILD_ID__="4622f065b0fd";</script>
 </head>
 <body>
 <div class="wrap">
@@ -1030,7 +1030,7 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
   </div>
 
   <section id="championsSec" hidden>
-    <div class="sec-head"><div class="sec-title-row"><h2 id="champTitle">获奖名单</h2><div class="set-btns" style="margin:0"><button type="button" class="btn btn-ghost" id="summaryPosterBtn">生成总结图</button><button type="button" class="btn btn-ghost" id="awardPosterBtn">生成获奖名单图</button></div></div></div>
+    <div class="sec-head"><div class="sec-title-row"><h2 id="champTitle">获奖名单</h2><div class="set-btns" style="margin:0"><button type="button" class="btn btn-ghost" id="awardPosterBtn">生成获奖名单图</button></div></div></div>
     <div class="champ-grid" id="champGrid"></div>
   </section>
 
@@ -1202,7 +1202,6 @@ html[data-role="viewer"] .seedbox label[for="seedInput"]{display:none!important}
         <div class="field"><label for="setPairMode">搭档方式</label><select id="setPairMode"><option value="level">按等级强弱搭配</option><option value="random">完全随机</option></select></div>
         <div class="field"><label for="setByeMode">轮空方式</label><select id="setByeMode"><option value="random">随机轮空</option><option value="seeded">按等级种子</option></select></div>
         <div class="field"><label for="setReferee">裁判/计分</label><input id="setReferee" type="text"></div>
-        <div class="field"><label for="setSponsor">赞助商</label><input id="setSponsor" type="text" placeholder="名字（昵称）"></div>
       </fieldset>
 
       <fieldset style="grid-column:1/-1">
@@ -2599,96 +2598,6 @@ async function buildAwardsPosterBlob(){
   ctx.fillText(`${__cupTitle()} · ${state.settings.date} · ${state.settings.venue} · 5/6 号场`,AW.W/2,1882);ctx.textAlign="left";
   return new Promise(res=>canvas.toBlob(res,"image/png"));
 }
-async function buildSummaryPosterBlob(){
-  if(!state.drawn) throw new Error("还没有抽签");
-  const images=await loadPosterImages();
-  const s=state.settings;
-  const cup=(s.eventTitle||"").replace(/羽球赛$/,"")||"赛事";
-  const kinds=[["md","男双"],["wd","女双"],["xd","混双"]];
-  const rosterRows=Math.max(MEN.length,WOMEN.length);
-  const HEAD=300, NUMH=140, CHT=64, CHR=126, RST=76, RSR=62, FOOT=150;
-  const H=HEAD+NUMH+CHT+3*CHR+40+RST+rosterRows*RSR+30+FOOT;
-  const canvas=document.createElement("canvas");canvas.width=AW.W;canvas.height=Math.ceil(H);
-  const ctx=canvas.getContext("2d");
-  ctx.fillStyle=PC.paper;ctx.fillRect(0,0,AW.W,canvas.height);
-  // 头部
-  if(images.__logo) ctx.drawImage(images.__logo,AW.PAD,44,108,108);
-  ctx.textBaseline="middle";ctx.textAlign="left";
-  ctx.fillStyle=PC.green;ctx.font=`bold 54px ${POSTER_FONT}`;ctx.fillText(cup,AW.PAD+132,82);
-  ctx.fillStyle=PC.ink2;ctx.font=`28px ${POSTER_FONT}`;ctx.fillText("羽毛球赛 · 赛事总结",AW.PAD+134,132);
-  ctx.fillStyle=PC.muted;ctx.font=`20px ${POSTER_FONT}`;ctx.fillText(`${s.date} · ${s.venue} 5/6 号场`,AW.PAD+134,170);
-  ctx.textAlign="right";ctx.fillStyle=PC.green2;ctx.font=`bold 20px ${POSTER_FONT}`;ctx.fillText("竖版 · 长按保存",AW.W-AW.PAD,72);ctx.textAlign="left";
-  ctx.strokeStyle=PC.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(AW.PAD,252);ctx.lineTo(AW.W-AW.PAD,252);ctx.stroke();
-  // 数字条
-  const nums=[[String(MEN.length+WOMEN.length),"位选手"],[String(kinds.length),"个项目"],[String(matchTable().length),"场对决"],["2","片场"]];
-  const gap=16, bw=(AW.W-AW.PAD*2-gap*3)/4, by=HEAD+24, bh=104;
-  nums.forEach(([v,l],i)=>{
-    const x=AW.PAD+i*(bw+gap);
-    awRound(ctx,x,by,bw,bh,14);ctx.fillStyle=PC.surface;ctx.fill();ctx.strokeStyle=PC.line;ctx.lineWidth=1;ctx.stroke();
-    ctx.textAlign="center";ctx.fillStyle=PC.green2;ctx.font=`bold 40px ${POSTER_FONT}`;ctx.fillText(v,x+bw/2,by+42);
-    ctx.fillStyle=PC.muted;ctx.font=`18px ${POSTER_FONT}`;ctx.fillText(l,x+bw/2,by+78);ctx.textAlign="left";
-  });
-  // 冠军阵容
-  let y=HEAD+NUMH+30;
-  ctx.fillStyle=PC.ink;ctx.font=`bold 32px ${POSTER_FONT}`;ctx.fillText("冠军阵容",AW.PAD,y+18);
-  y+=CHT-10;
-  kinds.forEach(([kind,label])=>{
-    const d=championData(kind);
-    awRound(ctx,AW.PAD,y,AW.W-AW.PAD*2,110,14);ctx.fillStyle=PC.surface;ctx.fill();ctx.strokeStyle=PC.line;ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle=PC.green2;ctx.font=`bold 25px ${POSTER_FONT}`;ctx.fillText(label,AW.PAD+26,y+36);
-    ctx.fillStyle=PC.muted;ctx.font=`17px ${POSTER_FONT}`;ctx.fillText("冠军",AW.PAD+26,y+72);
-    awTeam(ctx,images,d?d.winner:null,AW.PAD+130,y+50,AW.W-AW.PAD*2-130-120);
-    if(d&&d.finalScore){ctx.fillStyle=PC.green2;ctx.font=`bold 24px ${POSTER_FONT}`;ctx.textAlign="right";ctx.fillText(d.finalScore,AW.W-AW.PAD-26,y+52);ctx.textAlign="left";}
-    y+=CHR;
-  });
-  // 队伍名单
-  y+=24;
-  ctx.fillStyle=PC.ink;ctx.font=`bold 32px ${POSTER_FONT}`;ctx.fillText(`队伍名单 · ${MEN.length+WOMEN.length} 人`,AW.PAD,y+18);
-  ctx.fillStyle=PC.muted;ctx.font=`18px ${POSTER_FONT}`;ctx.textAlign="right";ctx.fillText(`男生 ${MEN.length} · 女生 ${WOMEN.length}`,AW.W-AW.PAD,y+18);ctx.textAlign="left";
-  y+=RST-24;
-  const cols=[["男生",MEN,AW.PAD],["女生",WOMEN,AW.W/2+12]];
-  const colW=AW.W/2-AW.PAD-16;
-  cols.forEach(([label,arr,x])=>{
-    ctx.fillStyle=PC.muted;ctx.font=`18px ${POSTER_FONT}`;ctx.fillText(label,x,y+6);
-    arr.forEach((p,i)=>{
-      const ry=y+30+i*RSR;
-      awAvatar(ctx,images[p.name],p.name,x,ry-18,42);
-      ctx.fillStyle=PC.ink;ctx.font=`bold 25px ${POSTER_FONT}`;ctx.fillText(pFit(ctx,p.name,colW-70),x+54,ry-2);
-      ctx.fillStyle=PC.muted;ctx.font=`16px ${POSTER_FONT}`;ctx.fillText(Number(p.lv).toFixed(1),x+54,ry+22);
-    });
-  });
-  // 页脚
-  const fy=canvas.height-FOOT+22;
-  ctx.strokeStyle=PC.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(AW.PAD,fy-18);ctx.lineTo(AW.W-AW.PAD,fy-18);ctx.stroke();
-  ctx.textAlign="center";
-  if((s.sponsor||"").trim()){
-    ctx.fillStyle=PC.green2;ctx.font=`bold 24px ${POSTER_FONT}`;ctx.fillText(`赞助：${s.sponsor}`,AW.W/2,fy+8);
-  }
-  ctx.fillStyle=PC.muted;ctx.font=`18px ${POSTER_FONT}`;
-  const referee=(s.referee||"").trim();
-  ctx.fillText(`${referee?`总裁判：${referee} · `:""}完整名次见获奖名单`,AW.W/2,fy+44);
-  ctx.fillText(`${cup} · ${s.date} · ${s.venue} 5/6 号场`,AW.W/2,fy+74);ctx.textAlign="left";
-  return new Promise(res=>canvas.toBlob(res,"image/png"));
-}
-async function generateSummaryPoster(){
-  const btn=document.getElementById("summaryPosterBtn");
-  if(!state.drawn){alert("先抽签再生成赛事总结");return;}
-  if(btn){btn.disabled=true;btn.textContent="生成中…";}
-  try{
-    const blob=await buildSummaryPosterBlob();
-    if(!blob) throw new Error("图片生成失败");
-    if(posterUrl) URL.revokeObjectURL(posterUrl);
-    posterUrl=URL.createObjectURL(blob);
-    document.getElementById("posterImg").src=posterUrl;
-    const cup=(state.settings.eventTitle||"").replace(/羽球赛$/,"")||"赛事";
-    const skinName=skinInfo(skinId()).name;
-    const t=document.getElementById("posterTitle"); if(t) t.textContent=`赛事总结 · 竖屏 · ${skinName}`;
-    const a=document.getElementById("posterDownload");
-    a.href=posterUrl;a.download=`${cup}-赛事总结-竖屏-${skinName}.png`;
-    document.getElementById("posterOverlay").hidden=false;
-  }catch(e){alert("生成失败："+e.message);}
-  finally{if(btn){btn.disabled=false;btn.textContent="生成总结图";}}
-}
 async function generateAwardsPoster(){
   const btn=document.getElementById("awardPosterBtn");
   if(!state.drawn){alert("先抽签再生成获奖名单");return;}
@@ -3719,7 +3628,6 @@ function fillSettings(){
   if($("setForcedWd")) $("setForcedWd").value=s.forcedWd||"";
   if($("setForcedXd")) $("setForcedXd").value=s.forcedXd||"";
   $("setReferee").value=s.referee;
-  $("setSponsor").value=s.sponsor||"";
   const fmtSubs=(arr)=>(arr||[]).map(it=>`${it.name}${it.lv!=null?","+Number(it.lv).toFixed(1):""}`).join("\n");
   if($("setSubMenList")) $("setSubMenList").value=fmtSubs(state.subList&&state.subList.men);
   if($("setSubWomenList")) $("setSubWomenList").value=fmtSubs(state.subList&&state.subList.women);
@@ -3765,8 +3673,7 @@ function saveSettings(){ if(!window.__isAdmin()){toast("仅管理员可操作");
     pairMode:g("setPairMode"), byeMode:g("setByeMode"),
     forcedEnabled:document.getElementById("setForcedOn").checked,
     forcedMd:g("setForcedMd").trim(), forcedWd:g("setForcedWd").trim(), forcedXd:g("setForcedXd").trim(),
-    referee:g("setReferee").trim(),
-    sponsor:g("setSponsor").trim()
+    referee:g("setReferee").trim()
   };
   delete next.subMen; delete next.subWomen;
   const men=readRoster("setMen"), women=readRoster("setWomen");
@@ -3793,7 +3700,6 @@ function saveSettings(){ if(!window.__isAdmin()){toast("仅管理员可操作");
 document.getElementById("demoBtn").addEventListener("click",runDemo);
 document.getElementById("posterBtn").addEventListener("click",generatePoster);
 document.getElementById("awardPosterBtn").addEventListener("click",generateAwardsPoster);
-document.getElementById("summaryPosterBtn").addEventListener("click",generateSummaryPoster);
 function closePoster(){document.getElementById("posterOverlay").hidden=true;}
 document.getElementById("posterClose").addEventListener("click",closePoster);
 document.getElementById("posterClose2").addEventListener("click",closePoster);
@@ -3824,7 +3730,6 @@ document.getElementById("setDefault").addEventListener("click",()=>{
   if($("setForcedWd")) $("setForcedWd").value=s.forcedWd||"";
   if($("setForcedXd")) $("setForcedXd").value=s.forcedXd||"";
   $("setReferee").value=s.referee;
-  $("setSponsor").value=s.sponsor||"";
   const fmt=(arr)=>arr.map(it=>`${it.name},${Number(it.lv).toFixed(1)}`).join("\n");
   if($("setSubMenList")) $("setSubMenList").value=fmt(DEFAULT_SUB_LIST.men);
   if($("setSubWomenList")) $("setSubWomenList").value=fmt(DEFAULT_SUB_LIST.women);
